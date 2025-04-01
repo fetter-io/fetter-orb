@@ -9,7 +9,7 @@ use fetter::PathShared;
 use fetter::ScanFS;
 use fetter::SystemTag;
 
-use fetter_orb_model::db_context::DBContext;
+use orb_model::db_context::DBContext;
 
 #[tokio::test]
 async fn load_scan_fs_a() {
