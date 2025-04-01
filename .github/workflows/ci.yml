@@ -12,13 +12,13 @@ on:
 
 jobs:
   #-----------------------------------------------------------------------------
-  build-and-test:
+  model-test:
     strategy:
       matrix:
-        os: [ubuntu-latest] # macos-latest] #, windows-latest]
+        os: [ubuntu-latest]
         rust: ["1.81.0", stable]
 
-    name: Build & Test / ${{ matrix.os }} / Rust ${{ matrix.rust }}
+    name: Model: Test / ${{ matrix.os }} / Rust ${{ matrix.rust }}
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -35,8 +35,8 @@ jobs:
         run: cargo test --verbose
 
   #-----------------------------------------------------------------------------
-  quality:
-    name: Quality
+  model-quality:
+    name: Model: Quality
     runs-on: ubuntu-latest
 
     steps:
