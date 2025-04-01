@@ -122,10 +122,9 @@ async fn load_site_packages_a() {
     assert_eq!(st_id3, 1);
 
     let p4 = ctx.site_packages_from_id(2).await.unwrap().unwrap();
-    assert!(
-        p4.to_string()
-            .ends_with("src/py_src/lib/python3.13/site-packages")
-    );
+    assert!(p4
+        .to_string()
+        .ends_with("src/py_src/lib/python3.13/site-packages"));
 
     ctx.tables_drop().await.unwrap();
 }
@@ -143,7 +142,7 @@ async fn monitor_scan_load_a() {
     ctx.monitor_scan_load_from_json(&msg).await.unwrap();
 
     let post = ctx.monitor_scan_site_to_packages(None).await.unwrap();
-    assert_eq!(post.get(&1).unwrap().get(&9).unwrap().len(), 2);
+    assert_eq!(post.get(&1).unwrap().len(), 11);
 }
 
 #[tokio::test]
