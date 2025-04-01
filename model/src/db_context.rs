@@ -1,7 +1,7 @@
 use chrono::Utc;
 use fetter::{DirectURL, Package, PathShared, ScanFS, SystemTag, VcsInfo, VersionSpec};
 use sqlx::types::chrono::DateTime;
-use sqlx::{postgres::PgArguments, Arguments, Executor, PgPool, Row};
+use sqlx::{Arguments, Executor, PgPool, Row, postgres::PgArguments};
 use std::collections::HashMap;
 use std::collections::HashSet;
 
