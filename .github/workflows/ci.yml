@@ -18,7 +18,7 @@ jobs:
         os: [ubuntu-latest]
         rust: ["1.81.0", stable]
 
-    name: Model: Test / ${{ matrix.os }} / Rust ${{ matrix.rust }}
+    name: Model Test / ${{ matrix.os }} / Rust ${{ matrix.rust }}
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -36,7 +36,7 @@ jobs:
 
   #-----------------------------------------------------------------------------
   model-quality:
-    name: Model: Quality
+    name: Model Quality
     runs-on: ubuntu-latest
 
     steps:
