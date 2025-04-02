@@ -1,34 +1,49 @@
 use axum::{
+    extract::State,
+    http::StatusCode,
     routing::{get, post},
     Json, Router,
 };
-use serde::Serialize;
+// use serde::Serialize;
 use std::net::SocketAddr;
 use tokio::net::TcpListener;
 use tower_http::cors::{Any, CorsLayer};
 
 use fetter::SystemTag;
+use orb_model::db_context::DBContext;
+use orb_model::db_via_container::get_db_pool;
 
 
-#[derive(Serialize)]
-struct HealthResponse {
-    status: String,
+pub async fn post_monitor_scan_load(
+    State(db): State<DBContext>,
+    Json(payload): Json<Value>,
+) -> Result<StatusCode, (StatusCode, String)> {
+    match db.monitor_scan_load_from_json(payload).await {
+        Ok(_) => Ok(StatusCode::NO_CONTENT),
+        Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
+    }
 }
 
-async fn root() -> Json<HealthResponse> {
-    Json(HealthResponse {
-        status: "ok fetter orb!".to_string(),
-    })
+
+pub async fn get_system_tag_all(
+    State(db): State<DBContext>,
+) -> Result<Json<Vec<(i32, SystemTag)>>, (StatusCode, String)> {
+    match db.system_tag_all().await {
+        Ok(sts) => Ok(Json(sts)),
+        Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
+    }
 }
 
-async fn create_user() -> &'static str {
-    "user created"
-}
 
 //------------------------------------------------------------------------------
 #[tokio::main]
 async fn main() {
     // tracing_subscriber::fmt::init();
+
+    // can branch when given a URL for a live DB
+    let pool = get_db_pool().await;
+    let dbx = DBContext::new(pool, None);
+    let _ = dbx.tables_create().await;
 
     let cors = CorsLayer::new()
         .allow_origin(Any) // TODO: tighten later
@@ -36,9 +51,10 @@ async fn main() {
         .allow_headers(Any);
 
     let app = Router::new()
-        .route("/health", get(root))
-        .route("/users", post(create_user))
-        .layer(cors);
+        .route("/system_tag", get(get_system_tag_all))
+        .route("/monitor_scan", post(post_monitor_scan_load))
+        .layer(cors)
+        .with_state(dbx);
 
     // let listener = tokio::net::TcpListener::bind("0.0.0.0:3001").await.unwrap();
     let addr = SocketAddr::from(([0, 0, 0, 0], 3001));

@@ -1,5 +1,3 @@
-#![cfg(test)]
-
 use sqlx::PgPool;
 use std::process::{Command, Stdio};
 use std::{thread::sleep, time::Duration};
@@ -69,7 +67,7 @@ pub async fn start_postgres_container() {
 //         .status();
 // }
 
-pub async fn get_test_db_pool() -> PgPool {
+pub async fn get_db_pool() -> PgPool {
     INIT.get_or_init(|| async {
         start_postgres_container().await; //
     })

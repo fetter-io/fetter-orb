@@ -10,11 +10,10 @@ use fetter::ScanFS;
 use fetter::SystemTag;
 
 use orb_model::db_context::DBContext;
+use orb_model::db_via_container::get_db_pool;
 
 #[tokio::test]
 async fn load_scan_fs_a() {
-    // let _pool = db_fixture::get_test_db_pool().await;
-
     let msg = "[[[\"/usr/bin/python3\",[\"/usr/lib/python3/site-packages\"]]],[[{\"name\":\"flask\",\"key\":\"flask\",\"version\":\"1.1.3\",\"direct_url\":null},[\"/usr/lib/python3/site-packages\"]],[{\"name\":\"numpy\",\"key\":\"numpy\",\"version\":\"1.19.3\",\"direct_url\":null},[\"/usr/lib/python3/site-packages\"]],[{\"name\":\"static-frame\",\"key\":\"static_frame\",\"version\":\"2.13.0\",\"direct_url\":null},[\"/usr/lib/python3/site-packages\"]]],[[\"/usr/lib/python3/site-packages\",\"/usr/bin/python3\"]],false,\"35cc8bbf5f965f99f2ed716a23e0cfbb70b8977ba65e837708e960fc13e51da2\"]";
 
     let sfs: ScanFS = serde_json::from_str(&msg).unwrap();
@@ -48,7 +47,7 @@ async fn load_package_a() {
     let p2: Package = serde_json::from_str(&msg2).unwrap();
     assert_eq!(p2.key, "numpy");
 
-    let pool = db_fixture::get_test_db_pool().await;
+    let pool = get_db_pool().await;
     let ctx = DBContext::new(pool, Some("lpa"));
 
     ctx.tables_create().await.unwrap();
@@ -89,7 +88,7 @@ async fn load_system_tag_a() {
         "SystemTag { username: \"testuser\", hostname: \"testhost\", os_name: \"linux\", os_version: \"5.10.0\", architecture: \"x86_64\", logical_cores: 8 }"
     );
 
-    let pool = db_fixture::get_test_db_pool().await;
+    let pool = get_db_pool().await;
     let ctx = DBContext::new(pool, Some("lsta"));
 
     ctx.tables_create().await.unwrap();
@@ -103,7 +102,7 @@ async fn load_system_tag_a() {
 
 #[tokio::test]
 async fn system_tag_all_a() {
-    let pool = db_fixture::get_test_db_pool().await;
+    let pool = get_db_pool().await;
     let ctx = DBContext::new(pool, Some("staa"));
     ctx.tables_create().await.unwrap();
 
@@ -119,7 +118,7 @@ async fn system_tag_all_a() {
 
 #[tokio::test]
 async fn load_site_packages_a() {
-    let pool = db_fixture::get_test_db_pool().await;
+    let pool = get_db_pool().await;
     let ctx = DBContext::new(pool, Some("lspa1"));
 
     ctx.tables_create().await.unwrap();
@@ -151,7 +150,7 @@ async fn monitor_scan_load_a() {
     path.push("tests/fixtures/monitor-scan-01.json");
     let msg = fs::read_to_string(path).expect("Failed to read JSON file");
 
-    let pool = db_fixture::get_test_db_pool().await;
+    let pool = get_db_pool().await;
     let ctx = DBContext::new(pool, Some("msla"));
 
     ctx.tables_create().await.unwrap();
@@ -171,7 +170,7 @@ async fn monitor_scan_load_b() {
     path2.push("tests/fixtures/monitor-scan-02.json");
     let msg2 = fs::read_to_string(path2).expect("Failed to read JSON file");
 
-    let pool = db_fixture::get_test_db_pool().await;
+    let pool = get_db_pool().await;
     let ctx = DBContext::new(pool, Some("mslb"));
 
     ctx.tables_create().await.unwrap();

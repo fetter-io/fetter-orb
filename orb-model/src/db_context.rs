@@ -8,14 +8,15 @@ use std::collections::HashSet;
 use std::time::Duration;
 use std::time::UNIX_EPOCH;
 
+// NOTE: DBContext is cloneable as PgPoll is an Arc.
+#[derive(Clone)]
 pub struct DBContext {
     pub pool: PgPool,
     suffix: Option<String>,
 }
 
 impl DBContext {
-    pub fn new<S: Into<String>>(pool: PgPool, suffix: Option<S>) -> Self {
-        let suffix = suffix.map(|s| s.into());
+    pub fn new(pool: PgPool, suffix: Option<String>) -> Self {
         Self { pool, suffix }
     }
 
@@ -195,9 +196,7 @@ impl DBContext {
             "#
         );
 
-        let rows = sqlx::query(&query)
-            .fetch_all(&self.pool)
-            .await?;
+        let rows = sqlx::query(&query).fetch_all(&self.pool).await?;
 
         let result = rows
             .into_iter()
@@ -217,7 +216,6 @@ impl DBContext {
 
         Ok(result)
     }
-
 
     //--------------------------------------------------------------------------
     pub async fn package_insert_or_get(&self, package: &Package) -> Result<i32, sqlx::Error> {
