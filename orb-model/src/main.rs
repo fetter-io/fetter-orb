@@ -28,7 +28,7 @@ async fn main() {
     // tracing_subscriber::fmt::init();
 
     let cors = CorsLayer::new()
-        .allow_origin(Any) // 👈 allow any origin for dev; tighten later
+        .allow_origin(Any) // TODO: tighten later
         .allow_methods(Any)
         .allow_headers(Any);
 

@@ -4,15 +4,17 @@ on:
   pull_request_target:
     branches:
       - default
+    paths:
+      - 'orb-model/**'
   push:
     branches:
       - default
-  release:
-    types: published
+    paths:
+      - 'orb-model/**'
 
 jobs:
   #-----------------------------------------------------------------------------
-  model-test:
+  test:
     strategy:
       matrix:
         os: [ubuntu-latest]
@@ -35,7 +37,7 @@ jobs:
         run: cargo test --verbose
 
   #-----------------------------------------------------------------------------
-  model-quality:
+  quality:
     name: Model Quality
     runs-on: ubuntu-latest
 
