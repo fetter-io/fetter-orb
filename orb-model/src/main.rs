@@ -13,17 +13,15 @@ use fetter::SystemTag;
 use orb_model::db_context::DBContext;
 use orb_model::db_via_container::get_db_pool;
 
-
 pub async fn post_monitor_scan_load(
     State(db): State<DBContext>,
-    Json(payload): Json<Value>,
+    body: String,
 ) -> Result<StatusCode, (StatusCode, String)> {
-    match db.monitor_scan_load_from_json(payload).await {
+    match db.monitor_scan_load_from_json(&body).await {
         Ok(_) => Ok(StatusCode::NO_CONTENT),
         Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
     }
 }
-
 
 pub async fn get_system_tag_all(
     State(db): State<DBContext>,
@@ -33,7 +31,6 @@ pub async fn get_system_tag_all(
         Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
     }
 }
-
 
 //------------------------------------------------------------------------------
 #[tokio::main]

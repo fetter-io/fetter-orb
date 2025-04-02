@@ -48,7 +48,7 @@ async fn load_package_a() {
     assert_eq!(p2.key, "numpy");
 
     let pool = get_db_pool().await;
-    let ctx = DBContext::new(pool, Some("lpa"));
+    let ctx = DBContext::new(pool, Some("lpa".into()));
 
     ctx.tables_create().await.unwrap();
 
@@ -89,7 +89,7 @@ async fn load_system_tag_a() {
     );
 
     let pool = get_db_pool().await;
-    let ctx = DBContext::new(pool, Some("lsta"));
+    let ctx = DBContext::new(pool, Some("lsta".into()));
 
     ctx.tables_create().await.unwrap();
 
@@ -103,7 +103,7 @@ async fn load_system_tag_a() {
 #[tokio::test]
 async fn system_tag_all_a() {
     let pool = get_db_pool().await;
-    let ctx = DBContext::new(pool, Some("staa"));
+    let ctx = DBContext::new(pool, Some("staa".into()));
     ctx.tables_create().await.unwrap();
 
     let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
@@ -119,7 +119,7 @@ async fn system_tag_all_a() {
 #[tokio::test]
 async fn load_site_packages_a() {
     let pool = get_db_pool().await;
-    let ctx = DBContext::new(pool, Some("lspa1"));
+    let ctx = DBContext::new(pool, Some("lspa1".into()));
 
     ctx.tables_create().await.unwrap();
 
@@ -151,7 +151,7 @@ async fn monitor_scan_load_a() {
     let msg = fs::read_to_string(path).expect("Failed to read JSON file");
 
     let pool = get_db_pool().await;
-    let ctx = DBContext::new(pool, Some("msla"));
+    let ctx = DBContext::new(pool, Some("msla".into()));
 
     ctx.tables_create().await.unwrap();
     ctx.monitor_scan_load_from_json(&msg).await.unwrap();
@@ -171,7 +171,7 @@ async fn monitor_scan_load_b() {
     let msg2 = fs::read_to_string(path2).expect("Failed to read JSON file");
 
     let pool = get_db_pool().await;
-    let ctx = DBContext::new(pool, Some("mslb"));
+    let ctx = DBContext::new(pool, Some("mslb".into()));
 
     ctx.tables_create().await.unwrap();
 
