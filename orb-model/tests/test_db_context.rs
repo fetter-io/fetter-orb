@@ -102,6 +102,22 @@ async fn load_system_tag_a() {
 }
 
 #[tokio::test]
+async fn system_tag_all_a() {
+    let pool = db_fixture::get_test_db_pool().await;
+    let ctx = DBContext::new(pool, Some("staa"));
+    ctx.tables_create().await.unwrap();
+
+    let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path1.push("tests/fixtures/monitor-scan-01.json");
+    let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
+    ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
+
+    let post = ctx.system_tag_all().await.unwrap();
+    assert_eq!(post.len(), 1);
+    assert_eq!(post[0].1.architecture, "x86_64");
+}
+
+#[tokio::test]
 async fn load_site_packages_a() {
     let pool = db_fixture::get_test_db_pool().await;
     let ctx = DBContext::new(pool, Some("lspa1"));

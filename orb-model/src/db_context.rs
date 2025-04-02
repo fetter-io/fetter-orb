@@ -184,6 +184,41 @@ impl DBContext {
         }
     }
 
+    // Return all SystemTag, in pairs of int, SystemTag.
+    pub async fn system_tag_all(&self) -> Result<Vec<(i32, SystemTag)>, sqlx::Error> {
+        let table_name = self.get_table("system_tag");
+
+        let query = format!(
+            r#"
+            SELECT id, username, hostname, os_name, os_version, architecture, logical_cores
+            FROM {table_name}
+            "#
+        );
+
+        let rows = sqlx::query(&query)
+            .fetch_all(&self.pool)
+            .await?;
+
+        let result = rows
+            .into_iter()
+            .map(|row| {
+                let id: i32 = row.get("id");
+                let tag = SystemTag {
+                    username: row.get("username"),
+                    hostname: row.get("hostname"),
+                    os_name: row.get("os_name"),
+                    os_version: row.get("os_version"),
+                    architecture: row.get("architecture"),
+                    logical_cores: row.get::<i16, _>("logical_cores") as usize,
+                };
+                (id, tag)
+            })
+            .collect();
+
+        Ok(result)
+    }
+
+
     //--------------------------------------------------------------------------
     pub async fn package_insert_or_get(&self, package: &Package) -> Result<i32, sqlx::Error> {
         let table_name = self.get_table("package");
