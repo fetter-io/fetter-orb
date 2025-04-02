@@ -16,13 +16,10 @@ async fn wait_for_db(db_url: &str) {
     let max_attempts = 20;
 
     for attempt in 1..=max_attempts {
-        match PgPool::connect(db_url).await {
-            Ok(pool) => {
-                if pool.acquire().await.is_ok() {
-                    return;
-                }
+        if let Ok(pool) = PgPool::connect(db_url).await {
+            if pool.acquire().await.is_ok() {
+                return;
             }
-            Err(_) => {}
         }
         println!("⏳ Waiting for DB... attempt {}/{}", attempt, max_attempts);
         sleep(Duration::from_millis(500));
