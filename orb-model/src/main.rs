@@ -13,6 +13,9 @@ use fetter::SystemTag;
 use orb_model::db_context::DBContext;
 use orb_model::db_via_container::get_db_pool;
 
+//------------------------------------------------------------------------------
+// endpoint implementations
+
 pub async fn post_monitor_scan_load(
     State(db): State<DBContext>,
     body: String,

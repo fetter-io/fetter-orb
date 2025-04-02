@@ -1,13 +1,51 @@
 use chrono::Utc;
 use fetter::{DirectURL, Package, PathShared, ScanFS, SystemTag, VcsInfo, VersionSpec};
+use sqlx::postgres::PgRow;
 use sqlx::types::chrono::DateTime;
 use sqlx::{postgres::PgArguments, Arguments, Executor, PgPool, Row};
 use std::collections::HashMap;
 use std::collections::HashSet;
-
 use std::time::Duration;
 use std::time::UNIX_EPOCH;
 
+fn package_from_row(row: &PgRow) -> (i32, Package) {
+    let id: i32 = row.get("id");
+    let name: String = row.get("name");
+    let key: String = row.get("key");
+    let version = VersionSpec::new(&row.get::<String, _>("version"));
+
+    let url: Option<String> = row.get("url");
+    let commit_id: Option<String> = row.get("commit_id");
+    let vcs: Option<String> = row.get("vcs");
+    let revision: Option<String> = row.get("revision");
+
+    let direct_url = url.map(|url_val| {
+        let vcs_info = match (commit_id, vcs) {
+            (Some(commit_id), Some(vcs)) => Some(VcsInfo {
+                commit_id,
+                vcs,
+                revision,
+            }),
+            _ => None,
+        };
+        DirectURL {
+            url: url_val,
+            vcs_info,
+        }
+    });
+
+    (
+        id,
+        Package {
+            name,
+            key,
+            version,
+            direct_url,
+        },
+    )
+}
+
+//------------------------------------------------------------------------------
 // NOTE: DBContext is cloneable as PgPoll is an Arc.
 #[derive(Clone)]
 pub struct DBContext {
@@ -218,6 +256,8 @@ impl DBContext {
     }
 
     //--------------------------------------------------------------------------
+    // Package
+
     pub async fn package_insert_or_get(&self, package: &Package) -> Result<i32, sqlx::Error> {
         let table_name = self.get_table("package");
 
@@ -286,7 +326,7 @@ impl DBContext {
 
         let query = format!(
             r#"
-            SELECT name, key, version, url, commit_id, vcs, revision
+            SELECT id, name, key, version, url, commit_id, vcs, revision
             FROM {table_name}
             WHERE id = $1
             "#
@@ -297,41 +337,29 @@ impl DBContext {
             .fetch_optional(&self.pool)
             .await?
         {
-            let name: String = row.get("name");
-            let key: String = row.get("key");
-            let version_str: String = row.get("version");
-            let version = VersionSpec::new(&version_str);
-
-            let url: Option<String> = row.get("url");
-            let commit_id: Option<String> = row.get("commit_id");
-            let vcs: Option<String> = row.get("vcs");
-            let revision: Option<String> = row.get("revision");
-
-            let direct_url = url.map(|url_val| {
-                let vcs_info = match (commit_id, vcs) {
-                    (Some(commit_id), Some(vcs)) => Some(VcsInfo {
-                        commit_id,
-                        vcs,
-                        revision,
-                    }),
-                    _ => None,
-                };
-                DirectURL {
-                    url: url_val,
-                    vcs_info,
-                }
-            });
-
-            Ok(Some(Package {
-                name,
-                key,
-                version,
-                direct_url,
-            }))
+            let (_, pkg) = package_from_row(&row);
+            Ok(Some(pkg))
         } else {
             Ok(None)
         }
     }
+
+    pub async fn package_all(&self) -> Result<Vec<(i32, Package)>, sqlx::Error> {
+        let table_name = self.get_table("package");
+
+        let query = format!(
+            r#"
+            SELECT id, name, key, version, url, commit_id, vcs, revision
+            FROM {table_name}
+            "#
+        );
+
+        let rows = sqlx::query(&query).fetch_all(&self.pool).await?;
+
+        let result = rows.into_iter().map(|row| package_from_row(&row)).collect();
+        Ok(result)
+    }
+
     //--------------------------------------------------------------------------
     pub async fn site_packages_insert_or_get(&self, fp: PathShared) -> Result<i32, sqlx::Error> {
         let table_name = self.get_table("site_packages");
@@ -373,6 +401,7 @@ impl DBContext {
             Ok(None)
         }
     }
+
     //--------------------------------------------------------------------------
     pub async fn monitor_scan_load(
         &self,
@@ -455,6 +484,8 @@ impl DBContext {
         Ok(map)
     }
 
+    //--------------------------------------------------------------------------
+    // for given SystemTag, collect IDs of all packages.
     pub async fn monitor_scan_get_packages(
         &self,
         system_tag_ids: &HashSet<i32>,

@@ -13,7 +13,7 @@ use orb_model::db_context::DBContext;
 use orb_model::db_via_container::get_db_pool;
 
 #[tokio::test]
-async fn load_scan_fs_a() {
+async fn test_load_scan_fs_a() {
     let msg = "[[[\"/usr/bin/python3\",[\"/usr/lib/python3/site-packages\"]]],[[{\"name\":\"flask\",\"key\":\"flask\",\"version\":\"1.1.3\",\"direct_url\":null},[\"/usr/lib/python3/site-packages\"]],[{\"name\":\"numpy\",\"key\":\"numpy\",\"version\":\"1.19.3\",\"direct_url\":null},[\"/usr/lib/python3/site-packages\"]],[{\"name\":\"static-frame\",\"key\":\"static_frame\",\"version\":\"2.13.0\",\"direct_url\":null},[\"/usr/lib/python3/site-packages\"]]],[[\"/usr/lib/python3/site-packages\",\"/usr/bin/python3\"]],false,\"35cc8bbf5f965f99f2ed716a23e0cfbb70b8977ba65e837708e960fc13e51da2\"]";
 
     let sfs: ScanFS = serde_json::from_str(&msg).unwrap();
@@ -21,7 +21,7 @@ async fn load_scan_fs_a() {
 }
 
 #[tokio::test]
-async fn load_package_a() {
+async fn test_load_package_a() {
     let msg1 = r#"{
         "name":"dill",
         "key":"dill",
@@ -71,8 +71,27 @@ async fn load_package_a() {
     assert_eq!(p3x, None);
 }
 
+
+
 #[tokio::test]
-async fn load_system_tag_a() {
+async fn test_package_all_a() {
+    let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path1.push("tests/fixtures/monitor-scan-04.json");
+    let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
+
+    let pool = get_db_pool().await;
+    let ctx = DBContext::new(pool, Some("paa".into()));
+    ctx.tables_create().await.unwrap();
+
+    ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
+
+    let post = ctx.package_all().await.unwrap();
+    assert_eq!(post.len(), 19)
+
+}
+
+#[tokio::test]
+async fn test_load_system_tag_a() {
     let msg = r#"{
         "username":"testuser",
         "hostname":"testhost",
@@ -90,7 +109,6 @@ async fn load_system_tag_a() {
 
     let pool = get_db_pool().await;
     let ctx = DBContext::new(pool, Some("lsta".into()));
-
     ctx.tables_create().await.unwrap();
 
     let st_id = ctx.system_tag_insert_or_get(&st).await.unwrap();
@@ -101,7 +119,7 @@ async fn load_system_tag_a() {
 }
 
 #[tokio::test]
-async fn system_tag_all_a() {
+async fn test_system_tag_all_a() {
     let pool = get_db_pool().await;
     let ctx = DBContext::new(pool, Some("staa".into()));
     ctx.tables_create().await.unwrap();
@@ -116,8 +134,9 @@ async fn system_tag_all_a() {
     assert_eq!(post[0].1.architecture, "x86_64");
 }
 
+//------------------------------------------------------------------------------
 #[tokio::test]
-async fn load_site_packages_a() {
+async fn test_load_site_packages_a() {
     let pool = get_db_pool().await;
     let ctx = DBContext::new(pool, Some("lspa1".into()));
 
@@ -145,7 +164,7 @@ async fn load_site_packages_a() {
 }
 
 #[tokio::test]
-async fn monitor_scan_load_a() {
+async fn test_monitor_scan_load_a() {
     let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     path.push("tests/fixtures/monitor-scan-01.json");
     let msg = fs::read_to_string(path).expect("Failed to read JSON file");
@@ -161,7 +180,7 @@ async fn monitor_scan_load_a() {
 }
 
 #[tokio::test]
-async fn monitor_scan_load_b() {
+async fn test_monitor_scan_load_b() {
     let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     path1.push("tests/fixtures/monitor-scan-01.json");
     let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
