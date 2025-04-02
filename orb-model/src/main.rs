@@ -3,9 +3,9 @@ use axum::{
     Json, Router,
 };
 use serde::Serialize;
-use tokio::net::TcpListener;
-use tower_http::cors::{CorsLayer, Any};
 use std::net::SocketAddr;
+use tokio::net::TcpListener;
+use tower_http::cors::{Any, CorsLayer};
 
 #[derive(Serialize)]
 struct HealthResponse {
