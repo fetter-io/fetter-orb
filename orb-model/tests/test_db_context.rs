@@ -71,8 +71,6 @@ async fn test_load_package_a() {
     assert_eq!(p3x, None);
 }
 
-
-
 #[tokio::test]
 async fn test_package_all_a() {
     let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
@@ -87,7 +85,6 @@ async fn test_package_all_a() {
 
     let post = ctx.package_all().await.unwrap();
     assert_eq!(post.len(), 19)
-
 }
 
 #[tokio::test]

@@ -9,7 +9,7 @@ use std::net::SocketAddr;
 use tokio::net::TcpListener;
 use tower_http::cors::{Any, CorsLayer};
 
-use fetter::SystemTag;
+use fetter::{Package, SystemTag};
 use orb_model::db_context::DBContext;
 use orb_model::db_via_container::get_db_pool;
 
@@ -35,6 +35,15 @@ pub async fn get_system_tag_all(
     }
 }
 
+pub async fn get_package_all(
+    State(db): State<DBContext>,
+) -> Result<Json<Vec<(i32, Package)>>, (StatusCode, String)> {
+    match db.package_all().await {
+        Ok(sts) => Ok(Json(sts)),
+        Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
+    }
+}
+
 //------------------------------------------------------------------------------
 #[tokio::main]
 async fn main() {
@@ -52,6 +61,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/system_tag", get(get_system_tag_all))
+        .route("/package", get(get_package_all))
         .route("/monitor_scan", post(post_monitor_scan_load))
         .layer(cors)
         .with_state(dbx);
