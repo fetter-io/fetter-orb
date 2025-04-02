@@ -2,8 +2,6 @@ use std::collections::HashSet;
 use std::fs;
 use std::path::PathBuf;
 
-mod db_fixture;
-
 use fetter::Package;
 use fetter::PathShared;
 use fetter::ScanFS;
