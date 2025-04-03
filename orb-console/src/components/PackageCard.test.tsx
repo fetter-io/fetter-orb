@@ -25,7 +25,10 @@ describe("PackageCard", () => {
   });
 
   it("renders link when direct_url is present", () => {
-    const pkgWithLink: Package = { ...mockPackage, direct_url: "https://example.com" };
+    const pkgWithLink: Package = {
+      ...mockPackage,
+      direct_url: "https://example.com",
+    };
     render(<PackageCard pkg={pkgWithLink} />);
     const link = screen.getByRole("link");
     expect(link).toHaveAttribute("href", "https://example.com");
