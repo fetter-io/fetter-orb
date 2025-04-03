@@ -3,7 +3,7 @@ Fetter console, including UI and backend services
 
 
 
-### Twelfth Night: Act3, Scene 1
+### Twelfth Night: Act 3, Scene 1
 
 > But rather reason thus with reason fetter.
 
