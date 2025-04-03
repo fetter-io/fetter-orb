@@ -5,3 +5,13 @@ export type Package = {
   version: string;
   direct_url: string | null;
 };
+
+export type SystemTag = {
+  id: number;
+  username: string;
+  hostname: string;
+  os_name: string;
+  os_version: string;
+  architecture: string;
+  logical_cores: number;
+};
