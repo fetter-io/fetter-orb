@@ -8,7 +8,6 @@ import { Footer } from "@/components/Footer";
 
 export default function Home() {
   const [packages, setPackages] = useState<Package[]>([]);
-  const [status, setStatus] = useState("loading...");
 
   useEffect(() => {
     const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL;
@@ -24,7 +23,6 @@ export default function Home() {
       })
       .catch((err) => {
         console.error("Error fetching /package:", err);
-        setStatus("fetter-orb error");
       });
   }, []);
 
