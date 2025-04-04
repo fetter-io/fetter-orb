@@ -2,7 +2,7 @@ import { SystemTag } from "@/types";
 
 export function SystemTagCard({ tag }: { tag: SystemTag }) {
   return (
-    <div className="border rounded-lg p-4 shadow-sm bg-gray-50 text-sm text-gray-700 w-full max-w-2xl">
+    <div className="p-4 border border-slate-600 rounded-lg shadow-sm bg-gray-800 text-sm text-gray-300 w-full">
       <p>
         <strong>User:</strong> {tag.username}
       </p>

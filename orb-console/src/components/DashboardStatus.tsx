@@ -13,14 +13,20 @@ export function DashboardStatus({ label, state }: DashboardStatusProps) {
 
   return (
     <>
-      <button onClick={refresh} className="text-xs text-blue-600 underline">
-        Refresh
-      </button>
-
-      <div className="text-xs text-gray-400 mt-1">
-        {lastFetched
-          ? `Last updated at ${lastFetched.toLocaleTimeString()}`
-          : ""}
+      <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+        <div>
+          {lastFetched
+            ? `Last updated at ${lastFetched.toLocaleTimeString()}`
+            : ""}
+        </div>
+        <button
+          onClick={refresh}
+          className="text-sm rounded-l px-2 py-1 bg-gray-800 hover:bg-gray-700 text-zinc-400 hover:text-zinc-300 transition"
+          aria-label="Refresh"
+          title="Refresh"
+        >
+          ↻
+        </button>
       </div>
 
       {loading && <div className="text-sm text-gray-400">Loading...</div>}
