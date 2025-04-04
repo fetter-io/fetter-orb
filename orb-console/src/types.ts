@@ -20,6 +20,8 @@ export type PackageVersionEntry = {
   version: string;
   path: string;
   system_tag_id: number;
+  system_tag_username: string;
+  system_tag_hostname: string;
 };
 
 export type PackageVersions = {

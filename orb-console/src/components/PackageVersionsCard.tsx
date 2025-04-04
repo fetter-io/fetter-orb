@@ -15,9 +15,14 @@ export function PackageVersionsCard({ pkg }: PackageVersionsCardProps) {
               <span className="text-gray-500">Version: </span>
               <span>{entry.version}</span>
             </div>
-            <div className="col-span-3">
+            <div className="col-span-2">
               <span className="text-gray-500">Site: </span>
               <span className="break-all">{entry.path}</span>
+            </div>
+            <div className="col-span-1">
+              <span>
+                {entry.system_tag_username}: {entry.system_tag_hostname}
+              </span>
             </div>
           </div>
         ))}
