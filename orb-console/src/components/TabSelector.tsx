@@ -1,30 +1,28 @@
 export function TabSelector({ activeTab, onTabChange }: TabSelectorProps) {
-    return (
-      <div className="flex gap-4 text-gray-500">
+  const tabs: { id: Tab; label: string }[] = [
+    { id: "packages", label: "Packages" },
+    { id: "tags", label: "System Tags" },
+    { id: "other", label: "Something Else" },
+  ];
+
+  return (
+    <div className="grid grid-cols-4 gap-0 text-gray-400 font-semibold">
+      {tabs.map((tab) => (
         <button
-          className={`transition hover:text-gray-400 ${
-            activeTab === "packages" ? "font-bold text-gray-400" : ""
-          }`}
-          onClick={() => onTabChange("packages")}
+          key={tab.id}
+          onClick={() => onTabChange(tab.id)}
+          className={`transition-all duration-100 text-left px-3 py-1 rounded
+              ${
+                activeTab === tab.id
+                  ? "bg-slate-800 text-gray-100 ring-1 ring-slate-900"
+                  : "hover:text-white"
+              }`}
         >
-          Packages
+          {tab.label}
         </button>
-        <button
-          className={`transition hover:text-gray-400 ${
-            activeTab === "tags" ? "font-bold text-gray-400" : ""
-          }`}
-          onClick={() => onTabChange("tags")}
-        >
-          System Tags
-        </button>
-        <button
-          className={`transition hover:text-gray-400 ${
-            activeTab === "other" ? "font-bold text-gray-400" : ""
-          }`}
-          onClick={() => onTabChange("other")}
-        >
-          Something Else
-        </button>
-      </div>
-    );
-  }
+      ))}
+      {/* Empty 4th column for spacing */}
+      <div></div>
+    </div>
+  );
+}

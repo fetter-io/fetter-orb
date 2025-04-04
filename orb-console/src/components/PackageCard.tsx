@@ -6,21 +6,21 @@ type PackageCardProps = {
 
 export function PackageCard({ pkg }: PackageCardProps) {
   return (
-    <div className="p-2 pl-4 border border-slate-600 rounded-lg bg-gray-800 shadow-md text-sm w-full">
+    <div className="py-2 px-4 border border-slate-600 rounded-lg bg-gray-800 shadow-md text-sm w-full">
       <h3 className="font-bold mb-1">{pkg.name}</h3>
 
-      <div className="flex flex-col gap-1 text-gray-400">
-        <div className="flex gap-2">
-          <span className="w-20 text-gray-500">Key:</span>
+      <div className="grid grid-cols-4 gap-4 text-gray-400">
+        <div>
+          <span className="text-gray-500">Key: </span>
           <span>{pkg.key}</span>
         </div>
-        <div className="flex gap-2">
-          <span className="w-20 text-gray-500">Version:</span>
+        <div>
+          <span className="text-gray-500">Version: </span>
           <span>{pkg.version}</span>
         </div>
         {pkg.direct_url && (
-          <div className="flex gap-2">
-            <span className="w-20 text-gray-500">Source:</span>
+          <div>
+            <span className="text-gray-500">Source: </span>
             <a
               href={pkg.direct_url}
               target="_blank"
@@ -31,6 +31,8 @@ export function PackageCard({ pkg }: PackageCardProps) {
             </a>
           </div>
         )}
+        {/* Optional blank cell to fill the fourth column */}
+        {!pkg.direct_url && <div></div>}
       </div>
     </div>
   );

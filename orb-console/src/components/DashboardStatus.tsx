@@ -21,7 +21,7 @@ export function DashboardStatus({ label, state }: DashboardStatusProps) {
         </div>
         <button
           onClick={refresh}
-          className="text-sm rounded-l px-2 py-1 bg-gray-800 hover:bg-gray-700 text-zinc-400 hover:text-zinc-300 transition"
+          className="text-sm rounded-l px-2 py-1 border border-slate-600 bg-gray-800 hover:bg-gray-700 text-zinc-400 hover:text-zinc-300 transition"
           aria-label="Refresh"
           title="Refresh"
         >
