@@ -9,7 +9,7 @@ export function TabSelector({ activeTab, onTabChange }: TabSelectorProps) {
   const tabs: { id: Tab; label: string }[] = [
     { id: "packages", label: "Packages" },
     { id: "tags", label: "System Tags" },
-    { id: "other", label: "Something Else" },
+    { id: "other", label: "{}" },
   ];
 
   return (

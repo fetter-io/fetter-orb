@@ -11,24 +11,16 @@ import { DashboardStatus } from "@/components/DashboardStatus";
 import { TabSelector } from "@/components/TabSelector";
 import { PackageVersions } from "@/types";
 import { PackageVersionsCard } from "@/components/PackageVersionsCard";
+import { SystemTagSelector } from "@/components/SystemTagSelector";
 
 type Tab = "packages" | "tags" | "other";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<Tab>("packages");
   const [selectedSystemId, setSelectedSystemId] = useState<number | null>(null);
-
-  // const fetchPackages = useCallback(async (): Promise<PackageVersions[]> => {
-  //   const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
-  //   const res = await fetch(`${apiBase}/package_versions`);
-  //   const raw = await res.json();
-
-  //   return Object.entries(raw).map(([key, value]) => ({
-  //     key,
-  //     name: value.name,
-  //     data: value.data,
-  //   }));
-  // }, []);
+  const [highlightedSystemTagId, setHighlightedSystemTagId] = useState<
+    number | null
+  >(null);
 
   // fetch system tags
   const fetchSystemTags = useCallback(async (): Promise<SystemTag[]> => {
@@ -48,11 +40,14 @@ export default function Home() {
     const res = await fetch(`${apiBase}/package_versions${query}`);
     const raw = await res.json();
 
-    return Object.entries(raw).map(([key, value]) => ({
-      key,
-      name: value.name,
-      data: value.data,
-    }));
+    return Object.entries(raw).map(([key, value]) => {
+      const casted = value as Omit<PackageVersions, "key">;
+      return {
+        key,
+        name: casted.name,
+        data: casted.data,
+      };
+    });
   }, [selectedSystemId]);
 
   const packagesState = useDashboardData(fetchPackages, {
@@ -64,6 +59,19 @@ export default function Home() {
     active: activeTab === "tags" || activeTab === "packages",
     pollInterval: 30000,
   });
+
+  const handleSystemTagClick = (id: number) => {
+    setHighlightedSystemTagId(id);
+    setActiveTab("tags");
+
+    setTimeout(() => {
+      document
+        .getElementById(`system-tag-${id}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+
+      setTimeout(() => setHighlightedSystemTagId(null), 3000);
+    }, 100);
+  };
 
   return (
     <div className="flex flex-col min-h-screen font-[family-name:var(--font-geist-sans)] bg-gradient-to-b from-slate-950 to-slate-900">
@@ -88,27 +96,20 @@ export default function Home() {
           {activeTab === "packages" && (
             <>
               <DashboardStatus label="packages" state={packagesState} />
-
-              {/* Dropdown menu for system tag filter */}
-              <select
-                value={selectedSystemId ?? ""}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setSelectedSystemId(value === "" ? null : parseInt(value));
-                }}
-                className="text-sm bg-slate-800 border border-slate-600 text-gray-300 px-2 py-1 rounded"
-              >
-                <option value="">All Systems</option>
-                {systemTagsState.data?.map((tag) => (
-                  <option key={tag.id} value={tag.id}>
-                    {tag.username}: {tag.hostname}
-                  </option>
-                ))}
-              </select>
+              <SystemTagSelector
+                selectedId={selectedSystemId}
+                onChange={setSelectedSystemId}
+                systemTags={systemTagsState.data ?? undefined}
+                resultCount={packagesState.data?.length ?? 0}
+              />
 
               <div className="flex flex-col gap-2">
                 {packagesState.data?.map((pkg) => (
-                  <PackageVersionsCard key={pkg.key} pkg={pkg} />
+                  <PackageVersionsCard
+                    key={pkg.key}
+                    pkg={pkg}
+                    onTagClick={handleSystemTagClick}
+                  />
                 ))}
               </div>
             </>
@@ -119,7 +120,15 @@ export default function Home() {
               <DashboardStatus label="system tags" state={systemTagsState} />
               <div className="flex flex-col gap-2">
                 {systemTagsState.data?.map((tag) => (
-                  <SystemTagCard key={tag.id} tag={tag} />
+                  <SystemTagCard
+                    key={tag.id}
+                    tag={tag}
+                    highlight={tag.id === highlightedSystemTagId}
+                    onPackagesClick={(id) => {
+                      setSelectedSystemId(id);
+                      setActiveTab("packages");
+                    }}
+                  />
                 ))}
               </div>
             </>
