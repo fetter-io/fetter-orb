@@ -7,7 +7,6 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::time::Duration;
 use std::time::UNIX_EPOCH;
-// use serde::Deserialize;
 use serde_json::{json, Value};
 
 fn package_from_row(row: &PgRow) -> (i32, Package) {
@@ -370,14 +369,22 @@ impl DBContext {
     ) -> Result<Value, sqlx::Error> {
         let mut query = String::from(
             r#"
-            SELECT p.key, p.name, p.version, sp.path, ms.system_tag_id
+            SELECT
+                p.key,
+                p.name,
+                p.version,
+                sp.path,
+                ms.system_tag_id,
+                st.username,
+                st.hostname
             FROM monitor_scan ms
             JOIN package p ON ms.package_id = p.id
             JOIN site_packages sp ON ms.site_packages_id = sp.id
+            JOIN system_tag st ON ms.system_tag_id = st.id
             "#,
         );
 
-        let mut args = PgArguments::default();
+        let mut args = sqlx::postgres::PgArguments::default();
 
         if let Some(st_id) = system_tag_id {
             query.push_str(" WHERE ms.system_tag_id = $1");
@@ -396,6 +403,8 @@ impl DBContext {
             let version: String = row.get("version");
             let path: String = row.get("path");
             let system_tag_id: i32 = row.get("system_tag_id");
+            let system_tag_username: String = row.get("username");
+            let system_tag_hostname: String = row.get("hostname");
 
             summary
                 .entry(key.clone())
@@ -404,7 +413,9 @@ impl DBContext {
                         data.push(json!({
                             "version": version,
                             "path": path,
-                            "system_tag_id": system_tag_id
+                            "system_tag_id": system_tag_id,
+                            "system_tag_username": system_tag_username,
+                            "system_tag_hostname": system_tag_hostname
                         }));
                     }
                 })
@@ -414,7 +425,9 @@ impl DBContext {
                         "data": [{
                             "version": version,
                             "path": path,
-                            "system_tag_id": system_tag_id
+                            "system_tag_id": system_tag_id,
+                            "system_tag_username": system_tag_username,
+                            "system_tag_hostname": system_tag_hostname
                         }]
                     })
                 });
@@ -422,7 +435,6 @@ impl DBContext {
 
         Ok(json!(summary))
     }
-
 
     //--------------------------------------------------------------------------
     pub async fn site_packages_insert_or_get(&self, fp: PathShared) -> Result<i32, sqlx::Error> {
