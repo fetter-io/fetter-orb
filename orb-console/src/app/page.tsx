@@ -16,30 +16,19 @@ type Tab = "packages" | "tags" | "other";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<Tab>("packages");
+  const [selectedSystemId, setSelectedSystemId] = useState<number | null>(null);
 
-  // fetch packages
-  // const fetchPackages = useCallback(async (): Promise<Package[]> => {
+  // const fetchPackages = useCallback(async (): Promise<PackageVersions[]> => {
   //   const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
-  //   const res = await fetch(`${apiBase}/package`);
+  //   const res = await fetch(`${apiBase}/package_versions`);
   //   const raw = await res.json();
-  //   return raw.map(([id, pkg]: [number, Omit<Package, "id">]) => ({
-  //     id,
-  //     ...pkg,
+
+  //   return Object.entries(raw).map(([key, value]) => ({
+  //     key,
+  //     name: value.name,
+  //     data: value.data,
   //   }));
   // }, []);
-
-  const fetchPackages = useCallback(async (): Promise<PackageVersions[]> => {
-    const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
-    const res = await fetch(`${apiBase}/package_versions`); // update to your actual endpoint path
-    const raw = await res.json();
-
-    // Map to include the package key explicitly
-    return Object.entries(raw).map(([key, value]) => ({
-      key,
-      name: value.name,
-      data: value.data,
-    }));
-  }, []);
 
   // fetch system tags
   const fetchSystemTags = useCallback(async (): Promise<SystemTag[]> => {
@@ -52,13 +41,27 @@ export default function Home() {
     }));
   }, []);
 
+  const fetchPackages = useCallback(async (): Promise<PackageVersions[]> => {
+    const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
+    const query =
+      selectedSystemId !== null ? `?system_tag_id=${selectedSystemId}` : "";
+    const res = await fetch(`${apiBase}/package_versions${query}`);
+    const raw = await res.json();
+
+    return Object.entries(raw).map(([key, value]) => ({
+      key,
+      name: value.name,
+      data: value.data,
+    }));
+  }, [selectedSystemId]);
+
   const packagesState = useDashboardData(fetchPackages, {
     active: activeTab === "packages",
     pollInterval: 30000,
   });
 
-  const tagsState = useDashboardData(fetchSystemTags, {
-    active: activeTab === "tags",
+  const systemTagsState = useDashboardData(fetchSystemTags, {
+    active: activeTab === "tags" || activeTab === "packages",
     pollInterval: 30000,
   });
 
@@ -85,6 +88,24 @@ export default function Home() {
           {activeTab === "packages" && (
             <>
               <DashboardStatus label="packages" state={packagesState} />
+
+              {/* Dropdown menu for system tag filter */}
+              <select
+                value={selectedSystemId ?? ""}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setSelectedSystemId(value === "" ? null : parseInt(value));
+                }}
+                className="text-sm bg-slate-800 border border-slate-600 text-gray-300 px-2 py-1 rounded"
+              >
+                <option value="">All Systems</option>
+                {systemTagsState.data?.map((tag) => (
+                  <option key={tag.id} value={tag.id}>
+                    {tag.username}: {tag.hostname}
+                  </option>
+                ))}
+              </select>
+
               <div className="flex flex-col gap-2">
                 {packagesState.data?.map((pkg) => (
                   <PackageVersionsCard key={pkg.key} pkg={pkg} />
@@ -95,9 +116,9 @@ export default function Home() {
 
           {activeTab === "tags" && (
             <>
-              <DashboardStatus label="system tags" state={tagsState} />
+              <DashboardStatus label="system tags" state={systemTagsState} />
               <div className="flex flex-col gap-2">
-                {tagsState.data?.map((tag) => (
+                {systemTagsState.data?.map((tag) => (
                   <SystemTagCard key={tag.id} tag={tag} />
                 ))}
               </div>
