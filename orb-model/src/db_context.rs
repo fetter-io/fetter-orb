@@ -1,5 +1,6 @@
 use chrono::Utc;
 use fetter::{DirectURL, Package, PathShared, ScanFS, SystemTag, VcsInfo, VersionSpec};
+use serde_json::{json, Value};
 use sqlx::postgres::PgRow;
 use sqlx::types::chrono::DateTime;
 use sqlx::{postgres::PgArguments, Arguments, Executor, PgPool, Row};
@@ -7,7 +8,6 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::time::Duration;
 use std::time::UNIX_EPOCH;
-use serde_json::{json, Value};
 
 fn package_from_row(row: &PgRow) -> (i32, Package) {
     let id: i32 = row.get("id");
@@ -362,11 +362,7 @@ impl DBContext {
         Ok(result)
     }
 
-
-    pub async fn package_versions(
-        &self,
-        system_tag_id: Option<i32>,
-    ) -> Result<Value, sqlx::Error> {
+    pub async fn package_versions(&self, system_tag_id: Option<i32>) -> Result<Value, sqlx::Error> {
         let mut query = String::from(
             r#"
             SELECT
@@ -391,9 +387,7 @@ impl DBContext {
             let _ = args.add(st_id);
         }
 
-        let rows = sqlx::query_with(&query, args)
-            .fetch_all(&self.pool)
-            .await?;
+        let rows = sqlx::query_with(&query, args).fetch_all(&self.pool).await?;
 
         let mut summary: HashMap<String, Value> = HashMap::new();
 
