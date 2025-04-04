@@ -15,3 +15,15 @@ export type SystemTag = {
   architecture: string;
   logical_cores: number;
 };
+
+export type PackageVersionEntry = {
+  version: string;
+  path: string;
+  system_tag_id: number;
+};
+
+export type PackageVersions = {
+  key: string;
+  name: string;
+  data: PackageVersionEntry[];
+};

@@ -9,6 +9,8 @@ import { useDashboardData } from "@/hooks/useDashboardData";
 import { SystemTagCard } from "@/components/SystemTagCard";
 import { DashboardStatus } from "@/components/DashboardStatus";
 import { TabSelector } from "@/components/TabSelector";
+import { PackageVersions } from "@/types";
+import { PackageVersionsCard } from "@/components/PackageVersionsCard";
 
 type Tab = "packages" | "tags" | "other";
 
@@ -16,13 +18,27 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<Tab>("packages");
 
   // fetch packages
-  const fetchPackages = useCallback(async (): Promise<Package[]> => {
+  // const fetchPackages = useCallback(async (): Promise<Package[]> => {
+  //   const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
+  //   const res = await fetch(`${apiBase}/package`);
+  //   const raw = await res.json();
+  //   return raw.map(([id, pkg]: [number, Omit<Package, "id">]) => ({
+  //     id,
+  //     ...pkg,
+  //   }));
+  // }, []);
+
+
+  const fetchPackages = useCallback(async (): Promise<PackageVersions[]> => {
     const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
-    const res = await fetch(`${apiBase}/package`);
+    const res = await fetch(`${apiBase}/package_versions`); // update to your actual endpoint path
     const raw = await res.json();
-    return raw.map(([id, pkg]: [number, Omit<Package, "id">]) => ({
-      id,
-      ...pkg,
+
+    // Map to include the package key explicitly
+    return Object.entries(raw).map(([key, value]) => ({
+      key,
+      name: value.name,
+      data: value.data,
     }));
   }, []);
 
@@ -72,7 +88,7 @@ export default function Home() {
               <DashboardStatus label="packages" state={packagesState} />
               <div className="flex flex-col gap-2">
                 {packagesState.data?.map((pkg) => (
-                  <PackageCard key={pkg.id} pkg={pkg} />
+                  <PackageVersionsCard key={pkg.key} pkg={pkg} />
                 ))}
               </div>
             </>
