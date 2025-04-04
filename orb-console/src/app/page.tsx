@@ -96,7 +96,7 @@ export default function Home() {
       </main>
 
       {/* Sticky footer */}
-      <footer className="bg-slate-900 border-t border-slate-700 px-6 py-4">
+      <footer className="bg-slate-950 border-t border-slate-700 px-6 py-4">
         <Footer />
       </footer>
     </div>
