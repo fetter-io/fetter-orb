@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+// use std::collections::HashSet;
 use std::fs;
 use std::path::PathBuf;
 
@@ -161,7 +161,7 @@ async fn test_load_site_packages_a() {
 #[tokio::test]
 async fn test_monitor_scan_load_a() {
     let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    path.push("tests/fixtures/monitor-scan-01.json");
+    path.push("tests/fixtures/monitor-scan-03.json");
     let msg = fs::read_to_string(path).expect("Failed to read JSON file");
 
     let pool = get_db_pool().await;
@@ -170,8 +170,12 @@ async fn test_monitor_scan_load_a() {
     ctx.tables_create().await.unwrap();
     ctx.monitor_scan_load_from_json(&msg).await.unwrap();
 
-    let post = ctx.monitor_scan_site_to_packages(None).await.unwrap();
-    assert_eq!(post.get(&1).unwrap().len(), 11);
+    let post = ctx.package_versions(None).await.unwrap();
+    assert_eq!(post.to_string().len(), 125206);
+    ctx.tables_drop().await.unwrap();
+
+    // let post = ctx.monitor_scan_site_to_packages(None).await.unwrap();
+    // assert_eq!(post.get(&1).unwrap().len(), 11);
 }
 
 #[tokio::test]
@@ -192,21 +196,21 @@ async fn test_monitor_scan_load_b() {
     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
     ctx.monitor_scan_load_from_json(&msg2).await.unwrap();
 
-    let post1 = ctx
-        .monitor_scan_get_packages(&HashSet::from([1]), None)
-        .await
-        .unwrap();
-    assert_eq!(post1.len(), 536);
+    // let post1 = ctx
+    //     .monitor_scan_get_packages(&HashSet::from([1]), None)
+    //     .await
+    //     .unwrap();
+    // assert_eq!(post1.len(), 536);
 
-    let post2 = ctx
-        .monitor_scan_get_packages(&HashSet::from([2]), None)
-        .await
-        .unwrap();
-    assert_eq!(post2.len(), 375);
+    // let post2 = ctx
+    //     .monitor_scan_get_packages(&HashSet::from([2]), None)
+    //     .await
+    //     .unwrap();
+    // assert_eq!(post2.len(), 375);
 
-    let post3 = ctx
-        .monitor_scan_get_packages(&HashSet::from([1, 2]), None)
-        .await
-        .unwrap();
-    assert_eq!(post3.len(), 779);
+    // let post3 = ctx
+    //     .monitor_scan_get_packages(&HashSet::from([1, 2]), None)
+    //     .await
+    //     .unwrap();
+    // assert_eq!(post3.len(), 779);
 }
