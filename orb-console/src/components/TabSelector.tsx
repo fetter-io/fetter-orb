@@ -1,3 +1,10 @@
+type Tab = "packages" | "tags" | "other";
+
+type TabSelectorProps = {
+  activeTab: Tab;
+  onTabChange: (tab: Tab) => void;
+};
+
 export function TabSelector({ activeTab, onTabChange }: TabSelectorProps) {
   const tabs: { id: Tab; label: string }[] = [
     { id: "packages", label: "Packages" },
