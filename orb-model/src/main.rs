@@ -1,5 +1,6 @@
 use axum::{
     extract::State,
+    extract::Query,
     http::StatusCode,
     routing::{get, post},
     Json, Router,
@@ -8,6 +9,8 @@ use axum::{
 use std::net::SocketAddr;
 use tokio::net::TcpListener;
 use tower_http::cors::{Any, CorsLayer};
+use serde::Deserialize;
+use serde_json::Value;
 
 use fetter::{Package, SystemTag};
 use orb_model::db_context::DBContext;
@@ -44,6 +47,22 @@ pub async fn get_package_all(
     }
 }
 
+#[derive(Deserialize)]
+pub struct PackageVersionsParams {
+    pub system_tag_id: Option<i32>,
+}
+
+pub async fn get_package_versions(
+    State(db): State<DBContext>,
+    Query(params): Query<PackageVersionsParams>,
+) -> Result<Json<Value>, (StatusCode, String)> {
+    db.package_versions(params.system_tag_id)
+        .await
+        .map(Json)
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
+}
+
+
 //------------------------------------------------------------------------------
 #[tokio::main]
 async fn main() {
@@ -62,6 +81,7 @@ async fn main() {
     let app = Router::new()
         .route("/system_tag", get(get_system_tag_all))
         .route("/package", get(get_package_all))
+        .route("/package_versions", get(get_package_versions))
         .route("/monitor_scan", post(post_monitor_scan_load))
         .layer(cors)
         .with_state(dbx);

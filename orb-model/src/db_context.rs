@@ -7,6 +7,8 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::time::Duration;
 use std::time::UNIX_EPOCH;
+// use serde::Deserialize;
+use serde_json::{json, Value};
 
 fn package_from_row(row: &PgRow) -> (i32, Package) {
     let id: i32 = row.get("id");
@@ -351,6 +353,7 @@ impl DBContext {
             r#"
             SELECT id, name, key, version, url, commit_id, vcs, revision
             FROM {table_name}
+            ORDER BY key
             "#
         );
 
@@ -359,6 +362,67 @@ impl DBContext {
         let result = rows.into_iter().map(|row| package_from_row(&row)).collect();
         Ok(result)
     }
+
+
+    pub async fn package_versions(
+        &self,
+        system_tag_id: Option<i32>,
+    ) -> Result<Value, sqlx::Error> {
+        let mut query = String::from(
+            r#"
+            SELECT p.key, p.name, p.version, sp.path, ms.system_tag_id
+            FROM monitor_scan ms
+            JOIN package p ON ms.package_id = p.id
+            JOIN site_packages sp ON ms.site_packages_id = sp.id
+            "#,
+        );
+
+        let mut args = PgArguments::default();
+
+        if let Some(st_id) = system_tag_id {
+            query.push_str(" WHERE ms.system_tag_id = $1");
+            let _ = args.add(st_id);
+        }
+
+        let rows = sqlx::query_with(&query, args)
+            .fetch_all(&self.pool)
+            .await?;
+
+        let mut summary: HashMap<String, Value> = HashMap::new();
+
+        for row in rows {
+            let key: String = row.get("key");
+            let name: String = row.get("name");
+            let version: String = row.get("version");
+            let path: String = row.get("path");
+            let system_tag_id: i32 = row.get("system_tag_id");
+
+            summary
+                .entry(key.clone())
+                .and_modify(|entry| {
+                    if let Some(data) = entry.get_mut("data").and_then(|v| v.as_array_mut()) {
+                        data.push(json!({
+                            "version": version,
+                            "path": path,
+                            "system_tag_id": system_tag_id
+                        }));
+                    }
+                })
+                .or_insert_with(|| {
+                    json!({
+                        "name": name,
+                        "data": [{
+                            "version": version,
+                            "path": path,
+                            "system_tag_id": system_tag_id
+                        }]
+                    })
+                });
+        }
+
+        Ok(json!(summary))
+    }
+
 
     //--------------------------------------------------------------------------
     pub async fn site_packages_insert_or_get(&self, fp: PathShared) -> Result<i32, sqlx::Error> {
