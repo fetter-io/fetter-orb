@@ -15,8 +15,8 @@ describe("PackageCard", () => {
     render(<PackageCard pkg={mockPackage} />);
 
     expect(screen.getByText("PyYAML")).toBeInTheDocument();
-    expect(screen.getByText("Key: pyyaml")).toBeInTheDocument();
-    expect(screen.getByText("Version: 6.0.2")).toBeInTheDocument();
+    expect(screen.getByText("pyyaml")).toBeInTheDocument();
+    expect(screen.getByText("6.0.2")).toBeInTheDocument();
   });
 
   it("does not render direct_url if null", () => {
