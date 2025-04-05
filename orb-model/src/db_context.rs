@@ -481,9 +481,7 @@ impl DBContext {
             let _ = args.add(st_id);
         }
 
-        let rows = sqlx::query_with(&query, args)
-            .fetch_all(&self.pool)
-            .await?;
+        let rows = sqlx::query_with(&query, args).fetch_all(&self.pool).await?;
 
         let mut summary: HashMap<String, Value> = HashMap::new();
 
@@ -525,7 +523,6 @@ impl DBContext {
 
         Ok(json!(summary))
     }
-
 
     //--------------------------------------------------------------------------
     pub async fn site_packages_insert_or_get(&self, fp: PathShared) -> Result<i32, sqlx::Error> {
