@@ -515,85 +515,85 @@ impl DBContext {
         let st_id = self.system_tag_insert_or_get(&st).await?;
         self.monitor_scan_load(&scan_fs, st_id, &ts).await
     }
-
-    // pub async fn monitor_scan_site_to_packages(
-    //     &self,
-    //     timestamp_filter: Option<DateTime<Utc>>,
-    // ) -> Result<HashMap<i32, HashMap<i32, Vec<i32>>>, sqlx::Error> {
-    //     let table_name = self.get_table("monitor_scan");
-
-    //     let mut query = format!(
-    //         r#"
-    //         SELECT system_tag_id, site_packages_id, package_id
-    //         FROM {table_name}
-    //         "#
-    //     );
-
-    //     let rows = if let Some(ts) = timestamp_filter {
-    //         query.push_str("WHERE timestamp >= $1");
-    //         sqlx::query(&query).bind(ts).fetch_all(&self.pool).await?
-    //     } else {
-    //         sqlx::query(&query).fetch_all(&self.pool).await?
-    //     };
-
-    //     let mut map: HashMap<i32, HashMap<i32, Vec<i32>>> = HashMap::new();
-
-    //     for row in rows {
-    //         let system_tag_id: i32 = row.get("system_tag_id");
-    //         let site_packages_id: i32 = row.get("site_packages_id");
-    //         let package_id: i32 = row.get("package_id");
-
-    //         map.entry(system_tag_id)
-    //             .or_default()
-    //             .entry(site_packages_id)
-    //             .or_default()
-    //             .push(package_id);
-    //     }
-
-    //     Ok(map)
-    // }
-
-    // pub async fn monitor_scan_get_packages(
-    //     &self,
-    //     system_tag_ids: &HashSet<i32>,
-    //     timestamp_filter: Option<DateTime<Utc>>,
-    // ) -> Result<HashSet<i32>, sqlx::Error> {
-    //     if system_tag_ids.is_empty() {
-    //         return Ok(HashSet::new());
-    //     }
-
-    //     let table_name = self.get_table("monitor_scan");
-
-    //     let mut placeholders = Vec::with_capacity(system_tag_ids.len());
-    //     let mut args = PgArguments::default();
-
-    //     for (i, tag_id) in system_tag_ids.iter().enumerate() {
-    //         placeholders.push(format!("${}", i + 1));
-    //         let _ = args.add(*tag_id);
-    //     }
-
-    //     let mut query = format!(
-    //         r#"
-    //         SELECT DISTINCT package_id
-    //         FROM {table_name}
-    //         WHERE system_tag_id IN ({})
-    //         "#,
-    //         placeholders.join(", ")
-    //     );
-
-    //     if let Some(ts) = timestamp_filter {
-    //         query.push_str(&format!(" AND timestamp >= ${}", system_tag_ids.len() + 1));
-    //         let _ = args.add(ts);
-    //     }
-
-    //     let rows = sqlx::query_with(&query, args).fetch_all(&self.pool).await?;
-
-    //     let mut result = HashSet::new();
-    //     for row in rows {
-    //         let pkg_id: i32 = row.get("package_id");
-    //         result.insert(pkg_id);
-    //     }
-
-    //     Ok(result)
-    // }
 }
+
+// pub async fn monitor_scan_site_to_packages(
+//     &self,
+//     timestamp_filter: Option<DateTime<Utc>>,
+// ) -> Result<HashMap<i32, HashMap<i32, Vec<i32>>>, sqlx::Error> {
+//     let table_name = self.get_table("monitor_scan");
+
+//     let mut query = format!(
+//         r#"
+//         SELECT system_tag_id, site_packages_id, package_id
+//         FROM {table_name}
+//         "#
+//     );
+
+//     let rows = if let Some(ts) = timestamp_filter {
+//         query.push_str("WHERE timestamp >= $1");
+//         sqlx::query(&query).bind(ts).fetch_all(&self.pool).await?
+//     } else {
+//         sqlx::query(&query).fetch_all(&self.pool).await?
+//     };
+
+//     let mut map: HashMap<i32, HashMap<i32, Vec<i32>>> = HashMap::new();
+
+//     for row in rows {
+//         let system_tag_id: i32 = row.get("system_tag_id");
+//         let site_packages_id: i32 = row.get("site_packages_id");
+//         let package_id: i32 = row.get("package_id");
+
+//         map.entry(system_tag_id)
+//             .or_default()
+//             .entry(site_packages_id)
+//             .or_default()
+//             .push(package_id);
+//     }
+
+//     Ok(map)
+// }
+
+// pub async fn monitor_scan_get_packages(
+//     &self,
+//     system_tag_ids: &HashSet<i32>,
+//     timestamp_filter: Option<DateTime<Utc>>,
+// ) -> Result<HashSet<i32>, sqlx::Error> {
+//     if system_tag_ids.is_empty() {
+//         return Ok(HashSet::new());
+//     }
+
+//     let table_name = self.get_table("monitor_scan");
+
+//     let mut placeholders = Vec::with_capacity(system_tag_ids.len());
+//     let mut args = PgArguments::default();
+
+//     for (i, tag_id) in system_tag_ids.iter().enumerate() {
+//         placeholders.push(format!("${}", i + 1));
+//         let _ = args.add(*tag_id);
+//     }
+
+//     let mut query = format!(
+//         r#"
+//         SELECT DISTINCT package_id
+//         FROM {table_name}
+//         WHERE system_tag_id IN ({})
+//         "#,
+//         placeholders.join(", ")
+//     );
+
+//     if let Some(ts) = timestamp_filter {
+//         query.push_str(&format!(" AND timestamp >= ${}", system_tag_ids.len() + 1));
+//         let _ = args.add(ts);
+//     }
+
+//     let rows = sqlx::query_with(&query, args).fetch_all(&self.pool).await?;
+
+//     let mut result = HashSet::new();
+//     for row in rows {
+//         let pkg_id: i32 = row.get("package_id");
+//         result.insert(pkg_id);
+//     }
+
+//     Ok(result)
+// }
