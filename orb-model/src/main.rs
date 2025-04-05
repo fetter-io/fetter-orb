@@ -70,7 +70,7 @@ async fn main() {
     // can branch when given a URL for a live DB
     let pool = get_db_pool().await;
     let dbx = DBContext::new(pool, None);
-    let _ = dbx.tables_create().await;
+    let _ = dbx.tables_create(true).await;
 
     let cors = CorsLayer::new()
         .allow_origin(Any) // TODO: tighten later

@@ -64,16 +64,18 @@ impl DBContext {
             None => root.to_string(),
         }
     }
-
-    pub async fn tables_create(&self) -> Result<(), sqlx::Error> {
+    pub async fn tables_create(&self, if_not_exists: bool) -> Result<(), sqlx::Error> {
         let system_tag_table = self.get_table("system_tag");
         let package_table = self.get_table("package");
         let site_packages_table = self.get_table("site_packages");
         let monitor_scan_table = self.get_table("monitor_scan");
+        let ping_table = self.get_table("ping");
+
+        let if_clause = if if_not_exists { "IF NOT EXISTS " } else { "" };
 
         let create_system_tag = format!(
             r#"
-            CREATE TABLE IF NOT EXISTS {system_tag_table} (
+            CREATE TABLE {if_clause}{system_tag_table} (
                 id SERIAL PRIMARY KEY,
                 username TEXT NOT NULL,
                 hostname TEXT NOT NULL,
@@ -87,7 +89,7 @@ impl DBContext {
 
         let create_package = format!(
             r#"
-            CREATE TABLE IF NOT EXISTS {package_table} (
+            CREATE TABLE {if_clause}{package_table} (
                 id SERIAL PRIMARY KEY,
                 name TEXT NOT NULL,
                 key TEXT NOT NULL,
@@ -102,21 +104,30 @@ impl DBContext {
 
         let create_site_packages = format!(
             r#"
-            CREATE TABLE IF NOT EXISTS {site_packages_table} (
+            CREATE TABLE {if_clause}{site_packages_table} (
                 id SERIAL PRIMARY KEY,
                 path TEXT UNIQUE NOT NULL
             );
             "#
         );
 
+        let create_ping = format!(
+            r#"
+            CREATE TABLE {if_clause}{ping_table} (
+                id SERIAL PRIMARY KEY,
+                system_tag_id INTEGER NOT NULL REFERENCES {system_tag_table}(id) ON DELETE RESTRICT,
+                timestamp TIMESTAMPTZ NOT NULL DEFAULT now()
+            );
+            "#
+        );
+
         let create_monitor_scan = format!(
             r#"
-            CREATE TABLE IF NOT EXISTS {monitor_scan_table} (
-                system_tag_id INTEGER NOT NULL REFERENCES {system_tag_table}(id) ON DELETE RESTRICT,
+            CREATE TABLE {if_clause}{monitor_scan_table} (
+                ping_id INTEGER NOT NULL REFERENCES {ping_table}(id) ON DELETE RESTRICT,
                 package_id INTEGER NOT NULL REFERENCES {package_table}(id) ON DELETE RESTRICT,
                 site_packages_id INTEGER NOT NULL REFERENCES {site_packages_table}(id) ON DELETE RESTRICT,
-                timestamp TIMESTAMPTZ NOT NULL,
-                PRIMARY KEY (system_tag_id, package_id, site_packages_id, timestamp)
+                PRIMARY KEY (ping_id, package_id, site_packages_id)
             );
             "#
         );
@@ -124,6 +135,7 @@ impl DBContext {
         self.pool.execute(&*create_system_tag).await?;
         self.pool.execute(&*create_package).await?;
         self.pool.execute(&*create_site_packages).await?;
+        self.pool.execute(&*create_ping).await?;
         self.pool.execute(&*create_monitor_scan).await?;
 
         Ok(())
@@ -133,14 +145,17 @@ impl DBContext {
         let system_tag_table = self.get_table("system_tag");
         let package_table = self.get_table("package");
         let site_packages_table = self.get_table("site_packages");
+        let ping_table = self.get_table("ping");
         let monitor_scan_table = self.get_table("monitor_scan");
 
         let drop_monitor_scan = format!(r#"DROP TABLE IF EXISTS {monitor_scan_table};"#);
+        let drop_ping = format!(r#"DROP TABLE IF EXISTS {ping_table};"#);
         let drop_site_packages = format!(r#"DROP TABLE IF EXISTS {site_packages_table};"#);
         let drop_package = format!(r#"DROP TABLE IF EXISTS {package_table};"#);
         let drop_system_tag = format!(r#"DROP TABLE IF EXISTS {system_tag_table};"#);
 
         self.pool.execute(&*drop_monitor_scan).await?;
+        self.pool.execute(&*drop_ping).await?;
         self.pool.execute(&*drop_site_packages).await?;
         self.pool.execute(&*drop_package).await?;
         self.pool.execute(&*drop_system_tag).await?;
@@ -361,11 +376,85 @@ impl DBContext {
         Ok(result)
     }
 
+    // pub async fn package_versions(&self, system_tag_id: Option<i32>) -> Result<Value, sqlx::Error> {
+    //     let system_tag_table = self.get_table("system_tag");
+    //     let package_table = self.get_table("package");
+    //     let site_packages_table = self.get_table("site_packages");
+    //     let monitor_scan_table = self.get_table("monitor_scan");
+
+    //     let mut query = format!(
+    //         r#"
+    //         SELECT
+    //             p.key,
+    //             p.name,
+    //             p.version,
+    //             sp.path,
+    //             ms.system_tag_id,
+    //             st.username,
+    //             st.hostname
+    //         FROM {monitor_scan_table} ms
+    //         JOIN {package_table} p ON ms.package_id = p.id
+    //         JOIN {site_packages_table} sp ON ms.site_packages_id = sp.id
+    //         JOIN {system_tag_table} st ON ms.system_tag_id = st.id
+    //         "#,
+    //     );
+
+    //     let mut args = sqlx::postgres::PgArguments::default();
+
+    //     if let Some(st_id) = system_tag_id {
+    //         query.push_str(" WHERE ms.system_tag_id = $1");
+    //         let _ = args.add(st_id);
+    //     }
+
+    //     let rows = sqlx::query_with(&query, args).fetch_all(&self.pool).await?;
+
+    //     let mut summary: HashMap<String, Value> = HashMap::new();
+
+    //     for row in rows {
+    //         let key: String = row.get("key");
+    //         let name: String = row.get("name");
+    //         let version: String = row.get("version");
+    //         let path: String = row.get("path");
+    //         let system_tag_id: i32 = row.get("system_tag_id");
+    //         let system_tag_username: String = row.get("username");
+    //         let system_tag_hostname: String = row.get("hostname");
+
+    //         summary
+    //             .entry(key.clone())
+    //             .and_modify(|entry| {
+    //                 if let Some(data) = entry.get_mut("data").and_then(|v| v.as_array_mut()) {
+    //                     data.push(json!({
+    //                         "version": version,
+    //                         "path": path,
+    //                         "system_tag_id": system_tag_id,
+    //                         "system_tag_username": system_tag_username,
+    //                         "system_tag_hostname": system_tag_hostname
+    //                     }));
+    //                 }
+    //             })
+    //             .or_insert_with(|| {
+    //                 json!({
+    //                     "name": name,
+    //                     "data": [{
+    //                         "version": version,
+    //                         "path": path,
+    //                         "system_tag_id": system_tag_id,
+    //                         "system_tag_username": system_tag_username,
+    //                         "system_tag_hostname": system_tag_hostname
+    //                     }]
+    //                 })
+    //             });
+    //     }
+
+    //     Ok(json!(summary))
+    // }
+
     pub async fn package_versions(&self, system_tag_id: Option<i32>) -> Result<Value, sqlx::Error> {
         let system_tag_table = self.get_table("system_tag");
         let package_table = self.get_table("package");
         let site_packages_table = self.get_table("site_packages");
         let monitor_scan_table = self.get_table("monitor_scan");
+        let ping_table = self.get_table("ping");
 
         let mut query = format!(
             r#"
@@ -374,24 +463,27 @@ impl DBContext {
                 p.name,
                 p.version,
                 sp.path,
-                ms.system_tag_id,
+                pi.system_tag_id,
                 st.username,
                 st.hostname
             FROM {monitor_scan_table} ms
+            JOIN {ping_table} pi ON ms.ping_id = pi.id
             JOIN {package_table} p ON ms.package_id = p.id
             JOIN {site_packages_table} sp ON ms.site_packages_id = sp.id
-            JOIN {system_tag_table} st ON ms.system_tag_id = st.id
-            "#,
+            JOIN {system_tag_table} st ON pi.system_tag_id = st.id
+            "#
         );
 
         let mut args = sqlx::postgres::PgArguments::default();
 
         if let Some(st_id) = system_tag_id {
-            query.push_str(" WHERE ms.system_tag_id = $1");
+            query.push_str(" WHERE pi.system_tag_id = $1");
             let _ = args.add(st_id);
         }
 
-        let rows = sqlx::query_with(&query, args).fetch_all(&self.pool).await?;
+        let rows = sqlx::query_with(&query, args)
+            .fetch_all(&self.pool)
+            .await?;
 
         let mut summary: HashMap<String, Value> = HashMap::new();
 
@@ -433,6 +525,7 @@ impl DBContext {
 
         Ok(json!(summary))
     }
+
 
     //--------------------------------------------------------------------------
     pub async fn site_packages_insert_or_get(&self, fp: PathShared) -> Result<i32, sqlx::Error> {
@@ -480,11 +573,25 @@ impl DBContext {
     pub async fn monitor_scan_load(
         &self,
         scan_fs: &ScanFS,
-        st_id: i32,
+        st_id: i32, // system tag id
         ts: &Duration,
     ) -> Result<(), sqlx::Error> {
-        let table_name = self.get_table("monitor_scan");
+        let monitor_scan_table = self.get_table("monitor_scan");
+        let ping_table = self.get_table("ping");
+
         let timestamp: DateTime<Utc> = (UNIX_EPOCH + *ts).into();
+
+        let ping_id: i32 = sqlx::query_scalar(&format!(
+            r#"
+            INSERT INTO {ping_table} (system_tag_id, timestamp)
+            VALUES ($1, $2)
+            RETURNING id
+            "#
+        ))
+        .bind(st_id)
+        .bind(timestamp)
+        .fetch_one(&self.pool)
+        .await?;
 
         for (pkg, sites) in scan_fs.package_to_sites.iter() {
             let pkg_id = self.package_insert_or_get(pkg).await?;
@@ -494,17 +601,16 @@ impl DBContext {
 
                 let insert_query = format!(
                     r#"
-                    INSERT INTO {table_name} (system_tag_id, package_id, site_packages_id, timestamp)
-                    VALUES ($1, $2, $3, $4)
+                    INSERT INTO {monitor_scan_table} (ping_id, package_id, site_packages_id)
+                    VALUES ($1, $2, $3)
                     ON CONFLICT DO NOTHING
                     "#
                 );
 
                 sqlx::query(&insert_query)
-                    .bind(st_id)
+                    .bind(ping_id)
                     .bind(pkg_id)
                     .bind(sp_id)
-                    .bind(timestamp)
                     .execute(&self.pool)
                     .await?;
             }

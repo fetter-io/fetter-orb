@@ -48,7 +48,7 @@ async fn test_load_package_a() {
     let pool = get_db_pool().await;
     let ctx = DBContext::new(pool, Some("lpa".into()));
 
-    ctx.tables_create().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
 
     let p1_id = ctx.package_insert_or_get(&p1).await.unwrap();
     assert_eq!(p1_id, 1);
@@ -77,12 +77,13 @@ async fn test_package_all_a() {
 
     let pool = get_db_pool().await;
     let ctx = DBContext::new(pool, Some("paa".into()));
-    ctx.tables_create().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
 
     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
 
     let post = ctx.package_all().await.unwrap();
-    assert_eq!(post.len(), 19)
+    assert_eq!(post.len(), 19);
+    ctx.tables_drop().await.unwrap();
 }
 
 #[tokio::test]
@@ -104,7 +105,7 @@ async fn test_load_system_tag_a() {
 
     let pool = get_db_pool().await;
     let ctx = DBContext::new(pool, Some("lsta".into()));
-    ctx.tables_create().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
 
     let st_id = ctx.system_tag_insert_or_get(&st).await.unwrap();
     assert_eq!(st_id, 1);
@@ -117,7 +118,7 @@ async fn test_load_system_tag_a() {
 async fn test_system_tag_all_a() {
     let pool = get_db_pool().await;
     let ctx = DBContext::new(pool, Some("staa".into()));
-    ctx.tables_create().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
 
     let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     path1.push("tests/fixtures/monitor-scan-01.json");
@@ -135,7 +136,7 @@ async fn test_load_site_packages_a() {
     let pool = get_db_pool().await;
     let ctx = DBContext::new(pool, Some("lspa1".into()));
 
-    ctx.tables_create().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
 
     let p1 = PathShared::from("/home/ariza/src/py_src/lib/python3.11/site-packages");
     let p2 = PathShared::from("/home/ariza/src/py_src/lib/python3.13/site-packages");
@@ -167,7 +168,7 @@ async fn test_monitor_scan_load_a() {
     let pool = get_db_pool().await;
     let ctx = DBContext::new(pool, Some("msla".into()));
 
-    ctx.tables_create().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
     ctx.monitor_scan_load_from_json(&msg).await.unwrap();
 
     let post = ctx.package_versions(None).await.unwrap();
@@ -191,7 +192,7 @@ async fn test_monitor_scan_load_b() {
     let pool = get_db_pool().await;
     let ctx = DBContext::new(pool, Some("mslb".into()));
 
-    ctx.tables_create().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
 
     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
     ctx.monitor_scan_load_from_json(&msg2).await.unwrap();
