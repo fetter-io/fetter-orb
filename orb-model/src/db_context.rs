@@ -362,7 +362,12 @@ impl DBContext {
     }
 
     pub async fn package_versions(&self, system_tag_id: Option<i32>) -> Result<Value, sqlx::Error> {
-        let mut query = String::from(
+        let system_tag_table = self.get_table("system_tag");
+        let package_table = self.get_table("package");
+        let site_packages_table = self.get_table("site_packages");
+        let monitor_scan_table = self.get_table("monitor_scan");
+
+        let mut query = format!(
             r#"
             SELECT
                 p.key,
@@ -372,10 +377,10 @@ impl DBContext {
                 ms.system_tag_id,
                 st.username,
                 st.hostname
-            FROM monitor_scan ms
-            JOIN package p ON ms.package_id = p.id
-            JOIN site_packages sp ON ms.site_packages_id = sp.id
-            JOIN system_tag st ON ms.system_tag_id = st.id
+            FROM {monitor_scan_table} ms
+            JOIN {package_table} p ON ms.package_id = p.id
+            JOIN {site_packages_table} sp ON ms.site_packages_id = sp.id
+            JOIN {system_tag_table} st ON ms.system_tag_id = st.id
             "#,
         );
 

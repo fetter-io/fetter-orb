@@ -171,7 +171,7 @@ async fn test_monitor_scan_load_a() {
     ctx.monitor_scan_load_from_json(&msg).await.unwrap();
 
     let post = ctx.package_versions(None).await.unwrap();
-    assert_eq!(post.to_string().len(), 125206);
+    assert_eq!(post.to_string().len(), 39899);
     ctx.tables_drop().await.unwrap();
 
     // let post = ctx.monitor_scan_site_to_packages(None).await.unwrap();
