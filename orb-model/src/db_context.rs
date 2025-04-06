@@ -273,6 +273,76 @@ impl DBContext {
         Ok(result)
     }
 
+    pub async fn system_tag_pings(&self, limit: Option<usize>) -> Result<Value, sqlx::Error> {
+        let system_tag_table = self.get_table("system_tag");
+        let ping_table = self.get_table("ping");
+
+        // 1. Query all system tags
+        let tags = sqlx::query(&format!(
+            r#"
+            SELECT id, username, hostname, os_name, os_version, architecture, logical_cores
+            FROM {system_tag_table}
+            "#
+        ))
+        .fetch_all(&self.pool)
+        .await?;
+
+        // 2. Query N pings per system tag
+        let ping_rows = sqlx::query(&format!(
+            r#"
+            SELECT system_tag_id, timestamp, scanned
+            FROM (
+                SELECT
+                    system_tag_id,
+                    timestamp,
+                    scanned,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY system_tag_id ORDER BY timestamp DESC
+                    ) as rn
+                FROM {ping_table}
+            ) sub
+            WHERE rn <= $1
+            "#
+        ))
+        .bind(limit.unwrap_or(20) as i64)
+        .fetch_all(&self.pool)
+        .await?;
+
+        // 3. Group pings by system_tag_id
+        use std::collections::HashMap;
+        let mut ping_map: HashMap<i32, Vec<Value>> = HashMap::new();
+
+        for row in ping_rows {
+            let system_tag_id: i32 = row.get("system_tag_id");
+            let timestamp: DateTime<Utc> = row.get("timestamp");
+            let scanned: bool = row.get("scanned");
+
+            ping_map
+                .entry(system_tag_id)
+                .or_default()
+                .push(json!({ "timestamp": timestamp, "scanned": scanned }));
+        }
+
+        // 4. Assemble final output
+        let mut result = Vec::new();
+
+        for tag in tags {
+            let id: i32 = tag.get("id");
+            result.push(json!({
+                "id": id,
+                "username": tag.get::<String, _>("username"),
+                "hostname": tag.get::<String, _>("hostname"),
+                "os_name": tag.get::<String, _>("os_name"),
+                "os_version": tag.get::<String, _>("os_version"),
+                "architecture": tag.get::<String, _>("architecture"),
+                "logical_cores": tag.get::<i16, _>("logical_cores") as usize,
+                "pings": ping_map.remove(&id).unwrap_or_else(Vec::new),
+            }));
+        }
+
+        Ok(Value::Array(result))
+    }
+
     //--------------------------------------------------------------------------
     // Package
 
@@ -378,79 +448,6 @@ impl DBContext {
         let result = rows.into_iter().map(|row| package_from_row(&row)).collect();
         Ok(result)
     }
-
-    // pub async fn package_versions(&self, system_tag_id: Option<i32>) -> Result<Value, sqlx::Error> {
-    //     let system_tag_table = self.get_table("system_tag");
-    //     let package_table = self.get_table("package");
-    //     let site_packages_table = self.get_table("site_packages");
-    //     let monitor_scan_table = self.get_table("monitor_scan");
-
-    //     let mut query = format!(
-    //         r#"
-    //         SELECT
-    //             p.key,
-    //             p.name,
-    //             p.version,
-    //             sp.path,
-    //             ms.system_tag_id,
-    //             st.username,
-    //             st.hostname
-    //         FROM {monitor_scan_table} ms
-    //         JOIN {package_table} p ON ms.package_id = p.id
-    //         JOIN {site_packages_table} sp ON ms.site_packages_id = sp.id
-    //         JOIN {system_tag_table} st ON ms.system_tag_id = st.id
-    //         "#,
-    //     );
-
-    //     let mut args = sqlx::postgres::PgArguments::default();
-
-    //     if let Some(st_id) = system_tag_id {
-    //         query.push_str(" WHERE ms.system_tag_id = $1");
-    //         let _ = args.add(st_id);
-    //     }
-
-    //     let rows = sqlx::query_with(&query, args).fetch_all(&self.pool).await?;
-
-    //     let mut summary: HashMap<String, Value> = HashMap::new();
-
-    //     for row in rows {
-    //         let key: String = row.get("key");
-    //         let name: String = row.get("name");
-    //         let version: String = row.get("version");
-    //         let path: String = row.get("path");
-    //         let system_tag_id: i32 = row.get("system_tag_id");
-    //         let system_tag_username: String = row.get("username");
-    //         let system_tag_hostname: String = row.get("hostname");
-
-    //         summary
-    //             .entry(key.clone())
-    //             .and_modify(|entry| {
-    //                 if let Some(data) = entry.get_mut("data").and_then(|v| v.as_array_mut()) {
-    //                     data.push(json!({
-    //                         "version": version,
-    //                         "path": path,
-    //                         "system_tag_id": system_tag_id,
-    //                         "system_tag_username": system_tag_username,
-    //                         "system_tag_hostname": system_tag_hostname
-    //                     }));
-    //                 }
-    //             })
-    //             .or_insert_with(|| {
-    //                 json!({
-    //                     "name": name,
-    //                     "data": [{
-    //                         "version": version,
-    //                         "path": path,
-    //                         "system_tag_id": system_tag_id,
-    //                         "system_tag_username": system_tag_username,
-    //                         "system_tag_hostname": system_tag_hostname
-    //                     }]
-    //                 })
-    //             });
-    //     }
-
-    //     Ok(json!(summary))
-    // }
 
     pub async fn package_versions(&self, system_tag_id: Option<i32>) -> Result<Value, sqlx::Error> {
         let system_tag_table = self.get_table("system_tag");
