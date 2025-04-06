@@ -137,7 +137,6 @@ async fn test_system_tag_all_a() {
     ctx.tables_drop().await.unwrap();
 }
 
-
 #[tokio::test]
 async fn test_system_tag_pings_a() {
     let pool = get_db_pool().await;
@@ -152,7 +151,10 @@ async fn test_system_tag_pings_a() {
 
     let post = ctx.system_tag_pings(None).await.unwrap().to_string();
     println!("{}", post);
-    assert_eq!(post, r#"[{"architecture":"x86_64","hostname":"is-ariza-p1g7","id":1,"logical_cores":22,"os_name":"linux","os_version":"24.04","pings":[{"scanned":true,"timestamp":"2025-04-02T21:58:08.072262Z"}],"username":"ariza"}]"#);
+    assert_eq!(
+        post,
+        r#"[{"architecture":"x86_64","hostname":"is-ariza-p1g7","id":1,"logical_cores":22,"os_name":"linux","os_version":"24.04","pings":[{"scanned":true,"timestamp":"2025-04-02T21:58:08.072262Z"}],"username":"ariza"}]"#
+    );
 
     ctx.tables_drop().await.unwrap();
 }

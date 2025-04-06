@@ -47,6 +47,8 @@ pub async fn get_package_all(
     }
 }
 
+//------------------------------------------------------------------------------
+
 #[derive(Deserialize)]
 pub struct PackageVersionsParams {
     pub system_tag_id: Option<i32>,
@@ -62,6 +64,22 @@ pub async fn get_package_versions(
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
 }
 
+//------------------------------------------------------------------------------
+
+#[derive(Deserialize)]
+pub struct SystemTagPingsParams {
+    pub limit: Option<usize>,
+}
+
+pub async fn get_system_tag_pings(
+    State(db): State<DBContext>,
+    Query(params): Query<SystemTagPingsParams>,
+) -> Result<Json<Value>, (StatusCode, String)> {
+    db.system_tag_pings(params.limit)
+        .await
+        .map(Json)
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
+}
 //------------------------------------------------------------------------------
 #[tokio::main]
 async fn main() {
@@ -80,6 +98,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/system_tag", get(get_system_tag_all))
+        .route("/system_tag_pings", get(get_system_tag_pings))
         .route("/package", get(get_package_all))
         .route("/package_versions", get(get_package_versions))
         .route("/monitor_scan", post(post_monitor_scan_load))
