@@ -25,7 +25,7 @@ export default function Home() {
   // fetch system tags
   const fetchSystemTags = useCallback(async (): Promise<SystemTag[]> => {
     const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
-    const res = await fetch(`${apiBase}/system_tag`);
+    const res = await fetch(`${apiBase}/system_tag_pings`);
     const raw = await res.json();
     return raw.map(([id, tag]: [number, Omit<SystemTag, "id">]) => ({
       id,
