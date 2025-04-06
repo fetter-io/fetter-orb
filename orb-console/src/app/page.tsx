@@ -30,7 +30,6 @@ export default function Home() {
     return raw as SystemTag[];
   }, []);
 
-
   const fetchPackages = useCallback(async (): Promise<PackageVersions[]> => {
     const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
     const query =

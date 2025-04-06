@@ -65,26 +65,23 @@ export function SystemTagCard({
               <th className="px-2 py-1">Scanned</th>
             </tr>
           </thead>
-            <tbody>
-              {tag.pings.map((ping) => (
-                <tr
-                  key={ping.timestamp}
-                  className={`border-b border-slate-800 ${
-                    ping.scanned ? "bg-gray-700" : "bg-gray-900"
-                  }`}
-                >
-                  <td className="px-2 py-1 whitespace-nowrap">
-                    {new Date(ping.timestamp).toLocaleTimeString()}
-                  </td>
-                  <td className="px-2 py-1">
-                    {ping.scanned ? "✓" : "–"}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+          <tbody>
+            {tag.pings.map((ping) => (
+              <tr
+                key={ping.timestamp}
+                className={`border-b border-slate-800 ${
+                  ping.scanned ? "bg-gray-700" : "bg-gray-900"
+                }`}
+              >
+                <td className="px-2 py-1 whitespace-nowrap">
+                  {new Date(ping.timestamp).toLocaleTimeString()}
+                </td>
+                <td className="px-2 py-1">{ping.scanned ? "✓" : "–"}</td>
+              </tr>
+            ))}
+          </tbody>
         </table>
       </div>
-
     </div>
   );
 }
