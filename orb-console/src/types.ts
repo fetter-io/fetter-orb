@@ -6,6 +6,11 @@ export type Package = {
   direct_url: string | null;
 };
 
+export type Ping = {
+  timestamp: string;
+  scanned: boolean;
+};
+
 export type SystemTag = {
   id: number;
   username: string;
@@ -14,6 +19,7 @@ export type SystemTag = {
   os_version: string;
   architecture: string;
   logical_cores: number;
+  pings: Ping[];
 };
 
 export type PackageVersionEntry = {
