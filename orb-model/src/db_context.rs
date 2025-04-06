@@ -4,7 +4,7 @@ use serde_json::{json, Value};
 use sqlx::postgres::PgRow;
 use sqlx::types::chrono::DateTime;
 use sqlx::{Arguments, Executor, PgPool, Row};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::time::Duration;
 use std::time::UNIX_EPOCH;
 
@@ -273,12 +273,82 @@ impl DBContext {
         Ok(result)
     }
 
+    // pub async fn system_tag_pings(&self, limit: Option<usize>) -> Result<Value, sqlx::Error> {
+    //     let system_tag_table = self.get_table("system_tag");
+    //     let ping_table = self.get_table("ping");
+
+    //     // 1. Query all system tags
+    //     let tags = sqlx::query(&format!(
+    //         r#"
+    //         SELECT id, username, hostname, os_name, os_version, architecture, logical_cores
+    //         FROM {system_tag_table}
+    //         "#
+    //     ))
+    //     .fetch_all(&self.pool)
+    //     .await?;
+
+    //     // 2. Query N pings per system tag
+    //     let ping_rows = sqlx::query(&format!(
+    //         r#"
+    //         SELECT system_tag_id, timestamp, scanned
+    //         FROM (
+    //             SELECT
+    //                 system_tag_id,
+    //                 timestamp,
+    //                 scanned,
+    //                 ROW_NUMBER() OVER (
+    //                     PARTITION BY system_tag_id ORDER BY timestamp DESC
+    //                 ) as rn
+    //             FROM {ping_table}
+    //         ) sub
+    //         WHERE rn <= $1
+    //         "#
+    //     ))
+    //     .bind(limit.unwrap_or(20) as i64)
+    //     .fetch_all(&self.pool)
+    //     .await?;
+
+    //     // 3. Group pings by system_tag_id
+    //     use std::collections::HashMap;
+    //     let mut ping_map: HashMap<i32, Vec<Value>> = HashMap::new();
+
+    //     for row in ping_rows {
+    //         let system_tag_id: i32 = row.get("system_tag_id");
+    //         let timestamp: DateTime<Utc> = row.get("timestamp");
+    //         let scanned: bool = row.get("scanned");
+
+    //         ping_map
+    //             .entry(system_tag_id)
+    //             .or_default()
+    //             .push(json!({ "timestamp": timestamp, "scanned": scanned }));
+    //     }
+
+    //     // 4. Assemble final output
+    //     let mut result = Vec::new();
+
+    //     for tag in tags {
+    //         let id: i32 = tag.get("id");
+    //         result.push(json!({
+    //             "id": id,
+    //             "username": tag.get::<String, _>("username"),
+    //             "hostname": tag.get::<String, _>("hostname"),
+    //             "os_name": tag.get::<String, _>("os_name"),
+    //             "os_version": tag.get::<String, _>("os_version"),
+    //             "architecture": tag.get::<String, _>("architecture"),
+    //             "logical_cores": tag.get::<i16, _>("logical_cores") as usize,
+    //             "pings": ping_map.remove(&id).unwrap_or_else(Vec::new),
+    //         }));
+    //     }
+
+    //     Ok(Value::Array(result))
+    // }
+
     pub async fn system_tag_pings(&self, limit: Option<usize>) -> Result<Value, sqlx::Error> {
         let system_tag_table = self.get_table("system_tag");
         let ping_table = self.get_table("ping");
 
-        // 1. Query all system tags
-        let tags = sqlx::query(&format!(
+        // Step 1: fetch all system tags
+        let tag_rows = sqlx::query(&format!(
             r#"
             SELECT id, username, hostname, os_name, os_version, architecture, logical_cores
             FROM {system_tag_table}
@@ -287,8 +357,10 @@ impl DBContext {
         .fetch_all(&self.pool)
         .await?;
 
-        // 2. Query N pings per system tag
-        let ping_rows = sqlx::query(&format!(
+        // Step 2: fetch up to N most recent pings per tag
+        let ping_limit = limit.unwrap_or(20) as i64;
+
+        let last_count_ping_rows = sqlx::query(&format!(
             r#"
             SELECT system_tag_id, timestamp, scanned
             FROM (
@@ -304,29 +376,52 @@ impl DBContext {
             WHERE rn <= $1
             "#
         ))
-        .bind(limit.unwrap_or(20) as i64)
+        .bind(ping_limit)
         .fetch_all(&self.pool)
         .await?;
 
-        // 3. Group pings by system_tag_id
-        use std::collections::HashMap;
-        let mut ping_map: HashMap<i32, Vec<Value>> = HashMap::new();
+        // Step 3: fetch the last scanned ping per tag
+        let last_scan_ping_rows = sqlx::query(&format!(
+            r#"
+            SELECT DISTINCT ON (system_tag_id)
+                system_tag_id,
+                timestamp,
+                scanned
+            FROM {ping_table}
+            WHERE scanned = true
+            ORDER BY system_tag_id, timestamp DESC
+            "#
+        ))
+        .fetch_all(&self.pool)
+        .await?;
 
-        for row in ping_rows {
-            let system_tag_id: i32 = row.get("system_tag_id");
-            let timestamp: DateTime<Utc> = row.get("timestamp");
-            let scanned: bool = row.get("scanned");
+        // Step 4: group all pings by system_tag_id, deduplicated by timestamp
+        let mut st_to_pings: HashMap<i32, Vec<Value>> = HashMap::new();
+        let mut st_to_pings_seen: HashMap<i32, HashSet<DateTime<Utc>>> = HashMap::new();
 
-            ping_map
-                .entry(system_tag_id)
-                .or_default()
-                .push(json!({ "timestamp": timestamp, "scanned": scanned }));
+        let mut insert_ping = |id: i32, timestamp: DateTime<Utc>, scanned: bool| {
+            let pings = st_to_pings.entry(id).or_default();
+            let pings_seen = st_to_pings_seen.entry(id).or_default();
+            // only push on pings if this is the first time we have seen the ping
+            if pings_seen.insert(timestamp) {
+                pings.push(json!({ "timestamp": timestamp, "scanned": scanned }));
+            }
+        };
+
+        for row in last_scan_ping_rows {
+            let id: i32 = row.get("system_tag_id");
+            insert_ping(id, row.get("timestamp"), row.get("scanned"));
         }
 
-        // 4. Assemble final output
+        for row in last_count_ping_rows {
+            let id: i32 = row.get("system_tag_id");
+            insert_ping(id, row.get("timestamp"), row.get("scanned"));
+        }
+
+        // Step 5: build final result
         let mut result = Vec::new();
 
-        for tag in tags {
+        for tag in tag_rows {
             let id: i32 = tag.get("id");
             result.push(json!({
                 "id": id,
@@ -336,7 +431,7 @@ impl DBContext {
                 "os_version": tag.get::<String, _>("os_version"),
                 "architecture": tag.get::<String, _>("architecture"),
                 "logical_cores": tag.get::<i16, _>("logical_cores") as usize,
-                "pings": ping_map.remove(&id).unwrap_or_else(Vec::new),
+                "pings": st_to_pings.remove(&id).unwrap_or_default()
             }));
         }
 
