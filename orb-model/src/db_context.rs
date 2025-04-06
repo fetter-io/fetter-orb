@@ -58,12 +58,14 @@ impl DBContext {
         Self { pool, suffix }
     }
 
+    // Get a table name with the defined suffix.
     fn get_table(&self, root: &str) -> String {
         match &self.suffix {
             Some(sfx) => format!("{}_{}", root, sfx),
             None => root.to_string(),
         }
     }
+
     pub async fn tables_create(&self, if_not_exists: bool) -> Result<(), sqlx::Error> {
         let system_tag_table = self.get_table("system_tag");
         let package_table = self.get_table("package");
@@ -116,7 +118,8 @@ impl DBContext {
             CREATE TABLE {if_clause}{ping_table} (
                 id SERIAL PRIMARY KEY,
                 system_tag_id INTEGER NOT NULL REFERENCES {system_tag_table}(id) ON DELETE RESTRICT,
-                timestamp TIMESTAMPTZ NOT NULL DEFAULT now()
+                timestamp TIMESTAMPTZ NOT NULL,
+                scanned BOOLEAN NOT NULL
             );
             "#
         );
@@ -148,11 +151,11 @@ impl DBContext {
         let ping_table = self.get_table("ping");
         let monitor_scan_table = self.get_table("monitor_scan");
 
-        let drop_monitor_scan = format!(r#"DROP TABLE IF EXISTS {monitor_scan_table};"#);
-        let drop_ping = format!(r#"DROP TABLE IF EXISTS {ping_table};"#);
-        let drop_site_packages = format!(r#"DROP TABLE IF EXISTS {site_packages_table};"#);
-        let drop_package = format!(r#"DROP TABLE IF EXISTS {package_table};"#);
-        let drop_system_tag = format!(r#"DROP TABLE IF EXISTS {system_tag_table};"#);
+        let drop_monitor_scan = format!(r#"DROP TABLE IF EXISTS {monitor_scan_table} CASCADE;"#);
+        let drop_ping = format!(r#"DROP TABLE IF EXISTS {ping_table} CASCADE;"#);
+        let drop_site_packages = format!(r#"DROP TABLE IF EXISTS {site_packages_table} CASCADE;"#);
+        let drop_package = format!(r#"DROP TABLE IF EXISTS {package_table} CASCADE;"#);
+        let drop_system_tag = format!(r#"DROP TABLE IF EXISTS {system_tag_table} CASCADE;"#);
 
         self.pool.execute(&*drop_monitor_scan).await?;
         self.pool.execute(&*drop_ping).await?;
@@ -569,7 +572,7 @@ impl DBContext {
     //--------------------------------------------------------------------------
     pub async fn monitor_scan_load(
         &self,
-        scan_fs: &ScanFS,
+        scan_fs: &Option<ScanFS>,
         st_id: i32, // system tag id
         ts: &Duration,
     ) -> Result<(), sqlx::Error> {
@@ -577,39 +580,43 @@ impl DBContext {
         let ping_table = self.get_table("ping");
 
         let timestamp: DateTime<Utc> = (UNIX_EPOCH + *ts).into();
+        let scanned = scan_fs.is_some();
 
         let ping_id: i32 = sqlx::query_scalar(&format!(
             r#"
-            INSERT INTO {ping_table} (system_tag_id, timestamp)
-            VALUES ($1, $2)
+            INSERT INTO {ping_table} (system_tag_id, timestamp, scanned)
+            VALUES ($1, $2, $3)
             RETURNING id
             "#
         ))
         .bind(st_id)
         .bind(timestamp)
+        .bind(scanned)
         .fetch_one(&self.pool)
         .await?;
 
-        for (pkg, sites) in scan_fs.package_to_sites.iter() {
-            let pkg_id = self.package_insert_or_get(pkg).await?;
+        if let Some(sfs) = scan_fs {
+            for (pkg, sites) in sfs.package_to_sites.iter() {
+                let pkg_id = self.package_insert_or_get(pkg).await?;
 
-            for sp in sites.iter() {
-                let sp_id = self.site_packages_insert_or_get(sp.clone()).await?;
+                for sp in sites.iter() {
+                    let sp_id = self.site_packages_insert_or_get(sp.clone()).await?;
 
-                let insert_query = format!(
-                    r#"
-                    INSERT INTO {monitor_scan_table} (ping_id, package_id, site_packages_id)
-                    VALUES ($1, $2, $3)
-                    ON CONFLICT DO NOTHING
-                    "#
-                );
+                    let insert_query = format!(
+                        r#"
+                        INSERT INTO {monitor_scan_table} (ping_id, package_id, site_packages_id)
+                        VALUES ($1, $2, $3)
+                        ON CONFLICT DO NOTHING
+                        "#
+                    );
 
-                sqlx::query(&insert_query)
-                    .bind(ping_id)
-                    .bind(pkg_id)
-                    .bind(sp_id)
-                    .execute(&self.pool)
-                    .await?;
+                    sqlx::query(&insert_query)
+                        .bind(ping_id)
+                        .bind(pkg_id)
+                        .bind(sp_id)
+                        .execute(&self.pool)
+                        .await?;
+                }
             }
         }
 
@@ -617,7 +624,7 @@ impl DBContext {
     }
 
     pub async fn monitor_scan_load_from_json(&self, payload: &str) -> Result<(), sqlx::Error> {
-        let (st, scan_fs, ts): (SystemTag, ScanFS, Duration) =
+        let (st, scan_fs, ts): (SystemTag, Option<ScanFS>, Duration) =
             serde_json::from_str(payload).expect("Invalid JSON payload");
 
         let st_id = self.system_tag_insert_or_get(&st).await?;

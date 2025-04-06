@@ -67,6 +67,8 @@ async fn test_load_package_a() {
 
     let p3x = ctx.package_from_id(3).await.unwrap();
     assert_eq!(p3x, None);
+
+    ctx.tables_drop().await.unwrap();
 }
 
 #[tokio::test]
@@ -105,6 +107,7 @@ async fn test_load_system_tag_a() {
 
     let pool = get_db_pool().await;
     let ctx = DBContext::new(pool, Some("lsta".into()));
+    ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
     let st_id = ctx.system_tag_insert_or_get(&st).await.unwrap();
@@ -112,12 +115,14 @@ async fn test_load_system_tag_a() {
 
     let st2 = ctx.system_tag_from_id(1).await.unwrap().unwrap();
     assert_eq!(st2.os_name, "linux");
+    ctx.tables_drop().await.unwrap();
 }
 
 #[tokio::test]
 async fn test_system_tag_all_a() {
     let pool = get_db_pool().await;
     let ctx = DBContext::new(pool, Some("staa".into()));
+    ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
     let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
@@ -128,6 +133,8 @@ async fn test_system_tag_all_a() {
     let post = ctx.system_tag_all().await.unwrap();
     assert_eq!(post.len(), 1);
     assert_eq!(post[0].1.architecture, "x86_64");
+
+    ctx.tables_drop().await.unwrap();
 }
 
 //------------------------------------------------------------------------------
@@ -167,8 +174,9 @@ async fn test_monitor_scan_load_a() {
 
     let pool = get_db_pool().await;
     let ctx = DBContext::new(pool, Some("msla".into()));
-
+    ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
+
     ctx.monitor_scan_load_from_json(&msg).await.unwrap();
 
     let post = ctx.package_versions(None).await.unwrap();
@@ -191,7 +199,7 @@ async fn test_monitor_scan_load_b() {
 
     let pool = get_db_pool().await;
     let ctx = DBContext::new(pool, Some("mslb".into()));
-
+    ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
