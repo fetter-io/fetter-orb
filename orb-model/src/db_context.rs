@@ -1,4 +1,3 @@
-use chrono::Utc;
 use fetter::{DirectURL, Package, PathShared, ScanFS, SystemTag, VcsInfo, VersionSpec};
 use serde_json::{json, Value};
 use sqlx::postgres::PgRow;
@@ -7,6 +6,8 @@ use sqlx::{Arguments, Executor, PgPool, Row};
 use std::collections::{HashMap, HashSet};
 use std::time::Duration;
 use std::time::UNIX_EPOCH;
+use chrono::Utc;
+
 
 fn package_from_row(row: &PgRow) -> (i32, Package) {
     let id: i32 = row.get("id");
@@ -481,29 +482,32 @@ impl DBContext {
         let monitor_scan_table = self.get_table("monitor_scan");
         let ping_table = self.get_table("ping");
 
-        let mut query = format!(
+        let query = format!(
             r#"
-            SELECT
-                p.key,
-                p.name,
-                p.version,
-                sp.path,
-                pi.system_tag_id,
-                st.username,
-                st.hostname
+            SELECT p.key, p.name, p.version, sp.path,
+                   pi.system_tag_id, st.username, st.hostname
             FROM {monitor_scan_table} ms
-            JOIN {ping_table} pi ON ms.ping_id = pi.id
+            JOIN (
+                SELECT DISTINCT ON (system_tag_id) id, system_tag_id
+                FROM {ping_table}
+                WHERE scanned = true
+                ORDER BY system_tag_id, timestamp DESC
+            ) pi ON ms.ping_id = pi.id
             JOIN {package_table} p ON ms.package_id = p.id
             JOIN {site_packages_table} sp ON ms.site_packages_id = sp.id
             JOIN {system_tag_table} st ON pi.system_tag_id = st.id
-            "#
+            {}
+            "#,
+            if system_tag_id.is_some() {
+                "WHERE pi.system_tag_id = $1"
+            } else {
+                ""
+            }
         );
 
         let mut args = sqlx::postgres::PgArguments::default();
-
-        if let Some(st_id) = system_tag_id {
-            query.push_str(" WHERE pi.system_tag_id = $1");
-            let _ = args.add(st_id);
+        if let Some(id) = system_tag_id {
+            let _ = args.add(id);
         }
 
         let rows = sqlx::query_with(&query, args).fetch_all(&self.pool).await?;
@@ -548,6 +552,125 @@ impl DBContext {
 
         Ok(json!(summary))
     }
+
+
+    pub async fn package_counts(
+        &self,
+        system_tag_id: Option<i32>,
+    ) -> Result<Value, sqlx::Error> {
+        let ping_table = self.get_table("ping");
+        let monitor_scan_table = self.get_table("monitor_scan");
+
+        let query = if system_tag_id.is_some() {
+            format!(
+                r#"
+                SELECT pi.timestamp, COUNT(DISTINCT ms.package_id) AS package_count
+                FROM {monitor_scan_table} ms
+                JOIN {ping_table} pi ON ms.ping_id = pi.id
+                WHERE pi.scanned = true AND pi.system_tag_id = $1
+                GROUP BY pi.timestamp
+                ORDER BY pi.timestamp ASC
+                "#
+            )
+        } else {
+            format!(
+                r#"
+                SELECT pi.timestamp, pi.system_tag_id, COUNT(DISTINCT ms.package_id) AS package_count
+                FROM {monitor_scan_table} ms
+                JOIN {ping_table} pi ON ms.ping_id = pi.id
+                WHERE pi.scanned = true
+                GROUP BY pi.timestamp, pi.system_tag_id
+                ORDER BY pi.timestamp ASC
+                "#
+            )
+        };
+
+        let mut args = sqlx::postgres::PgArguments::default();
+        if let Some(id) = system_tag_id {
+            let _ = args.add(id);
+        }
+
+        let rows = sqlx::query_with(&query, args).fetch_all(&self.pool).await?;
+
+        // Fast path for single system tag
+        if system_tag_id.is_some() {
+            let mut result = Vec::new();
+
+            for window in rows.windows(2) {
+                let start: DateTime<Utc> = window[0].get("timestamp");
+                let stop: DateTime<Utc> = window[1].get("timestamp");
+                let count: i64 = window[0].get("package_count");
+                result.push(json!([start, stop, count]));
+            }
+
+            if let Some(last) = rows.last() {
+                let start: DateTime<Utc> = last.get("timestamp");
+                let count: i64 = last.get("package_count");
+                result.push(json!([start, Value::Null, count]));
+            }
+
+            return Ok(json!(result));
+        }
+
+        // Multi-tag mode
+        let mut latest_by_tag: HashMap<i32, i64> = HashMap::new();
+        let mut scan_accum: Vec<(DateTime<Utc>, i64)> = Vec::new();
+
+        // Group all rows by timestamp
+        let mut grouped: Vec<(DateTime<Utc>, Vec<(i32, i64)>)> = Vec::new();
+        let mut current_ts: Option<DateTime<Utc>> = None;
+        let mut current_group: Vec<(i32, i64)> = Vec::new();
+
+        for row in rows {
+            let ts: DateTime<Utc> = row.get("timestamp");
+            let tag_id: i32 = row.get("system_tag_id");
+            let count: i64 = row.get("package_count");
+
+            match current_ts {
+                Some(current) if ts != current => {
+                    grouped.push((current, std::mem::take(&mut current_group)));
+                    current_ts = Some(ts);
+                }
+                None => {
+                    current_ts = Some(ts);
+                }
+                _ => {} // Same timestamp, just accumulate
+            }
+
+            current_group.push((tag_id, count));
+        }
+
+        // Final flush
+        if let Some(ts) = current_ts {
+            grouped.push((ts, current_group));
+        }
+
+        // Now accumulate state and compute running totals
+        for (ts, updates) in grouped {
+            for (tag_id, count) in updates {
+                latest_by_tag.insert(tag_id, count);
+            }
+
+            let sum: i64 = latest_by_tag.values().sum();
+            scan_accum.push((ts, sum));
+        }
+
+        // Build final output
+        let mut result = Vec::new();
+
+        for window in scan_accum.windows(2) {
+            let (start, count) = window[0];
+            let (stop, _) = window[1];
+            result.push(json!([start, stop, count]));
+        }
+
+        if let Some((start, count)) = scan_accum.last() {
+            result.push(json!([start, Value::Null, count]));
+        }
+
+        Ok(json!(result))
+    }
+
 
     //--------------------------------------------------------------------------
     pub async fn site_packages_insert_or_get(&self, fp: PathShared) -> Result<i32, sqlx::Error> {

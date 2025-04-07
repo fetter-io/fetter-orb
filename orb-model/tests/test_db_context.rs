@@ -161,6 +161,36 @@ async fn test_system_tag_pings_a() {
 
 //------------------------------------------------------------------------------
 #[tokio::test]
+async fn test_package_counts_a() {
+    let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path1.push("tests/fixtures/monitor-scan-03.json");
+    let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
+
+    let mut path2 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path2.push("tests/fixtures/monitor-scan-04.json");
+    let msg2 = fs::read_to_string(path2).expect("Failed to read JSON file");
+
+    let pool = get_db_pool().await;
+    let ctx = DBContext::new(pool, Some("pca".into()));
+    ctx.tables_drop().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
+
+    ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
+    ctx.monitor_scan_load_from_json(&msg2).await.unwrap();
+
+    let post1 = ctx.package_counts(None).await.unwrap().to_string();
+    assert_eq!(post1, r#"[["2025-04-02T21:53:09.367412Z","2025-04-02T21:58:08.072262Z",166],["2025-04-02T21:58:08.072262Z",null,185]]"#);
+
+    let post2 = ctx.package_counts(Some(1)).await.unwrap().to_string();
+    assert_eq!(post2, r#"[["2025-04-02T21:53:09.367412Z",null,166]]"#);
+
+    let post3 = ctx.package_counts(Some(2)).await.unwrap().to_string();
+    assert_eq!(post3, r#"[["2025-04-02T21:58:08.072262Z",null,19]]"#);
+
+}
+
+//------------------------------------------------------------------------------
+#[tokio::test]
 async fn test_load_site_packages_a() {
     let pool = get_db_pool().await;
     let ctx = DBContext::new(pool, Some("lspa1".into()));
@@ -202,7 +232,8 @@ async fn test_monitor_scan_load_a() {
     ctx.monitor_scan_load_from_json(&msg).await.unwrap();
 
     let post = ctx.package_versions(None).await.unwrap();
-    assert_eq!(post.to_string().len(), 39899);
+    // variability due to home path substitution
+    assert!(post.to_string().len() >= 37949);
     ctx.tables_drop().await.unwrap();
 
     // let post = ctx.monitor_scan_site_to_packages(None).await.unwrap();
