@@ -64,6 +64,21 @@ pub async fn get_package_versions(
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
 }
 
+#[derive(Deserialize)]
+pub struct PackageCountsParams {
+    pub system_tag_id: Option<i32>,
+}
+
+pub async fn get_package_counts(
+    State(db): State<DBContext>,
+    Query(params): Query<PackageCountsParams>,
+) -> Result<Json<Value>, (StatusCode, String)> {
+    db.package_counts(params.system_tag_id)
+        .await
+        .map(Json)
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
+}
+
 //------------------------------------------------------------------------------
 
 #[derive(Deserialize)]
@@ -101,6 +116,7 @@ async fn main() {
         .route("/system_tag_pings", get(get_system_tag_pings))
         .route("/package", get(get_package_all))
         .route("/package_versions", get(get_package_versions))
+        .route("/package_counts", get(get_package_counts))
         .route("/monitor_scan", post(post_monitor_scan_load))
         .layer(cors)
         .with_state(dbx);
