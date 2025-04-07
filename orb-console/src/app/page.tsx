@@ -12,6 +12,7 @@ import { TabSelector } from "@/components/TabSelector";
 import { PackageVersions } from "@/types";
 import { PackageVersionsCard } from "@/components/PackageVersionsCard";
 import { SystemTagSelector } from "@/components/SystemTagSelector";
+import { PackageCountsChart } from "@/components/PackageCountsChart";
 
 type Tab = "packages" | "tags" | "other";
 
@@ -47,7 +48,29 @@ export default function Home() {
     });
   }, [selectedSystemId]);
 
+  const fetchPackageCounts = useCallback(async (): Promise<
+    PackageCountRecord[]
+  > => {
+    const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
+    const query =
+      selectedSystemId !== null ? `?system_tag_id=${selectedSystemId}` : "";
+    const res = await fetch(`${apiBase}/package_counts${query}`);
+    const raw = await res.json();
+
+    return raw.map(([start, end, count]: [string, string, number]) => ({
+      start,
+      end,
+      count,
+    }));
+  }, [selectedSystemId]);
+
+  //----------------------------------------------------------------------------
   const packagesState = useDashboardData(fetchPackages, {
+    active: activeTab === "packages",
+    pollInterval: 30000,
+  });
+
+  const packageCountsState = useDashboardData(fetchPackageCounts, {
     active: activeTab === "packages",
     pollInterval: 30000,
   });
@@ -56,6 +79,8 @@ export default function Home() {
     active: activeTab === "tags" || activeTab === "packages",
     pollInterval: 30000,
   });
+
+  //----------------------------------------------------------------------------
 
   const handleSystemTagClick = (id: number) => {
     setHighlightedSystemTagId(id);
@@ -93,12 +118,17 @@ export default function Home() {
           {activeTab === "packages" && (
             <>
               <DashboardStatus label="packages" state={packagesState} />
+
               <SystemTagSelector
                 selectedId={selectedSystemId}
                 onChange={setSelectedSystemId}
                 systemTags={systemTagsState.data ?? undefined}
                 resultCount={packagesState.data?.length ?? 0}
               />
+
+              {packageCountsState.data && (
+                <PackageCountsChart data={packageCountsState.data} />
+              )}
 
               <div className="flex flex-col gap-2">
                 {packagesState.data?.map((pkg) => (

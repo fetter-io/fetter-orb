@@ -35,3 +35,9 @@ export type PackageVersions = {
   name: string;
   data: PackageVersionEntry[];
 };
+
+export type PackageCountsRecord = {
+  start: string;
+  end: string;
+  count: number;
+};
