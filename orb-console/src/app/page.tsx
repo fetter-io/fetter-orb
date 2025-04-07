@@ -49,7 +49,7 @@ export default function Home() {
   }, [selectedSystemId]);
 
   const fetchPackageCounts = useCallback(async (): Promise<
-    PackageCountRecord[]
+    PackageCountsRecord[]
   > => {
     const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
     const query =
