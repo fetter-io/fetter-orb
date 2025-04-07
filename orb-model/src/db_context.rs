@@ -1,3 +1,4 @@
+use chrono::Utc;
 use fetter::{DirectURL, Package, PathShared, ScanFS, SystemTag, VcsInfo, VersionSpec};
 use serde_json::{json, Value};
 use sqlx::postgres::PgRow;
@@ -6,8 +7,6 @@ use sqlx::{Arguments, Executor, PgPool, Row};
 use std::collections::{HashMap, HashSet};
 use std::time::Duration;
 use std::time::UNIX_EPOCH;
-use chrono::Utc;
-
 
 fn package_from_row(row: &PgRow) -> (i32, Package) {
     let id: i32 = row.get("id");
@@ -553,11 +552,8 @@ impl DBContext {
         Ok(json!(summary))
     }
 
-
-    pub async fn package_counts(
-        &self,
-        system_tag_id: Option<i32>,
-    ) -> Result<Value, sqlx::Error> {
+    /// Return a time line of package counts, either for a single SystemTag or a moving aggregation of all last scanned counts.
+    pub async fn package_counts(&self, system_tag_id: Option<i32>) -> Result<Value, sqlx::Error> {
         let ping_table = self.get_table("ping");
         let monitor_scan_table = self.get_table("monitor_scan");
 
@@ -589,10 +585,8 @@ impl DBContext {
         if let Some(id) = system_tag_id {
             let _ = args.add(id);
         }
-
         let rows = sqlx::query_with(&query, args).fetch_all(&self.pool).await?;
 
-        // Fast path for single system tag
         if system_tag_id.is_some() {
             let mut result = Vec::new();
 
@@ -612,65 +606,59 @@ impl DBContext {
             return Ok(json!(result));
         }
 
-        // Multi-tag mode
-        let mut latest_by_tag: HashMap<i32, i64> = HashMap::new();
-        let mut scan_accum: Vec<(DateTime<Utc>, i64)> = Vec::new();
-
-        // Group all rows by timestamp
-        let mut grouped: Vec<(DateTime<Utc>, Vec<(i32, i64)>)> = Vec::new();
-        let mut current_ts: Option<DateTime<Utc>> = None;
-        let mut current_group: Vec<(i32, i64)> = Vec::new();
+        // grouping and aggregation
+        type VecSTCount = Vec<(i32, i64)>;
+        let mut timestamp_groups: Vec<(DateTime<Utc>, VecSTCount)> = Vec::new();
+        let mut group_ts: Option<DateTime<Utc>> = None;
+        let mut group: VecSTCount = Vec::new();
 
         for row in rows {
             let ts: DateTime<Utc> = row.get("timestamp");
             let tag_id: i32 = row.get("system_tag_id");
             let count: i64 = row.get("package_count");
 
-            match current_ts {
-                Some(current) if ts != current => {
-                    grouped.push((current, std::mem::take(&mut current_group)));
-                    current_ts = Some(ts);
+            match group_ts {
+                Some(gts) if ts != gts => {
+                    // move group into tuple, then replace it with an empty one
+                    timestamp_groups.push((gts, std::mem::take(&mut group)));
+                    group_ts = Some(ts);
                 }
                 None => {
-                    current_ts = Some(ts);
+                    group_ts = Some(ts);
                 }
-                _ => {} // Same timestamp, just accumulate
+                _ => {} // ts == gts
             }
-
-            current_group.push((tag_id, count));
+            group.push((tag_id, count));
+        }
+        if let Some(ts) = group_ts {
+            timestamp_groups.push((ts, group));
         }
 
-        // Final flush
-        if let Some(ts) = current_ts {
-            grouped.push((ts, current_group));
-        }
-
-        // Now accumulate state and compute running totals
-        for (ts, updates) in grouped {
+        // accumulate state and compute running totals
+        // for each timestamp, update all SystemTag counts, then sum
+        let mut st_to_count_latest: HashMap<i32, i64> = HashMap::new();
+        let mut ts_counts: Vec<(DateTime<Utc>, i64)> = Vec::new();
+        for (ts, updates) in timestamp_groups {
             for (tag_id, count) in updates {
-                latest_by_tag.insert(tag_id, count);
+                st_to_count_latest.insert(tag_id, count);
             }
-
-            let sum: i64 = latest_by_tag.values().sum();
-            scan_accum.push((ts, sum));
+            let sum: i64 = st_to_count_latest.values().sum();
+            ts_counts.push((ts, sum));
         }
 
-        // Build final output
+        // derive pairs
         let mut result = Vec::new();
-
-        for window in scan_accum.windows(2) {
+        for window in ts_counts.windows(2) {
             let (start, count) = window[0];
             let (stop, _) = window[1];
             result.push(json!([start, stop, count]));
         }
-
-        if let Some((start, count)) = scan_accum.last() {
+        if let Some((start, count)) = ts_counts.last() {
             result.push(json!([start, Value::Null, count]));
         }
 
         Ok(json!(result))
     }
-
 
     //--------------------------------------------------------------------------
     pub async fn site_packages_insert_or_get(&self, fp: PathShared) -> Result<i32, sqlx::Error> {
