@@ -701,35 +701,123 @@ impl DBContext {
     }
 
     //--------------------------------------------------------------------------
-    pub async fn audit_report(&self) -> Result<Value, sqlx::Error> {
-        // for now, we get all packages, but refine this to select last scan per all SystemTag or last 1 SystemTag
-        let table_name = self.get_table("package");
+    // pub async fn audit_report(&self) -> Result<Value, sqlx::Error> {
+    //     let table_name = self.get_table("package");
 
-        let query = format!(
-            r#"
-            SELECT id, name, key, version, url, commit_id, vcs, revision
-            FROM {table_name}
-            ORDER BY key
-            "#
-        );
+    //     let query = format!(
+    //         r#"
+    //         SELECT id, name, key, version, url, commit_id, vcs, revision
+    //         FROM {table_name}
+    //         ORDER BY key
+    //         "#
+    //     );
 
-        let rows = sqlx::query(&query).fetch_all(&self.pool).await?;
-        let client = Arc::new(UreqClientLive);
+    //     let rows = sqlx::query(&query).fetch_all(&self.pool).await?;
+    //     let client = Arc::new(UreqClientLive);
+
+    //     let mut ids = Vec::new();
+    //     let mut packages = Vec::new();
+
+    //     for row in rows {
+    //         let (id, pkg) = package_from_row(&row);
+    //         ids.push(id);
+    //         packages.push(pkg);
+    //     }
+
+    //     let ar = AuditReport::from_packages(client, &packages);
+
+    //     let paired: Vec<Value> = ids
+    //         .into_iter()
+    //         .zip(ar.records.into_iter())
+    //         .map(|(id, record)| json!({ "id": id, "record": record }))
+    //         .collect();
+
+    //     Ok(json!(paired))
+    // }
+
+
+    pub async fn audit_report(
+        &self,
+        system_tag_id: Option<i32>,
+    ) -> Result<Value, sqlx::Error> {
+        let ping_table = self.get_table("ping");
+        let package_table = self.get_table("package");
+        let monitor_scan_table = self.get_table("monitor_scan");
+
+        let (query, args): (String, sqlx::postgres::PgArguments) = if let Some(id) = system_tag_id {
+            let query = format!(
+                r#"
+                WITH latest_scan AS (
+                    SELECT MAX(timestamp) as latest_ts
+                    FROM {ping_table}
+                    WHERE scanned = true AND system_tag_id = $1
+                )
+                SELECT
+                    p.id,
+                    p.name,
+                    p.key,
+                    p.version,
+                    p.url,
+                    p.commit_id,
+                    p.vcs,
+                    p.revision
+                FROM {monitor_scan_table} ms
+                JOIN {ping_table} pi ON ms.ping_id = pi.id
+                JOIN latest_scan ls ON pi.timestamp = ls.latest_ts
+                JOIN {package_table} p ON ms.package_id = p.id
+                WHERE pi.system_tag_id = $1
+                "#
+            );
+            let mut args = sqlx::postgres::PgArguments::default();
+            let _ = args.add(id);
+            (query, args)
+        } else {
+            let query = format!(
+                r#"
+                WITH latest_scans AS (
+                    SELECT system_tag_id, MAX(timestamp) as latest_ts
+                    FROM {ping_table}
+                    WHERE scanned = true
+                    GROUP BY system_tag_id
+                )
+                SELECT
+                    p.id,
+                    p.name,
+                    p.key,
+                    p.version,
+                    p.url,
+                    p.commit_id,
+                    p.vcs,
+                    p.revision
+                FROM {monitor_scan_table} ms
+                JOIN {ping_table} pi ON ms.ping_id = pi.id
+                JOIN latest_scans ls
+                    ON pi.system_tag_id = ls.system_tag_id
+                   AND pi.timestamp = ls.latest_ts
+                JOIN {package_table} p ON ms.package_id = p.id
+                "#
+            );
+            let args = sqlx::postgres::PgArguments::default();
+            (query, args)
+        };
+
+        let rows = sqlx::query_with(&query, args).fetch_all(&self.pool).await?;
 
         let mut ids = Vec::new();
         let mut packages = Vec::new();
 
         for row in rows {
-            let (id, pkg) = package_from_row(&row);
+            let (id, pkg) = package_from_row(&row); // returns (i32, Package)
             ids.push(id);
             packages.push(pkg);
         }
 
-        let ar = AuditReport::from_packages(client, &packages);
+        let client = Arc::new(UreqClientLive);
+        let audit = AuditReport::from_packages(client, &packages);
 
         let paired: Vec<Value> = ids
             .into_iter()
-            .zip(ar.records.into_iter())
+            .zip(audit.records.into_iter())
             .map(|(id, record)| json!({ "id": id, "record": record }))
             .collect();
 
