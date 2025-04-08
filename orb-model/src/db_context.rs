@@ -1,14 +1,16 @@
 use chrono::Utc;
-use fetter::{DirectURL, Package, PathShared, ScanFS, SystemTag, VcsInfo, VersionSpec, AuditReport, UreqClientLive};
+use fetter::{
+    AuditReport, DirectURL, Package, PathShared, ScanFS, SystemTag, UreqClientLive, VcsInfo,
+    VersionSpec,
+};
 use serde_json::{json, Value};
 use sqlx::postgres::PgRow;
 use sqlx::types::chrono::DateTime;
 use sqlx::{Arguments, Executor, PgPool, Row};
 use std::collections::{HashMap, HashSet};
+use std::sync::Arc;
 use std::time::Duration;
 use std::time::UNIX_EPOCH;
-use std::sync::Arc;
-
 
 fn package_from_row(row: &PgRow) -> (i32, Package) {
     let id: i32 = row.get("id");
@@ -698,10 +700,8 @@ impl DBContext {
         Ok(json!(result))
     }
 
-
     //--------------------------------------------------------------------------
     pub async fn audit_report(&self) -> Result<Value, sqlx::Error> {
-
         // for now, we get all packages, but refine this to select last scan per all SystemTag or last 1 SystemTag
         let table_name = self.get_table("package");
 
@@ -728,10 +728,10 @@ impl DBContext {
         let ar = AuditReport::from_packages(client, &packages);
 
         let paired: Vec<Value> = ids
-        .into_iter()
-        .zip(ar.records.into_iter())
-        .map(|(id, record)| json!({ "id": id, "record": record }))
-        .collect();
+            .into_iter()
+            .zip(ar.records.into_iter())
+            .map(|(id, record)| json!({ "id": id, "record": record }))
+            .collect();
 
         Ok(json!(paired))
     }
