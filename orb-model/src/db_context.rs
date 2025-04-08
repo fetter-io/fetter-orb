@@ -714,11 +714,26 @@ impl DBContext {
         );
 
         let rows = sqlx::query(&query).fetch_all(&self.pool).await?;
-
-        let packages = rows.into_iter().map(|row| package_from_row(&row)).collect();
         let client = Arc::new(UreqClientLive);
-        let ar = AuditReport::from_packages(client, packages);
-        Ok(json!(ar))
+
+        let mut ids = Vec::new();
+        let mut packages = Vec::new();
+
+        for row in rows {
+            let (id, pkg) = package_from_row(&row);
+            ids.push(id);
+            packages.push(pkg);
+        }
+
+        let ar = AuditReport::from_packages(client, &packages);
+
+        let paired: Vec<Value> = ids
+        .into_iter()
+        .zip(ar.records.into_iter())
+        .map(|(id, record)| json!({ "id": id, "record": record }))
+        .collect();
+
+        Ok(json!(paired))
     }
 
     //--------------------------------------------------------------------------
