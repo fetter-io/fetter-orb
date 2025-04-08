@@ -1,5 +1,5 @@
 use chrono::Utc;
-use fetter::{DirectURL, Package, PathShared, ScanFS, SystemTag, VcsInfo, VersionSpec};
+use fetter::{DirectURL, Package, PathShared, ScanFS, SystemTag, VcsInfo, VersionSpec, AuditReport, UreqClientLive};
 use serde_json::{json, Value};
 use sqlx::postgres::PgRow;
 use sqlx::types::chrono::DateTime;
@@ -7,6 +7,8 @@ use sqlx::{Arguments, Executor, PgPool, Row};
 use std::collections::{HashMap, HashSet};
 use std::time::Duration;
 use std::time::UNIX_EPOCH;
+use std::sync::Arc;
+
 
 fn package_from_row(row: &PgRow) -> (i32, Package) {
     let id: i32 = row.get("id");
@@ -694,6 +696,29 @@ impl DBContext {
         }
 
         Ok(json!(result))
+    }
+
+
+    //--------------------------------------------------------------------------
+    pub async fn audit_report(&self) -> Result<Value, sqlx::Error> {
+
+        // for now, we get all packages, but refine this to select last scan per all SystemTag or last 1 SystemTag
+        let table_name = self.get_table("package");
+
+        let query = format!(
+            r#"
+            SELECT id, name, key, version, url, commit_id, vcs, revision
+            FROM {table_name}
+            ORDER BY key
+            "#
+        );
+
+        let rows = sqlx::query(&query).fetch_all(&self.pool).await?;
+
+        let packages = rows.into_iter().map(|row| package_from_row(&row)).collect();
+        let client = Arc::new(UreqClientLive);
+        let ar = AuditReport::from_packages(client, packages);
+        Ok(json!(ar))
     }
 
     //--------------------------------------------------------------------------
