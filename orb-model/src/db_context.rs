@@ -701,45 +701,7 @@ impl DBContext {
     }
 
     //--------------------------------------------------------------------------
-    // pub async fn audit_report(&self) -> Result<Value, sqlx::Error> {
-    //     let table_name = self.get_table("package");
-
-    //     let query = format!(
-    //         r#"
-    //         SELECT id, name, key, version, url, commit_id, vcs, revision
-    //         FROM {table_name}
-    //         ORDER BY key
-    //         "#
-    //     );
-
-    //     let rows = sqlx::query(&query).fetch_all(&self.pool).await?;
-    //     let client = Arc::new(UreqClientLive);
-
-    //     let mut ids = Vec::new();
-    //     let mut packages = Vec::new();
-
-    //     for row in rows {
-    //         let (id, pkg) = package_from_row(&row);
-    //         ids.push(id);
-    //         packages.push(pkg);
-    //     }
-
-    //     let ar = AuditReport::from_packages(client, &packages);
-
-    //     let paired: Vec<Value> = ids
-    //         .into_iter()
-    //         .zip(ar.records.into_iter())
-    //         .map(|(id, record)| json!({ "id": id, "record": record }))
-    //         .collect();
-
-    //     Ok(json!(paired))
-    // }
-
-
-    pub async fn audit_report(
-        &self,
-        system_tag_id: Option<i32>,
-    ) -> Result<Value, sqlx::Error> {
+    pub async fn audit_report(&self, system_tag_id: Option<i32>) -> Result<Value, sqlx::Error> {
         let ping_table = self.get_table("ping");
         let package_table = self.get_table("package");
         let monitor_scan_table = self.get_table("monitor_scan");
