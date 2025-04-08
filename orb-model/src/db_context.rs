@@ -552,7 +552,6 @@ impl DBContext {
         Ok(json!(summary))
     }
 
-
     /// Return a time line of package counts, either for a single SystemTag or a moving aggregation of all last scanned counts.
     pub async fn package_counts(
         &self,
