@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "format": "prettier --write .",
-    "test": "jest"
+    "test": "jest",
+    "tsc": "tsc --noEmit",
+    "quality": "npm run lint && npm run format && npm run tsc && npm run test"
   },
   "dependencies": {
     "next": "15.2.4",

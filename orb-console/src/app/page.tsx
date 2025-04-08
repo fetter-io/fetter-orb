@@ -9,7 +9,7 @@ import { useDashboardData } from "@/hooks/useDashboardData";
 import { SystemTagCard } from "@/components/SystemTagCard";
 import { DashboardStatus } from "@/components/DashboardStatus";
 import { TabSelector } from "@/components/TabSelector";
-import { PackageVersions } from "@/types";
+import { PackageVersions, PackageCountsRecord } from "@/types";
 import { PackageVersionsCard } from "@/components/PackageVersionsCard";
 import { SystemTagSelector } from "@/components/SystemTagSelector";
 import { PackageCountsChart } from "@/components/PackageCountsChart";
