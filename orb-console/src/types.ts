@@ -1,3 +1,5 @@
+export type Tab = "packages" | "tags" | "allow" | "vulns";
+
 export type Package = {
   id: number;
   name: string;

@@ -29,7 +29,7 @@ export function PackageVersionsCard({
                   className="hover:text-gray-300 hover:underline ml-auto"
                   onClick={() => onTagClick?.(entry.system_tag_id)}
                 >
-                  {entry.system_tag_username}:{entry.system_tag_hostname}
+                  {entry.system_tag_username}: {entry.system_tag_hostname}
                 </button>
               )}
             </div>

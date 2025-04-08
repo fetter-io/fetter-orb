@@ -2,19 +2,18 @@
 
 import Image from "next/image";
 import { useState, useCallback } from "react";
-import { SystemTag } from "@/types";
 // import { PackageCard } from "@/components/PackageCard";
 import { Footer } from "@/components/Footer";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { SystemTagCard } from "@/components/SystemTagCard";
 import { DashboardStatus } from "@/components/DashboardStatus";
 import { TabSelector } from "@/components/TabSelector";
-import { PackageVersions, PackageCountsRecord } from "@/types";
+import { PackageVersions, PackageCountsRecord, SystemTag, Tab } from "@/types";
 import { PackageVersionsCard } from "@/components/PackageVersionsCard";
 import { SystemTagSelector } from "@/components/SystemTagSelector";
 import { PackageCountsChart } from "@/components/PackageCountsChart";
 
-type Tab = "packages" | "tags" | "other";
+// type Tab = "packages" | "tags" | "other";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<Tab>("packages");
@@ -161,8 +160,12 @@ export default function Home() {
             </>
           )}
 
-          {activeTab === "other" && (
-            <div className="text-gray-400">Other content here</div>
+          {activeTab === "allow" && (
+            <div className="text-gray-400">Allow list content here</div>
+          )}
+
+          {activeTab === "vulns" && (
+            <div className="text-gray-400">Vulnerabilities content here</div>
           )}
         </div>
       </main>
