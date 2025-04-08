@@ -73,7 +73,7 @@ pub async fn get_package_counts(
     State(db): State<DBContext>,
     Query(params): Query<PackageCountsParams>,
 ) -> Result<Json<Value>, (StatusCode, String)> {
-    db.package_counts(params.system_tag_id)
+    db.package_counts(params.system_tag_id, None)
         .await
         .map(Json)
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))

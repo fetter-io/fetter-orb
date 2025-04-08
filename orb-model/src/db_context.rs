@@ -552,42 +552,46 @@ impl DBContext {
         Ok(json!(summary))
     }
 
+
     /// Return a time line of package counts, either for a single SystemTag or a moving aggregation of all last scanned counts.
-    pub async fn package_counts(&self, system_tag_id: Option<i32>) -> Result<Value, sqlx::Error> {
+    pub async fn package_counts(
+        &self,
+        system_tag_id: Option<i32>,
+        limit: Option<usize>,
+    ) -> Result<Value, sqlx::Error> {
         let ping_table = self.get_table("ping");
         let monitor_scan_table = self.get_table("monitor_scan");
+        let limit = limit.unwrap_or(20);
 
-        let query = if system_tag_id.is_some() {
-            format!(
-                r#"
-                SELECT pi.timestamp, COUNT(DISTINCT ms.package_id) AS package_count
-                FROM {monitor_scan_table} ms
-                JOIN {ping_table} pi ON ms.ping_id = pi.id
-                WHERE pi.scanned = true AND pi.system_tag_id = $1
-                GROUP BY pi.timestamp
-                ORDER BY pi.timestamp ASC
-                "#
-            )
-        } else {
-            format!(
-                r#"
-                SELECT pi.timestamp, pi.system_tag_id, COUNT(DISTINCT ms.package_id) AS package_count
-                FROM {monitor_scan_table} ms
-                JOIN {ping_table} pi ON ms.ping_id = pi.id
-                WHERE pi.scanned = true
-                GROUP BY pi.timestamp, pi.system_tag_id
-                ORDER BY pi.timestamp ASC
-                "#
-            )
-        };
-
-        let mut args = sqlx::postgres::PgArguments::default();
         if let Some(id) = system_tag_id {
-            let _ = args.add(id);
-        }
-        let rows = sqlx::query_with(&query, args).fetch_all(&self.pool).await?;
+            let query = format!(
+                r#"
+                WITH ranked_scans AS (
+                    SELECT
+                        pi.timestamp,
+                        COUNT(DISTINCT ms.package_id) AS package_count,
+                        ROW_NUMBER() OVER (
+                            ORDER BY pi.timestamp DESC
+                        ) AS rank
+                    FROM {monitor_scan_table} ms
+                    JOIN {ping_table} pi ON ms.ping_id = pi.id
+                    WHERE pi.scanned = true AND pi.system_tag_id = $1
+                    GROUP BY pi.timestamp
+                ),
+                filtered AS (
+                    SELECT * FROM ranked_scans WHERE rank <= $2
+                )
+                SELECT timestamp, package_count
+                FROM filtered
+                ORDER BY timestamp ASC
+                "#
+            );
 
-        if system_tag_id.is_some() {
+            let mut args = sqlx::postgres::PgArguments::default();
+            let _ = args.add(id);
+            let _ = args.add(limit as i64);
+
+            let rows = sqlx::query_with(&query, args).fetch_all(&self.pool).await?;
             let mut result = Vec::new();
 
             for window in rows.windows(2) {
@@ -605,6 +609,37 @@ impl DBContext {
 
             return Ok(json!(result));
         }
+
+        // Multi-tag case with partitioned row limiting
+        let query = format!(
+            r#"
+            WITH ranked_scans AS (
+                SELECT
+                    pi.timestamp,
+                    pi.system_tag_id,
+                    COUNT(DISTINCT ms.package_id) AS package_count,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY pi.system_tag_id
+                        ORDER BY pi.timestamp DESC
+                    ) AS rank
+                FROM {monitor_scan_table} ms
+                JOIN {ping_table} pi ON ms.ping_id = pi.id
+                WHERE pi.scanned = true
+                GROUP BY pi.timestamp, pi.system_tag_id
+            ),
+            filtered AS (
+                SELECT * FROM ranked_scans WHERE rank <= $1
+            )
+            SELECT timestamp, system_tag_id, package_count
+            FROM filtered
+            ORDER BY timestamp ASC
+            "#
+        );
+
+        let mut args = sqlx::postgres::PgArguments::default();
+        let _ = args.add(limit as i64);
+
+        let rows = sqlx::query_with(&query, args).fetch_all(&self.pool).await?;
 
         // grouping and aggregation
         type VecSTCount = Vec<(i32, i64)>;
@@ -630,6 +665,7 @@ impl DBContext {
             }
             group.push((tag_id, count));
         }
+
         if let Some(ts) = group_ts {
             timestamp_groups.push((ts, group));
         }
@@ -638,6 +674,7 @@ impl DBContext {
         // for each timestamp, update all SystemTag counts, then sum
         let mut st_to_count_latest: HashMap<i32, i64> = HashMap::new();
         let mut ts_counts: Vec<(DateTime<Utc>, i64)> = Vec::new();
+
         for (ts, updates) in timestamp_groups {
             for (tag_id, count) in updates {
                 st_to_count_latest.insert(tag_id, count);

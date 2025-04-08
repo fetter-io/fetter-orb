@@ -183,16 +183,16 @@ async fn test_package_counts_a() {
     ctx.monitor_scan_load_from_json(&msg2).await.unwrap();
     ctx.monitor_scan_load_from_json(&msg3).await.unwrap();
 
-    let post1 = ctx.package_counts(None).await.unwrap().to_string();
+    let post1 = ctx.package_counts(None, None).await.unwrap().to_string();
     assert_eq!(
         post1,
         r#"[["2025-04-02T21:53:09.367412Z","2025-04-02T21:58:08.072262Z",166],["2025-04-02T21:58:08.072262Z","2025-04-02T22:14:48.072262Z",185],["2025-04-02T22:14:48.072262Z",null,168]]"#
     );
 
-    let post2 = ctx.package_counts(Some(1)).await.unwrap().to_string();
+    let post2 = ctx.package_counts(Some(1), None).await.unwrap().to_string();
     assert_eq!(post2, r#"[["2025-04-02T21:53:09.367412Z",null,166]]"#);
 
-    let post3 = ctx.package_counts(Some(2)).await.unwrap().to_string();
+    let post3 = ctx.package_counts(Some(2), None).await.unwrap().to_string();
     assert_eq!(
         post3,
         r#"[["2025-04-02T21:58:08.072262Z","2025-04-02T22:14:48.072262Z",19],["2025-04-02T22:14:48.072262Z",null,2]]"#
