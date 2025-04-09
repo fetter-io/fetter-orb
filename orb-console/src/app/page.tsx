@@ -124,6 +124,17 @@ export default function Home() {
     }, 100);
   };
 
+  // Given a DB package ID
+  const handleVulnClick = (id: number) => {
+    setActiveTab("vulns");
+
+    setTimeout(() => {
+      document
+        .getElementById(`vuln-pkg-${id}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 100);
+  };
+
   return (
     <div className="flex flex-col min-h-screen font-[family-name:var(--font-geist-sans)] bg-gradient-to-b from-slate-950 to-slate-900">
       {/* Frosted header with sticky tab selector */}
@@ -165,6 +176,7 @@ export default function Home() {
                     key={pkg.key}
                     pkg={pkg}
                     onTagClick={handleSystemTagClick}
+                    onVulnClick={handleVulnClick}
                     vulnerablePackageIds={vulnerablePackageIds}
                   />
                 ))}
@@ -203,6 +215,7 @@ export default function Home() {
                   <VulnCard
                     key={`${entry.record.package.key}-${entry.record.package.version}`}
                     record={entry.record}
+                    package_id={entry.id}
                   />
                 ))}
               </div>

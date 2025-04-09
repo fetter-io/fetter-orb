@@ -3,12 +3,14 @@ import { PackageVersions } from "@/types";
 type PackageVersionsCardProps = {
   pkg: PackageVersions;
   onTagClick?: (systemTagId: number) => void;
-  vulnerablePackageIds?: Set<number>; // changed from keys to DB ids
+  onVulnClick?: (packageId: number) => void;
+  vulnerablePackageIds?: Set<number>;
 };
 
 export function PackageVersionsCard({
   pkg,
   onTagClick,
+  onVulnClick,
   vulnerablePackageIds,
 }: PackageVersionsCardProps) {
   return (
@@ -28,20 +30,19 @@ export function PackageVersionsCard({
                 <span className="inline-flex items-center gap-1">
                   {entry.version}
                   {isVulnerable && (
-                    <span
+                    <button
                       title="This version has known vulnerabilities"
-                      className="text-yellow-400"
+                      className="text-yellow-400 hover:underline"
+                      onClick={() => onVulnClick?.(entry.package_id)}
                     >
                       ⚠
-                    </span>
+                    </button>
                   )}
                 </span>
               </div>
-
               <div className="col-span-2">
                 <span className="break-all">{entry.path}</span>
               </div>
-
               <div className="col-span-1">
                 {entry.system_tag_username && entry.system_tag_hostname && (
                   <button
