@@ -637,7 +637,6 @@ impl DBContext {
         Ok(json!(summary))
     }
 
-
     /// Return a time line of package counts, either for a single SystemTag or a moving aggregation of all last scanned counts.
     pub async fn package_counts(
         &self,
@@ -847,22 +846,20 @@ impl DBContext {
 
         let rows = sqlx::query_with(&query, args).fetch_all(&self.pool).await?;
 
-        let mut ids = Vec::new();
-        let mut packages = Vec::new();
+        let mut package_to_id: HashMap<Package, i32> = HashMap::new();
 
         for row in rows {
             let (id, pkg) = package_from_row(&row); // returns (i32, Package)
-            ids.push(id);
-            packages.push(pkg);
+            package_to_id.insert(pkg, id);
         }
+        let packages: Vec<Package> = package_to_id.keys().cloned().collect();
 
         let client = Arc::new(UreqClientLive);
         let audit = AuditReport::from_packages(client, &packages);
 
-        let paired: Vec<Value> = ids
+        let paired: Vec<Value> = audit.records
             .into_iter()
-            .zip(audit.records.into_iter())
-            .map(|(id, record)| json!({ "id": id, "record": record }))
+            .map(|record| json!({ "id": package_to_id.get(&record.package).unwrap_or(&-1), "record": record }))
             .collect();
 
         Ok(json!(paired))
