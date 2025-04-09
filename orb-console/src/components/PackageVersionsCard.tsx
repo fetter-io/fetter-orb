@@ -17,7 +17,7 @@ export function PackageVersionsCard({
       <div className="space-y-1">
         {pkg.data.map((entry, index) => {
           const isVulnerable =
-            vulnerablePackageIds?.has(entry.id) ?? false;
+            vulnerablePackageIds?.has(entry.package_id) ?? false;
 
           return (
             <div
