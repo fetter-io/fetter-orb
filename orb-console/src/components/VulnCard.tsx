@@ -10,8 +10,7 @@ export function VulnCard({ record }: VulnCardProps) {
   return (
     <div className="p-4 border border-slate-600 rounded-lg bg-gray-900 shadow-md text-sm text-gray-200 space-y-2">
       <h3 className="text-white font-semibold text-base">
-        {pkg.name}{" "}
-        <span className="text-sm text-gray-400">{pkg.version}</span>
+        {pkg.name} <span className="text-sm text-gray-400">{pkg.version}</span>
       </h3>
 
       {vuln_ids.map((id) => {
@@ -19,37 +18,77 @@ export function VulnCard({ record }: VulnCardProps) {
         if (!vuln) return null;
 
         return (
-          <div key={id} className="border-t border-slate-700 pt-2">
+          <div key={id} className="border-t border-slate-700 pt-2 space-y-2">
             <p className="font-semibold text-red-300">{vuln.id}</p>
 
-            {vuln.summary && (
-              <p className="text-gray-400 mb-1">{vuln.summary}</p>
-            )}
+            {vuln.summary && <p className="text-gray-400">{vuln.summary}</p>}
 
             <div className="text-xs text-gray-400 space-y-1">
-              {vuln.severity?.map((sev, i) => (
-                <div key={`${id}-sev-${i}`}>
-                  <span className="text-gray-500">{sev.type}:</span> {sev.score}
-                </div>
-              ))}
+              {vuln.severity && vuln.severity.length > 0 && (
+                <div className="mt-1">
+                  <span className="text-gray-500 text-sm font-semibold block mb-1">
+                    Severity
+                  </span>
+                  <div className="grid grid-cols-1 bg-slate-800 rounded-md overflow-hidden divide-y divide-slate-700">
+                    {vuln.severity.map((sev, i) => {
+                      const type = sev.type.toUpperCase(); // Normalize for consistency
+                      let baseUrl = null;
 
-              <div className="mt-1">
-                <span className="text-gray-500">References:</span>
-                <ul className="list-disc list-inside ml-2 space-y-0.5">
-                  {vuln.references.map((ref, i) => (
-                    <li key={`${id}-ref-${i}`}>
+                      if (type === "CVSS_V4") {
+                        baseUrl = "https://www.first.org/cvss/calculator/4-0#";
+                      } else if (type === "CVSS_V3") {
+                        baseUrl = "https://www.first.org/cvss/calculator/3-1#";
+                      } else if (type === "CVSS_V2") {
+                        baseUrl = "https://www.first.org/cvss/calculator/2-0#";
+                      }
+
+                      const href = baseUrl ? `${baseUrl}${sev.score}` : null;
+
+                      return (
+                        <div
+                          key={`${id}-sev-${i}`}
+                          className="px-2 py-1 text-slate-400 text-sm"
+                        >
+                          {href ? (
+                            <a
+                              href={href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-slate-400 hover:underline break-all"
+                            >
+                              {sev.score}
+                            </a>
+                          ) : (
+                            sev.score
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {vuln.references.length > 0 && (
+                <div className="mt-1">
+                  <span className="text-gray-500 text-sm font-semibold block mb-1">
+                    References
+                  </span>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 bg-slate-800 rounded-md overflow-hidden divide-y divide-slate-700">
+                    {vuln.references.map((ref, i) => (
                       <a
+                        key={`${id}-ref-${i}`}
                         href={ref.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-400 hover:underline"
+                        className="text-slate-400 hover:underline break-all px-2 py-1 text-sm"
                       >
-                        {ref.type}
+                        {ref.type.charAt(0).toUpperCase() +
+                          ref.type.slice(1).toLowerCase()}
                       </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         );
