@@ -16,25 +16,29 @@ export function VulnCard({ record }: VulnCardProps) {
 
       {vuln_ids.map((id) => {
         const vuln = vuln_infos[id];
+        if (!vuln) return null;
+
         return (
           <div key={id} className="border-t border-slate-700 pt-2">
             <p className="font-semibold text-red-300">{vuln.id}</p>
+
             {vuln.summary && (
               <p className="text-gray-400 mb-1">{vuln.summary}</p>
             )}
 
             <div className="text-xs text-gray-400 space-y-1">
               {vuln.severity?.map((sev, i) => (
-                <div key={i}>
-                  <span className="text-gray-500">{sev.type}:</span> {sev.score}
+                <div key={`${id}-sev-${i}`}>
+                  <span className="text-gray-500">{sev.type}:</span>{" "}
+                  {sev.score}
                 </div>
               ))}
 
               <div className="mt-1">
                 <span className="text-gray-500">References:</span>
-                <ul className="list-disc list-inside ml-2">
+                <ul className="list-disc list-inside ml-2 space-y-0.5">
                   {vuln.references.map((ref, i) => (
-                    <li key={i}>
+                    <li key={`${id}-ref-${i}`}>
                       <a
                         href={ref.url}
                         target="_blank"

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 // import { PackageCard } from "@/components/PackageCard";
 import { Footer } from "@/components/Footer";
 import { useDashboardData } from "@/hooks/useDashboardData";
@@ -95,9 +95,20 @@ export default function Home() {
   });
 
   const auditState = useDashboardData(fetchAudit, {
-    active: selectedSystemId !== null,
+    active: false,
     pollInterval: 0,
   });
+
+  // force refresh when selectedSystemId changes
+  useEffect(() => {
+    auditState.refresh();
+  }, [selectedSystemId]);
+
+  const vulnerablePackageIds = useMemo(() => {
+    if (!auditState.data) return new Set<number>();
+    return new Set(auditState.data.map((entry) => entry.id));
+  }, [auditState.data]);
+
 
   //----------------------------------------------------------------------------
 
@@ -149,15 +160,16 @@ export default function Home() {
                 <PackageCountsChart data={packageCountsState.data} />
               )}
 
-              <div className="flex flex-col gap-2">
-                {packagesState.data?.map((pkg) => (
-                  <PackageVersionsCard
-                    key={pkg.key}
-                    pkg={pkg}
-                    onTagClick={handleSystemTagClick}
-                  />
-                ))}
-              </div>
+<div className="flex flex-col gap-2">
+  {packagesState.data?.map((pkg) => (
+    <PackageVersionsCard
+      key={pkg.key}
+      pkg={pkg}
+      onTagClick={handleSystemTagClick}
+      vulnerablePackageIds={vulnerablePackageIds}
+    />
+  ))}
+</div>
             </>
           )}
 
