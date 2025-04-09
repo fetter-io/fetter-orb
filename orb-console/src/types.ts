@@ -25,12 +25,12 @@ export type SystemTag = {
 };
 
 export type PackageVersionEntry = {
+  package_id: number;
   version: string;
   path: string;
   system_tag_id: number;
   system_tag_username: string;
   system_tag_hostname: string;
-  package_id: number;
 };
 
 export type PackageVersions = {
