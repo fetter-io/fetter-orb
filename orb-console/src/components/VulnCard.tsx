@@ -3,18 +3,41 @@ import { VulnRecord } from "@/types";
 type VulnCardProps = {
   record: VulnRecord;
   package_id: number;
+  highlight?: boolean;
+  onPackageClick?: (key: string) => void;
 };
 
-export function VulnCard({ record, package_id }: VulnCardProps) {
+export function VulnCard({
+  record,
+  package_id,
+  highlight,
+  onPackageClick,
+}: VulnCardProps) {
   const { package: pkg, vuln_ids, vuln_infos } = record;
 
   return (
     <div
       id={`vuln-pkg-${package_id}`}
-      className="p-4 border border-slate-600 rounded-lg bg-gray-900 shadow-md text-sm text-gray-200 space-y-2"
+      className={`p-4 border rounded-lg bg-gray-900 shadow-md text-sm text-gray-200 space-y-2
+        ${
+          highlight
+            ? "border-blue-500 bg-gray-700"
+            : "border-slate-600 bg-gray-800"
+        }`}
     >
-      <h3 className="text-white font-semibold text-base">
+      {/* <h3 className="text-white font-semibold text-base">
         {pkg.name} <span className="text-sm text-gray-400">{pkg.version}</span>
+      </h3> */}
+
+      <h3 className="text-white font-semibold text-base flex items-center gap-2">
+        {pkg.name}
+        <button
+          onClick={() => onPackageClick?.(pkg.key)}
+          className="text-sm text-gray-400 hover:underline"
+          title="View in package list"
+        >
+          {pkg.version}
+        </button>
       </h3>
 
       {vuln_ids.map((id) => {
@@ -23,7 +46,18 @@ export function VulnCard({ record, package_id }: VulnCardProps) {
 
         return (
           <div key={id} className="border-t border-slate-700 pt-2 space-y-2">
-            <p className="font-semibold text-red-300">{vuln.id}</p>
+            {/* <p className="font-semibold text-red-300">{vuln.id}</p> */}
+
+            <p className="font-semibold text-red-300">
+              <a
+                href={`https://osv.dev/vulnerability/${vuln.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:underline"
+              >
+                {vuln.id}
+              </a>
+            </p>
 
             {vuln.summary && <p className="text-gray-400">{vuln.summary}</p>}
 

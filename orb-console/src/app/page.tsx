@@ -28,6 +28,12 @@ export default function Home() {
   const [highlightedSystemTagId, setHighlightedSystemTagId] = useState<
     number | null
   >(null);
+  const [highlightedPackageKey, setHighlightedPackageKey] = useState<
+    string | null
+  >(null);
+  const [highlightedVulnId, setHighlightedVulnId] = useState<string | null>(
+    null,
+  );
 
   // fetch system tags
   const fetchSystemTags = useCallback(async (): Promise<SystemTag[]> => {
@@ -99,10 +105,11 @@ export default function Home() {
     pollInterval: 0,
   });
 
+  const auditRefresh = auditState.refresh;
   // force refresh when selectedSystemId changes
   useEffect(() => {
-    auditState.refresh();
-  }, [selectedSystemId]);
+    auditRefresh();
+  }, [selectedSystemId, auditRefresh]);
 
   const vulnerablePackageIds = useMemo(() => {
     if (!auditState.data) return new Set<number>();
@@ -124,14 +131,30 @@ export default function Home() {
     }, 100);
   };
 
+  const handlePackageClick = (key: string) => {
+    setHighlightedPackageKey(key);
+    setActiveTab("packages");
+
+    setTimeout(() => {
+      document
+        .getElementById(`package-${key}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+
+      setTimeout(() => setHighlightedPackageKey(null), 3000);
+    }, 100);
+  };
+
   // Given a DB package ID
   const handleVulnClick = (id: number) => {
+    setHighlightedVulnId(`vuln-pkg-${id}`);
     setActiveTab("vulns");
 
     setTimeout(() => {
       document
         .getElementById(`vuln-pkg-${id}`)
         ?.scrollIntoView({ behavior: "smooth", block: "center" });
+
+      setTimeout(() => setHighlightedVulnId(null), 3000);
     }, 100);
   };
 
@@ -177,6 +200,7 @@ export default function Home() {
                     pkg={pkg}
                     onTagClick={handleSystemTagClick}
                     onVulnClick={handleVulnClick}
+                    highlight={pkg.key === highlightedPackageKey}
                     vulnerablePackageIds={vulnerablePackageIds}
                   />
                 ))}
@@ -210,12 +234,24 @@ export default function Home() {
           {activeTab === "vulns" && (
             <>
               <DashboardStatus label="vulnerabilities" state={auditState} />
+
+              <SystemTagSelector
+                selectedId={selectedSystemId}
+                onChange={setSelectedSystemId}
+                systemTags={systemTagsState.data ?? undefined}
+                resultCount={packagesState.data?.length ?? 0}
+              />
+
               <div className="flex flex-col gap-2">
                 {auditState.data?.map((entry) => (
                   <VulnCard
-                    key={`vuln-${entry.package_id}`}
+                    key={`vuln-pkg-${entry.package_id}`}
                     record={entry.record}
                     package_id={entry.package_id}
+                    highlight={
+                      `vuln-pkg-${entry.package_id}` === highlightedVulnId
+                    }
+                    onPackageClick={handlePackageClick}
                   />
                 ))}
               </div>

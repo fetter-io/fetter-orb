@@ -23,7 +23,7 @@ export function SystemTagSelector({
         }}
         className="text-sm bg-slate-800 border border-slate-600 text-gray-300 px-2 py-1 rounded"
       >
-        <option value="">All System Tags</option>
+        <option value="">All Systems</option>
         {systemTags?.map((tag) => (
           <option key={tag.id} value={tag.id}>
             {tag.username}: {tag.hostname}
@@ -31,7 +31,7 @@ export function SystemTagSelector({
         ))}
       </select>
 
-      <p className="text-xs text-gray-500">Showing {resultCount} packages</p>
+      <p className="text-xs text-gray-500">Viewing {resultCount} packages</p>
     </div>
   );
 }

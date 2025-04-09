@@ -4,6 +4,7 @@ type PackageVersionsCardProps = {
   pkg: PackageVersions;
   onTagClick?: (systemTagId: number) => void;
   onVulnClick?: (packageId: number) => void;
+  highlight?: boolean;
   vulnerablePackageIds?: Set<number>;
 };
 
@@ -11,10 +12,21 @@ export function PackageVersionsCard({
   pkg,
   onTagClick,
   onVulnClick,
+  highlight,
   vulnerablePackageIds,
 }: PackageVersionsCardProps) {
   return (
-    <div className="p-4 border border-slate-600 rounded-lg bg-gray-800 shadow-md text-sm w-full">
+    <div
+      id={`package-${pkg.key}`}
+      className={`p-4 border rounded-lg shadow-md text-sm w-full
+      ${
+        highlight
+          ? "border-blue-500 bg-gray-700"
+          : "border-slate-600 bg-gray-800"
+      }`}
+
+      // className="p-4 border border-slate-600 rounded-lg bg-gray-800 shadow-md text-sm w-full"
+    >
       <h3 className="font-bold text-white mb-2">{pkg.name}</h3>
       <div className="space-y-1">
         {pkg.data.map((entry, index) => {
