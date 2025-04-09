@@ -213,7 +213,7 @@ export default function Home() {
               <div className="flex flex-col gap-2">
                 {auditState.data?.map((entry) => (
                   <VulnCard
-                    key={`${entry.record.package.key}-${entry.record.package.version}`}
+                    key={`vuln-${entry.package_id}`}
                     record={entry.record}
                     package_id={entry.package_id}
                   />
