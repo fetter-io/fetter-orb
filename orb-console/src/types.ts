@@ -74,6 +74,6 @@ export type VulnRecord = {
 };
 
 export type AuditEntry = {
-  id: number; // this is a package id!
+  package_id: number; // this is a package id!
   record: VulnRecord;
 };

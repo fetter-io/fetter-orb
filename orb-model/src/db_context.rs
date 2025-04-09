@@ -859,7 +859,7 @@ impl DBContext {
 
         let paired: Vec<Value> = audit.records
             .into_iter()
-            .map(|record| json!({ "id": package_to_id.get(&record.package).unwrap_or(&-1), "record": record }))
+            .map(|record| json!({ "package_id": package_to_id.get(&record.package).unwrap_or(&-1), "record": record }))
             .collect();
 
         Ok(json!(paired))

@@ -106,7 +106,7 @@ export default function Home() {
 
   const vulnerablePackageIds = useMemo(() => {
     if (!auditState.data) return new Set<number>();
-    return new Set(auditState.data.map((entry) => entry.id));
+    return new Set(auditState.data.map((entry) => entry.package_id));
   }, [auditState.data]);
 
   //----------------------------------------------------------------------------
@@ -215,7 +215,7 @@ export default function Home() {
                   <VulnCard
                     key={`${entry.record.package.key}-${entry.record.package.version}`}
                     record={entry.record}
-                    package_id={entry.id}
+                    package_id={entry.package_id}
                   />
                 ))}
               </div>
