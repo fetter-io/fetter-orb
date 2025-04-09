@@ -8,10 +8,10 @@ export function VulnCard({ record }: VulnCardProps) {
   const { package: pkg, vuln_ids, vuln_infos } = record;
 
   return (
-    <div className="p-4 border border-red-500 rounded-lg bg-slate-900 shadow-md text-sm text-gray-200 space-y-2">
-      <h3 className="text-red-400 font-semibold text-base">
+    <div className="p-4 border border-slate-600 rounded-lg bg-gray-900 shadow-md text-sm text-gray-200 space-y-2">
+      <h3 className="text-white font-semibold text-base">
         {pkg.name}{" "}
-        <span className="text-sm text-gray-400">({pkg.version})</span>
+        <span className="text-sm text-gray-400">{pkg.version}</span>
       </h3>
 
       {vuln_ids.map((id) => {
