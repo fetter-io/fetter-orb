@@ -25,10 +25,6 @@ export function VulnCard({
             : "border-slate-600 bg-gray-800"
         }`}
     >
-      {/* <h3 className="text-white font-semibold text-base">
-        {pkg.name} <span className="text-sm text-gray-400">{pkg.version}</span>
-      </h3> */}
-
       <h3 className="text-white font-semibold text-base flex items-center gap-2">
         {pkg.name}
         <button
