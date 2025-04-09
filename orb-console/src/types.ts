@@ -30,6 +30,7 @@ export type PackageVersionEntry = {
   system_tag_id: number;
   system_tag_username: string;
   system_tag_hostname: string;
+  package_id: number;
 };
 
 export type PackageVersions = {

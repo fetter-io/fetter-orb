@@ -29,8 +29,7 @@ export function VulnCard({ record }: VulnCardProps) {
             <div className="text-xs text-gray-400 space-y-1">
               {vuln.severity?.map((sev, i) => (
                 <div key={`${id}-sev-${i}`}>
-                  <span className="text-gray-500">{sev.type}:</span>{" "}
-                  {sev.score}
+                  <span className="text-gray-500">{sev.type}:</span> {sev.score}
                 </div>
               ))}
 

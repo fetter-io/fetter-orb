@@ -109,7 +109,6 @@ export default function Home() {
     return new Set(auditState.data.map((entry) => entry.id));
   }, [auditState.data]);
 
-
   //----------------------------------------------------------------------------
 
   const handleSystemTagClick = (id: number) => {
@@ -160,16 +159,16 @@ export default function Home() {
                 <PackageCountsChart data={packageCountsState.data} />
               )}
 
-<div className="flex flex-col gap-2">
-  {packagesState.data?.map((pkg) => (
-    <PackageVersionsCard
-      key={pkg.key}
-      pkg={pkg}
-      onTagClick={handleSystemTagClick}
-      vulnerablePackageIds={vulnerablePackageIds}
-    />
-  ))}
-</div>
+              <div className="flex flex-col gap-2">
+                {packagesState.data?.map((pkg) => (
+                  <PackageVersionsCard
+                    key={pkg.key}
+                    pkg={pkg}
+                    onTagClick={handleSystemTagClick}
+                    vulnerablePackageIds={vulnerablePackageIds}
+                  />
+                ))}
+              </div>
             </>
           )}
 
