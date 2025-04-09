@@ -68,39 +68,40 @@ export function VulnCard({ record }: VulnCardProps) {
                 </div>
               )}
 
-{vuln.references.length > 0 && (
-  <div className="mt-1">
-    <span className="text-gray-500 text-sm font-semibold block mb-1">
-      References
-    </span>
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 bg-slate-800 rounded-md overflow-hidden divide-y divide-slate-700">
-      {vuln.references.map((ref, i) => {
-        let hostname = "";
-        try {
-          hostname = new URL(ref.url).hostname.replace(/^www\./, "");
-        } catch {
-          hostname = "invalid.url";
-        }
+              {vuln.references.length > 0 && (
+                <div className="mt-1">
+                  <span className="text-gray-500 text-sm font-semibold block mb-1">
+                    References
+                  </span>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 bg-slate-800 rounded-md overflow-hidden divide-y divide-slate-700">
+                    {vuln.references.map((ref, i) => {
+                      let hostname = "";
+                      try {
+                        hostname = new URL(ref.url).hostname.replace(
+                          /^www\./,
+                          "",
+                        );
+                      } catch {
+                        hostname = "invalid.url";
+                      }
 
-        const label =
-          `${ref.type.charAt(0).toUpperCase()}${ref.type.slice(1).toLowerCase()} (${hostname})`;
+                      const label = `${ref.type.charAt(0).toUpperCase()}${ref.type.slice(1).toLowerCase()} (${hostname})`;
 
-        return (
-          <a
-            key={`${id}-ref-${i}`}
-            href={ref.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-slate-400 hover:underline break-all px-2 py-1 text-sm"
-          >
-            {label}
-          </a>
-        );
-      })}
-    </div>
-  </div>
-)}
-
+                      return (
+                        <a
+                          key={`${id}-ref-${i}`}
+                          href={ref.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-slate-400 hover:underline break-all px-2 py-1 text-sm"
+                        >
+                          {label}
+                        </a>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         );
