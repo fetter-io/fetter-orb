@@ -43,3 +43,36 @@ export type PackageCountsRecord = {
   end: string;
   count: number;
 };
+
+export type VulnReference = {
+  type: string;
+  url: string;
+};
+
+export type VulnSeverity = {
+  type: string;
+  score: string;
+};
+
+export type VulnInfo = {
+  id: string;
+  references: VulnReference[];
+  severity: VulnSeverity[] | null;
+  summary: string | null;
+};
+
+export type VulnRecord = {
+  package: {
+    direct_url: string | null;
+    key: string;
+    name: string;
+    version: string;
+  };
+  vuln_ids: string[];
+  vuln_infos: Record<string, VulnInfo>;
+};
+
+export type AuditEntry = {
+  id: number;
+  record: VulnRecord;
+};

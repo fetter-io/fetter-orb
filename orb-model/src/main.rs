@@ -95,6 +95,24 @@ pub async fn get_system_tag_pings(
         .map(Json)
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
 }
+
+//------------------------------------------------------------------------------
+
+#[derive(Deserialize)]
+pub struct AuditParams {
+    pub system_tag_id: Option<i32>,
+}
+
+pub async fn get_audit(
+    State(db): State<DBContext>,
+    Query(params): Query<AuditParams>,
+) -> Result<Json<Value>, (StatusCode, String)> {
+    db.audit(params.system_tag_id)
+        .await
+        .map(Json)
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
+}
+
 //------------------------------------------------------------------------------
 #[tokio::main]
 async fn main() {
@@ -117,6 +135,8 @@ async fn main() {
         .route("/package", get(get_package_all))
         .route("/package_versions", get(get_package_versions))
         .route("/package_counts", get(get_package_counts))
+        .route("/audit", get(get_audit))
+        // post requests
         .route("/monitor_scan", post(post_monitor_scan_load))
         .layer(cors)
         .with_state(dbx);

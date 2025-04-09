@@ -8,10 +8,17 @@ import { useDashboardData } from "@/hooks/useDashboardData";
 import { SystemTagCard } from "@/components/SystemTagCard";
 import { DashboardStatus } from "@/components/DashboardStatus";
 import { TabSelector } from "@/components/TabSelector";
-import { PackageVersions, PackageCountsRecord, SystemTag, Tab } from "@/types";
+import {
+  PackageVersions,
+  PackageCountsRecord,
+  SystemTag,
+  Tab,
+  AuditEntry,
+} from "@/types";
 import { PackageVersionsCard } from "@/components/PackageVersionsCard";
 import { SystemTagSelector } from "@/components/SystemTagSelector";
 import { PackageCountsChart } from "@/components/PackageCountsChart";
+import { VulnCard } from "@/components/VulnCard";
 
 // type Tab = "packages" | "tags" | "other";
 
@@ -63,6 +70,14 @@ export default function Home() {
     }));
   }, [selectedSystemId]);
 
+  const fetchAudit = useCallback(async (): Promise<AuditEntry[]> => {
+    const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
+    const query =
+      selectedSystemId !== null ? `?system_tag_id=${selectedSystemId}` : "";
+    const res = await fetch(`${apiBase}/audit${query}`);
+    return await res.json();
+  }, [selectedSystemId]);
+
   //----------------------------------------------------------------------------
   const packagesState = useDashboardData(fetchPackages, {
     active: activeTab === "packages",
@@ -77,6 +92,11 @@ export default function Home() {
   const systemTagsState = useDashboardData(fetchSystemTags, {
     active: activeTab === "tags" || activeTab === "packages",
     pollInterval: 30000,
+  });
+
+  const auditState = useDashboardData(fetchAudit, {
+    active: selectedSystemId !== null,
+    pollInterval: 0,
   });
 
   //----------------------------------------------------------------------------
@@ -165,7 +185,17 @@ export default function Home() {
           )}
 
           {activeTab === "vulns" && (
-            <div className="text-gray-400">Vulnerabilities content here</div>
+            <>
+              <DashboardStatus label="vulnerabilities" state={auditState} />
+              <div className="flex flex-col gap-2">
+                {auditState.data?.map((entry) => (
+                  <VulnCard
+                    key={`${entry.record.package.key}-${entry.record.package.version}`}
+                    record={entry.record}
+                  />
+                ))}
+              </div>
+            </>
           )}
         </div>
       </main>

@@ -3,6 +3,7 @@ import { PackageVersions } from "@/types";
 type PackageVersionsCardProps = {
   pkg: PackageVersions;
   onTagClick?: (systemTagId: number) => void;
+  vulnerablePackageKeys?: Set<string>;
 };
 
 export function PackageVersionsCard({

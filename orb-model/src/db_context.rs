@@ -701,7 +701,7 @@ impl DBContext {
     }
 
     //--------------------------------------------------------------------------
-    pub async fn audit_report(&self, system_tag_id: Option<i32>) -> Result<Value, sqlx::Error> {
+    pub async fn audit(&self, system_tag_id: Option<i32>) -> Result<Value, sqlx::Error> {
         let ping_table = self.get_table("ping");
         let package_table = self.get_table("package");
         let monitor_scan_table = self.get_table("monitor_scan");
