@@ -51,6 +51,12 @@ fn package_from_row(row: &PgRow) -> (i32, Package) {
     )
 }
 
+#[derive(Debug)]
+pub struct Tenant {
+    pub key: String,
+    pub name: String,
+}
+
 //------------------------------------------------------------------------------
 // NOTE: DBContext is cloneable as PgPoll is an Arc.
 #[derive(Clone)]
@@ -73,6 +79,7 @@ impl DBContext {
     }
 
     pub async fn tables_create(&self, if_not_exists: bool) -> Result<(), sqlx::Error> {
+        let tenant_table = self.get_table("tenant");
         let system_tag_table = self.get_table("system_tag");
         let package_table = self.get_table("package");
         let site_packages_table = self.get_table("site_packages");
@@ -81,10 +88,21 @@ impl DBContext {
 
         let if_clause = if if_not_exists { "IF NOT EXISTS " } else { "" };
 
+        let create_tenant = format!(
+            r#"
+            CREATE TABLE {if_clause}{tenant_table} (
+                id SERIAL PRIMARY KEY,
+                key TEXT NOT NULL UNIQUE,
+                name TEXT NOT NULL
+            );
+            "#
+        );
+
         let create_system_tag = format!(
             r#"
             CREATE TABLE {if_clause}{system_tag_table} (
                 id SERIAL PRIMARY KEY,
+                tenant_id INTEGER NOT NULL REFERENCES {tenant_table}(id) ON DELETE RESTRICT,
                 username TEXT NOT NULL,
                 hostname TEXT NOT NULL,
                 os_name TEXT NOT NULL,
@@ -141,6 +159,7 @@ impl DBContext {
             "#
         );
 
+        self.pool.execute(&*create_tenant).await?;
         self.pool.execute(&*create_system_tag).await?;
         self.pool.execute(&*create_package).await?;
         self.pool.execute(&*create_site_packages).await?;
@@ -156,21 +175,62 @@ impl DBContext {
         let site_packages_table = self.get_table("site_packages");
         let ping_table = self.get_table("ping");
         let monitor_scan_table = self.get_table("monitor_scan");
+        let tenant_table = self.get_table("tenant");
 
         let drop_monitor_scan = format!(r#"DROP TABLE IF EXISTS {monitor_scan_table} CASCADE;"#);
         let drop_ping = format!(r#"DROP TABLE IF EXISTS {ping_table} CASCADE;"#);
         let drop_site_packages = format!(r#"DROP TABLE IF EXISTS {site_packages_table} CASCADE;"#);
         let drop_package = format!(r#"DROP TABLE IF EXISTS {package_table} CASCADE;"#);
         let drop_system_tag = format!(r#"DROP TABLE IF EXISTS {system_tag_table} CASCADE;"#);
+        let drop_tenant = format!(r#"DROP TABLE IF EXISTS {tenant_table} CASCADE;"#);
 
         self.pool.execute(&*drop_monitor_scan).await?;
         self.pool.execute(&*drop_ping).await?;
         self.pool.execute(&*drop_site_packages).await?;
         self.pool.execute(&*drop_package).await?;
         self.pool.execute(&*drop_system_tag).await?;
+        self.pool.execute(&*drop_tenant).await?;
 
         Ok(())
     }
+
+    //--------------------------------------------------------------------------
+    pub async fn tenant_insert_or_get(&self, tenant: &Tenant) -> Result<i32, sqlx::Error> {
+        let table_name = self.get_table("tenant");
+
+        let select_query = format!(
+            r#"
+            SELECT id FROM {table_name}
+            WHERE key = $1
+            "#
+        );
+
+        if let Some(row) = sqlx::query(&select_query)
+            .bind(&tenant.key)
+            .fetch_optional(&self.pool)
+            .await?
+        {
+            return Ok(row.get("id"));
+        }
+
+        let insert_query = format!(
+            r#"
+            INSERT INTO {table_name}
+            (key, name)
+            VALUES ($1, $2)
+            RETURNING id
+            "#
+        );
+
+        let row = sqlx::query(&insert_query)
+            .bind(&tenant.key)
+            .bind(&tenant.name)
+            .fetch_one(&self.pool)
+            .await?;
+
+        Ok(row.get("id"))
+    }
+
     //--------------------------------------------------------------------------
     pub async fn system_tag_insert_or_get(&self, tag: &SystemTag) -> Result<i32, sqlx::Error> {
         let table_name = self.get_table("system_tag");
