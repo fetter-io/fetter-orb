@@ -36,15 +36,28 @@ export function PackageVersionsCard({
           return (
             <div
               key={index}
-              className="grid grid-cols-4 gap-4 text-gray-400 items-center"
+              className="grid grid-cols-6 gap-2 text-gray-400 items-center"
             >
               <div>
                 <span className="inline-flex items-center gap-1">
                   {entry.version}
+                </span>
+              </div>
+              <div>
+                <span className="inline-flex items-center gap-x-2">
+                  <a
+                    href={`https://pypi.org/project/${pkg.key}/${entry.version}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:underline"
+                  >
+                    PyPI
+                  </a>
+
                   {isVulnerable && (
                     <button
                       title="This version has known vulnerabilities"
-                      className="text-yellow-400 hover:underline"
+                      className="text-yellow-400 border-b border-transparent hover:border-yellow-400"
                       onClick={() => onVulnClick?.(entry.package_id)}
                     >
                       ⚠
@@ -52,7 +65,7 @@ export function PackageVersionsCard({
                   )}
                 </span>
               </div>
-              <div className="col-span-2">
+              <div className="col-span-3">
                 <span className="break-all">{entry.path}</span>
               </div>
               <div className="col-span-1">
