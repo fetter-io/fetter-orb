@@ -14,10 +14,10 @@ export function SystemTagCard({
   return (
     <div
       id={`system-tag-${tag.id}`}
-      className={`py-2 px-4 border rounded-lg shadow-sm text-sm w-full text-gray-300
+      className={`py-2 px-4 border rounded-lg shadow-sm text-sm w-full text-gray-300 transition-colors duration-1000
         ${
           highlight
-            ? "border-blue-500 bg-gray-700"
+            ? "border-blue-500 bg-gray-800"
             : "border-slate-600 bg-gray-800"
         }`}
     >
