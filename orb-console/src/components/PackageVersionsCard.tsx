@@ -18,14 +18,12 @@ export function PackageVersionsCard({
   return (
     <div
       id={`package-${pkg.key}`}
-      className={`p-4 border rounded-lg shadow-md text-sm w-full
+      className={`p-4 border rounded-lg shadow-md text-sm w-full transition-colors duration-1000
       ${
         highlight
-          ? "border-blue-500 bg-gray-700"
+          ? "border-blue-500 bg-gray-800"
           : "border-slate-600 bg-gray-800"
       }`}
-
-      // className="p-4 border border-slate-600 rounded-lg bg-gray-800 shadow-md text-sm w-full"
     >
       <h3 className="font-bold text-white mb-2">{pkg.name}</h3>
       <div className="space-y-1">

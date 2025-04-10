@@ -20,8 +20,6 @@ import { SystemTagSelector } from "@/components/SystemTagSelector";
 import { PackageCountsChart } from "@/components/PackageCountsChart";
 import { VulnCard } from "@/components/VulnCard";
 
-// type Tab = "packages" | "tags" | "other";
-
 export default function Home() {
   const [activeTab, setActiveTab] = useState<Tab>("packages");
   const [selectedSystemId, setSelectedSystemId] = useState<number | null>(null);
