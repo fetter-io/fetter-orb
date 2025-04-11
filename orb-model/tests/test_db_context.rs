@@ -26,6 +26,31 @@ async fn test_tenant_a() {
 }
 
 #[tokio::test]
+async fn test_tenant_all_a() {
+    let pool = get_db_pool().await;
+    let ctx = DBContext::new(pool, Some("taa".into()));
+    ctx.tables_drop().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
+    let t1 = Tenant {
+        key: "aaa".to_string(),
+        name: "AAA".to_string(),
+    };
+    let _ = ctx.tenant_insert_or_get(&t1).await.unwrap();
+
+    let t2 = Tenant {
+        key: "bbb".to_string(),
+        name: "BBB".to_string(),
+    };
+    let _ = ctx.tenant_insert_or_get(&t2).await.unwrap();
+    let tenants = ctx.tenant_all().await.unwrap();
+    let json = serde_json::to_value(&tenants).unwrap();
+    assert_eq!(
+        serde_json::to_string(&json).unwrap(),
+        r#"[[1,{"key":"aaa","name":"AAA"}],[2,{"key":"bbb","name":"BBB"}]]"#
+    );
+}
+
+#[tokio::test]
 async fn test_load_scan_fs_a() {
     let msg = "[[[\"/usr/bin/python3\",[\"/usr/lib/python3/site-packages\"]]],[[{\"name\":\"flask\",\"key\":\"flask\",\"version\":\"1.1.3\",\"direct_url\":null},[\"/usr/lib/python3/site-packages\"]],[{\"name\":\"numpy\",\"key\":\"numpy\",\"version\":\"1.19.3\",\"direct_url\":null},[\"/usr/lib/python3/site-packages\"]],[{\"name\":\"static-frame\",\"key\":\"static_frame\",\"version\":\"2.13.0\",\"direct_url\":null},[\"/usr/lib/python3/site-packages\"]]],[[\"/usr/lib/python3/site-packages\",\"/usr/bin/python3\"]],false,\"35cc8bbf5f965f99f2ed716a23e0cfbb70b8977ba65e837708e960fc13e51da2\"]";
 
@@ -86,23 +111,23 @@ async fn test_load_package_a() {
     ctx.tables_drop().await.unwrap();
 }
 
-#[tokio::test]
-async fn test_package_all_a() {
-    let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    path1.push("tests/fixtures/monitor-scan-04.json");
-    let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
+// #[tokio::test]
+// async fn test_package_all_a() {
+//     let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+//     path1.push("tests/fixtures/monitor-scan-04.json");
+//     let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
 
-    let pool = get_db_pool().await;
-    let ctx = DBContext::new(pool, Some("paa".into()));
-    ctx.tables_drop().await.unwrap();
-    ctx.tables_create(false).await.unwrap();
+//     let pool = get_db_pool().await;
+//     let ctx = DBContext::new(pool, Some("paa".into()));
+//     ctx.tables_drop().await.unwrap();
+//     ctx.tables_create(false).await.unwrap();
 
-    ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
+//     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
 
-    let post = ctx.package_all(1).await.unwrap();
-    assert_eq!(post.len(), 19);
-    ctx.tables_drop().await.unwrap();
-}
+//     let post = ctx.package_all(1).await.unwrap();
+//     assert_eq!(post.len(), 19);
+//     ctx.tables_drop().await.unwrap();
+// }
 
 #[tokio::test]
 async fn test_load_system_tag_a() {
@@ -140,31 +165,31 @@ async fn test_load_system_tag_a() {
     // ctx.tables_drop().await.unwrap();
 }
 
-#[tokio::test]
-async fn test_system_tag_all_a() {
-    let pool = get_db_pool().await;
-    let ctx = DBContext::new(pool, Some("staa".into()));
-    ctx.tables_drop().await.unwrap();
-    ctx.tables_create(false).await.unwrap();
+// #[tokio::test]
+// async fn test_system_tag_all_a() {
+//     let pool = get_db_pool().await;
+//     let ctx = DBContext::new(pool, Some("staa".into()));
+//     ctx.tables_drop().await.unwrap();
+//     ctx.tables_create(false).await.unwrap();
 
-    let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    path1.push("tests/fixtures/monitor-scan-01.json");
-    let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
-    ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
+//     let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+//     path1.push("tests/fixtures/monitor-scan-01.json");
+//     let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
+//     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
 
-    // this may have already been inserted
-    let t = Tenant {
-        key: "test".to_string(),
-        name: "test".to_string(),
-    };
-    let t_id = ctx.tenant_insert_or_get(&t).await.unwrap();
+//     // this may have already been inserted
+//     let t = Tenant {
+//         key: "test".to_string(),
+//         name: "test".to_string(),
+//     };
+//     let t_id = ctx.tenant_insert_or_get(&t).await.unwrap();
 
-    let post = ctx.system_tag_all(t_id).await.unwrap();
-    assert_eq!(post.len(), 1);
-    assert_eq!(post[0].1.architecture, "x86_64");
+//     let post = ctx.system_tag_all(t_id).await.unwrap();
+//     assert_eq!(post.len(), 1);
+//     assert_eq!(post[0].1.architecture, "x86_64");
 
-    ctx.tables_drop().await.unwrap();
-}
+//     ctx.tables_drop().await.unwrap();
+// }
 
 #[tokio::test]
 async fn test_system_tag_pings_a() {

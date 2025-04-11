@@ -4,6 +4,7 @@ use fetter::{
     VersionSpec,
 };
 use serde_json::{json, Value};
+use serde::{Serialize, Deserialize};
 use sqlx::postgres::PgRow;
 use sqlx::types::chrono::DateTime;
 use sqlx::Executor;
@@ -53,7 +54,7 @@ fn package_from_row(row: &PgRow) -> (i32, Package) {
 
 //------------------------------------------------------------------------------
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Tenant {
     pub key: String,
     pub name: String,
@@ -246,6 +247,34 @@ impl DBContext {
         Ok(row.get("id"))
     }
 
+    pub async fn tenant_all(&self) -> Result<Vec<(i32, Tenant)>, sqlx::Error> {
+        let table_name = self.get_table("tenant");
+
+        let query = format!(
+            r#"
+            SELECT id, key, name
+            FROM {table_name}
+            ORDER BY name
+            "#
+        );
+
+        let rows = sqlx::query(&query).fetch_all(&self.pool).await?;
+
+        let result = rows
+            .into_iter()
+            .map(|row| {
+                let id: i32 = row.get("id");
+                let tenant = Tenant {
+                    key: row.get("key"),
+                    name: row.get("name"),
+                };
+                (id, tenant)
+            })
+            .collect();
+
+        Ok(result)
+    }
+
     //--------------------------------------------------------------------------
     pub async fn system_tag_insert_or_get(
         &self,
@@ -329,43 +358,43 @@ impl DBContext {
     // }
 
     // Return all SystemTag, in pairs of int, SystemTag.
-    pub async fn system_tag_all(
-        &self,
-        tenant_id: i32,
-    ) -> Result<Vec<(i32, SystemTag)>, sqlx::Error> {
-        let table_name = self.get_table("system_tag");
+    // pub async fn system_tag_all(
+    //     &self,
+    //     tenant_id: i32,
+    // ) -> Result<Vec<(i32, SystemTag)>, sqlx::Error> {
+    //     let table_name = self.get_table("system_tag");
 
-        let query = format!(
-            r#"
-            SELECT id, username, hostname, os_name, os_version, architecture, logical_cores
-            FROM {table_name}
-            WHERE tenant_id = $1
-            "#
-        );
+    //     let query = format!(
+    //         r#"
+    //         SELECT id, username, hostname, os_name, os_version, architecture, logical_cores
+    //         FROM {table_name}
+    //         WHERE tenant_id = $1
+    //         "#
+    //     );
 
-        let rows = sqlx::query(&query)
-            .bind(tenant_id)
-            .fetch_all(&self.pool)
-            .await?;
+    //     let rows = sqlx::query(&query)
+    //         .bind(tenant_id)
+    //         .fetch_all(&self.pool)
+    //         .await?;
 
-        let result = rows
-            .into_iter()
-            .map(|row| {
-                let id: i32 = row.get("id");
-                let tag = SystemTag {
-                    username: row.get("username"),
-                    hostname: row.get("hostname"),
-                    os_name: row.get("os_name"),
-                    os_version: row.get("os_version"),
-                    architecture: row.get("architecture"),
-                    logical_cores: row.get::<i16, _>("logical_cores") as usize,
-                };
-                (id, tag)
-            })
-            .collect();
+    //     let result = rows
+    //         .into_iter()
+    //         .map(|row| {
+    //             let id: i32 = row.get("id");
+    //             let tag = SystemTag {
+    //                 username: row.get("username"),
+    //                 hostname: row.get("hostname"),
+    //                 os_name: row.get("os_name"),
+    //                 os_version: row.get("os_version"),
+    //                 architecture: row.get("architecture"),
+    //                 logical_cores: row.get::<i16, _>("logical_cores") as usize,
+    //             };
+    //             (id, tag)
+    //         })
+    //         .collect();
 
-        Ok(result)
-    }
+    //     Ok(result)
+    // }
 
     pub async fn system_tag_pings(
         &self,
@@ -563,32 +592,32 @@ impl DBContext {
         }
     }
 
-    pub async fn package_all(&self, tenant_id: i32) -> Result<Vec<(i32, Package)>, sqlx::Error> {
-        let package_table = self.get_table("package");
-        let monitor_scan_table = self.get_table("monitor_scan");
-        let ping_table = self.get_table("ping");
-        let system_tag_table = self.get_table("system_tag");
+    // pub async fn package_all(&self, tenant_id: i32) -> Result<Vec<(i32, Package)>, sqlx::Error> {
+    //     let package_table = self.get_table("package");
+    //     let monitor_scan_table = self.get_table("monitor_scan");
+    //     let ping_table = self.get_table("ping");
+    //     let system_tag_table = self.get_table("system_tag");
 
-        let query = format!(
-            r#"
-            SELECT DISTINCT p.id, p.name, p.key, p.version, p.url, p.commit_id, p.vcs, p.revision
-            FROM {package_table} p
-            JOIN {monitor_scan_table} ms ON ms.package_id = p.id
-            JOIN {ping_table} pi ON pi.id = ms.ping_id
-            JOIN {system_tag_table} st ON st.id = pi.system_tag_id
-            WHERE st.tenant_id = $1
-            ORDER BY p.key
-            "#
-        );
+    //     let query = format!(
+    //         r#"
+    //         SELECT DISTINCT p.id, p.name, p.key, p.version, p.url, p.commit_id, p.vcs, p.revision
+    //         FROM {package_table} p
+    //         JOIN {monitor_scan_table} ms ON ms.package_id = p.id
+    //         JOIN {ping_table} pi ON pi.id = ms.ping_id
+    //         JOIN {system_tag_table} st ON st.id = pi.system_tag_id
+    //         WHERE st.tenant_id = $1
+    //         ORDER BY p.key
+    //         "#
+    //     );
 
-        let rows = sqlx::query(&query)
-            .bind(tenant_id)
-            .fetch_all(&self.pool)
-            .await?;
+    //     let rows = sqlx::query(&query)
+    //         .bind(tenant_id)
+    //         .fetch_all(&self.pool)
+    //         .await?;
 
-        let result = rows.into_iter().map(|row| package_from_row(&row)).collect();
-        Ok(result)
-    }
+    //     let result = rows.into_iter().map(|row| package_from_row(&row)).collect();
+    //     Ok(result)
+    // }
 
     // pub async fn package_versions(&self, system_tag_id: Option<i32>) -> Result<Value, sqlx::Error> {
     //     let system_tag_table = self.get_table("system_tag");

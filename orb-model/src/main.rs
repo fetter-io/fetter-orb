@@ -12,8 +12,9 @@ use std::net::SocketAddr;
 use tokio::net::TcpListener;
 use tower_http::cors::{Any, CorsLayer};
 
-use fetter::{Package, SystemTag};
+// use fetter::Package;
 use orb_model::db_context::DBContext;
+use orb_model::db_context::Tenant;
 use orb_model::db_via_container::get_db_pool;
 
 //------------------------------------------------------------------------------
@@ -29,25 +30,24 @@ pub async fn post_monitor_scan_load(
     }
 }
 
-pub async fn get_system_tag_all(
+pub async fn get_tenant_all(
     State(db): State<DBContext>,
-) -> Result<Json<Vec<(i32, SystemTag)>>, (StatusCode, String)> {
-    // TODO: get tenant
-    match db.system_tag_all(1).await {
+) -> Result<Json<Vec<(i32, Tenant)>>, (StatusCode, String)> {
+    match db.tenant_all().await {
         Ok(sts) => Ok(Json(sts)),
         Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
     }
 }
 
-pub async fn get_package_all(
-    State(db): State<DBContext>,
-) -> Result<Json<Vec<(i32, Package)>>, (StatusCode, String)> {
-    // TODO: get tenant
-    match db.package_all(1).await {
-        Ok(sts) => Ok(Json(sts)),
-        Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
-    }
-}
+// pub async fn get_package_all(
+//     State(db): State<DBContext>,
+// ) -> Result<Json<Vec<(i32, Package)>>, (StatusCode, String)> {
+//     // TODO: get tenant
+//     match db.package_all(1).await {
+//         Ok(sts) => Ok(Json(sts)),
+//         Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
+//     }
+// }
 
 //------------------------------------------------------------------------------
 
@@ -136,9 +136,10 @@ async fn main() {
         .allow_headers(Any);
 
     let app = Router::new()
-        .route("/system_tag", get(get_system_tag_all))
+        // .route("/system_tag", get(get_system_tag_all))
         .route("/system_tag_pings", get(get_system_tag_pings))
-        .route("/package", get(get_package_all))
+        .route("/tenant", get(get_tenant_all))
+        // .route("/package", get(get_package_all))
         .route("/package_versions", get(get_package_versions))
         .route("/package_counts", get(get_package_counts))
         .route("/audit", get(get_audit))

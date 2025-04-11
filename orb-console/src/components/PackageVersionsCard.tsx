@@ -55,7 +55,7 @@ export function PackageVersionsCard({
                   {isVulnerable && (
                     <button
                       title="Vulnerability details"
-                      className="text-yellow-400 border-b border-transparent hover:border-yellow-400 cursor-pointer"
+                      className="border-b border-transparent hover:border-yellow-400 cursor-pointer"
                       onClick={() => onVulnClick?.(entry.package_id)}
                     >
                       ⚠️
