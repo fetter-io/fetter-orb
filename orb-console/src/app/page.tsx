@@ -280,10 +280,9 @@ export default function Home() {
                 vulnCount={auditState.data?.length ?? 0}
               />
 
-              {packageCountsState.data && (
-                <PackageCountsChart data={packageCountsState.data} />
-              )}
-
+{packageCountsState.data && packageCountsState.data.length > 0 && (
+  <PackageCountsChart data={packageCountsState.data} />
+)}
               <div className="flex flex-col gap-2">
                 {packagesState.data?.map((pkg) => (
                   <PackageVersionsCard

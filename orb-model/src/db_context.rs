@@ -1406,16 +1406,16 @@ impl DBContext {
     }
 
     pub async fn monitor_scan_load_from_json(&self, payload: &str) -> Result<(), sqlx::Error> {
-        let (st, scan_fs, ts): (SystemTag, Option<ScanFS>, Duration) =
+        let (tenant, st, scan_fs, ts): (String, SystemTag, Option<ScanFS>, Duration) =
             serde_json::from_str(payload).expect("Invalid JSON payload");
 
-        // TODO: get tenant key from payload
-        let tenant = Tenant {
-            key: "test".to_string(),
-            name: "test".to_string(),
+        // TODO: validate tenant against defined list
+        let t = Tenant {
+            key: tenant.clone(),
+            name: tenant.clone(),
         };
-        let tenant_id = self.tenant_insert_or_get(&tenant).await?;
 
+        let tenant_id = self.tenant_insert_or_get(&t).await?;
         let st_id = self.system_tag_insert_or_get(tenant_id, &st).await?;
         self.monitor_scan_load(&scan_fs, st_id, &ts).await
     }

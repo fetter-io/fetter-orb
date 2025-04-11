@@ -166,7 +166,9 @@ async fn main() {
     let pool = get_db_pool().await;
     let dbx = DBContext::new(pool, None);
     // dbx.tables_drop().await;
+
     let _ = dbx.tables_create(true).await;
+    // NOTE: could read-in tenant definitions from a flat file on init
 
     let cors = CorsLayer::new()
         .allow_origin(Any) // TODO: tighten later
