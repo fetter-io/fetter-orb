@@ -170,17 +170,16 @@ impl DBContext {
         self.pool.execute(&*create_ping).await?;
         self.pool.execute(&*create_monitor_scan).await?;
 
-
-    // Create indexes for join/filter performance
-    // for stmt in [
-    //     format!("CREATE INDEX IF NOT EXISTS monitor_scan_package_id_idx ON {monitor_scan_table}(package_id);"),
-    //     format!("CREATE INDEX IF NOT EXISTS monitor_scan_ping_id_idx ON {monitor_scan_table}(ping_id);"),
-    //     format!("CREATE INDEX IF NOT EXISTS ping_system_tag_id_idx ON {ping_table}(system_tag_id);"),
-    //     format!("CREATE INDEX IF NOT EXISTS system_tag_tenant_id_idx ON {system_tag_table}(tenant_id);"),
-    //     format!("CREATE INDEX IF NOT EXISTS package_key_idx ON {package_table}(key);"),
-    // ] {
-    //     self.pool.execute(&*stmt).await?;
-    // }
+        // Create indexes for join/filter performance
+        // for stmt in [
+        //     format!("CREATE INDEX IF NOT EXISTS monitor_scan_package_id_idx ON {monitor_scan_table}(package_id);"),
+        //     format!("CREATE INDEX IF NOT EXISTS monitor_scan_ping_id_idx ON {monitor_scan_table}(ping_id);"),
+        //     format!("CREATE INDEX IF NOT EXISTS ping_system_tag_id_idx ON {ping_table}(system_tag_id);"),
+        //     format!("CREATE INDEX IF NOT EXISTS system_tag_tenant_id_idx ON {system_tag_table}(tenant_id);"),
+        //     format!("CREATE INDEX IF NOT EXISTS package_key_idx ON {package_table}(key);"),
+        // ] {
+        //     self.pool.execute(&*stmt).await?;
+        // }
 
         Ok(())
     }
