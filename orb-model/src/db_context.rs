@@ -318,7 +318,10 @@ impl DBContext {
     // }
 
     // Return all SystemTag, in pairs of int, SystemTag.
-    pub async fn system_tag_all(&self, tenant_id: i32) -> Result<Vec<(i32, SystemTag)>, sqlx::Error> {
+    pub async fn system_tag_all(
+        &self,
+        tenant_id: i32,
+    ) -> Result<Vec<(i32, SystemTag)>, sqlx::Error> {
         let table_name = self.get_table("system_tag");
 
         let query = format!(
@@ -353,17 +356,23 @@ impl DBContext {
         Ok(result)
     }
 
-    pub async fn system_tag_pings(&self, limit: Option<usize>) -> Result<Value, sqlx::Error> {
+    pub async fn system_tag_pings(
+        &self,
+        tenant_id: i32,
+        limit: Option<usize>,
+    ) -> Result<Value, sqlx::Error> {
         let system_tag_table = self.get_table("system_tag");
         let ping_table = self.get_table("ping");
 
-        // Step 1: fetch all system tags
+        // Step 1: fetch all system tags for the given tenant
         let tag_rows = sqlx::query(&format!(
             r#"
             SELECT id, username, hostname, os_name, os_version, architecture, logical_cores
             FROM {system_tag_table}
+            WHERE tenant_id = $1
             "#
         ))
+        .bind(tenant_id)
         .fetch_all(&self.pool)
         .await?;
 
@@ -382,10 +391,14 @@ impl DBContext {
                         PARTITION BY system_tag_id ORDER BY timestamp DESC
                     ) as rn
                 FROM {ping_table}
+                WHERE system_tag_id IN (
+                    SELECT id FROM {system_tag_table} WHERE tenant_id = $1
+                )
             ) sub
-            WHERE rn <= $1
+            WHERE rn <= $2
             "#
         ))
+        .bind(tenant_id)
         .bind(ping_limit)
         .fetch_all(&self.pool)
         .await?;
@@ -398,10 +411,13 @@ impl DBContext {
                 timestamp,
                 scanned
             FROM {ping_table}
-            WHERE scanned = true
+            WHERE scanned = true AND system_tag_id IN (
+                SELECT id FROM {system_tag_table} WHERE tenant_id = $1
+            )
             ORDER BY system_tag_id, timestamp DESC
             "#
         ))
+        .bind(tenant_id)
         .fetch_all(&self.pool)
         .await?;
 
@@ -412,7 +428,6 @@ impl DBContext {
         let mut insert_ping = |id: i32, timestamp: DateTime<Utc>, scanned: bool| {
             let pings = st_to_pings.entry(id).or_default();
             let pings_seen = st_to_pings_seen.entry(id).or_default();
-            // only push on pings if this is the first time we have seen the ping
             if pings_seen.insert(timestamp) {
                 pings.push(json!({ "timestamp": timestamp, "scanned": scanned }));
             }
@@ -537,22 +552,50 @@ impl DBContext {
         }
     }
 
-    pub async fn package_all(&self) -> Result<Vec<(i32, Package)>, sqlx::Error> {
-        let table_name = self.get_table("package");
+    pub async fn package_all(&self, tenant_id: i32) -> Result<Vec<(i32, Package)>, sqlx::Error> {
+        let package_table = self.get_table("package");
+        let monitor_scan_table = self.get_table("monitor_scan");
+        let ping_table = self.get_table("ping");
+        let system_tag_table = self.get_table("system_tag");
 
         let query = format!(
             r#"
-            SELECT id, name, key, version, url, commit_id, vcs, revision
-            FROM {table_name}
-            ORDER BY key
+            SELECT DISTINCT p.id, p.name, p.key, p.version, p.url, p.commit_id, p.vcs, p.revision
+            FROM {package_table} p
+            JOIN {monitor_scan_table} ms ON ms.package_id = p.id
+            JOIN {ping_table} pi ON pi.id = ms.ping_id
+            JOIN {system_tag_table} st ON st.id = pi.system_tag_id
+            WHERE st.tenant_id = $1
+            ORDER BY p.key
             "#
         );
 
-        let rows = sqlx::query(&query).fetch_all(&self.pool).await?;
+        let rows = sqlx::query(&query)
+            .bind(tenant_id)
+            .fetch_all(&self.pool)
+            .await?;
 
         let result = rows.into_iter().map(|row| package_from_row(&row)).collect();
         Ok(result)
     }
+
+
+    // pub async fn package_all(&self) -> Result<Vec<(i32, Package)>, sqlx::Error> {
+    //     let table_name = self.get_table("package");
+
+    //     let query = format!(
+    //         r#"
+    //         SELECT id, name, key, version, url, commit_id, vcs, revision
+    //         FROM {table_name}
+    //         ORDER BY key
+    //         "#
+    //     );
+
+    //     let rows = sqlx::query(&query).fetch_all(&self.pool).await?;
+
+    //     let result = rows.into_iter().map(|row| package_from_row(&row)).collect();
+    //     Ok(result)
+    // }
 
     pub async fn package_versions(&self, system_tag_id: Option<i32>) -> Result<Value, sqlx::Error> {
         let system_tag_table = self.get_table("system_tag");

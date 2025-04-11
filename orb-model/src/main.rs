@@ -32,7 +32,7 @@ pub async fn post_monitor_scan_load(
 pub async fn get_system_tag_all(
     State(db): State<DBContext>,
 ) -> Result<Json<Vec<(i32, SystemTag)>>, (StatusCode, String)> {
-    // TODO: take system_tag id
+    // TODO: get tenant
     match db.system_tag_all(1).await {
         Ok(sts) => Ok(Json(sts)),
         Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
@@ -42,7 +42,8 @@ pub async fn get_system_tag_all(
 pub async fn get_package_all(
     State(db): State<DBContext>,
 ) -> Result<Json<Vec<(i32, Package)>>, (StatusCode, String)> {
-    match db.package_all().await {
+    // TODO: get tenant
+    match db.package_all(1).await {
         Ok(sts) => Ok(Json(sts)),
         Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
     }
@@ -91,7 +92,8 @@ pub async fn get_system_tag_pings(
     State(db): State<DBContext>,
     Query(params): Query<SystemTagPingsParams>,
 ) -> Result<Json<Value>, (StatusCode, String)> {
-    db.system_tag_pings(params.limit)
+    // TODO: get tenant
+    db.system_tag_pings(1, params.limit)
         .await
         .map(Json)
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))

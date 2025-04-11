@@ -8,8 +8,8 @@ use fetter::ScanFS;
 use fetter::SystemTag;
 
 use orb_model::db_context::DBContext;
-use orb_model::db_via_container::get_db_pool;
 use orb_model::db_context::Tenant;
+use orb_model::db_via_container::get_db_pool;
 
 #[tokio::test]
 async fn test_tenant_a() {
@@ -17,7 +17,10 @@ async fn test_tenant_a() {
     let ctx = DBContext::new(pool, Some("ta".into()));
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
-    let t = Tenant{key: "ffff".to_string(), name: "foo".to_string()};
+    let t = Tenant {
+        key: "test".to_string(),
+        name: "test".to_string(),
+    };
     let id = ctx.tenant_insert_or_get(&t).await.unwrap();
     assert_eq!(id, 1);
 }
@@ -95,7 +98,7 @@ async fn test_package_all_a() {
 
     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
 
-    let post = ctx.package_all().await.unwrap();
+    let post = ctx.package_all(1).await.unwrap();
     assert_eq!(post.len(), 19);
     ctx.tables_drop().await.unwrap();
 }
@@ -122,7 +125,10 @@ async fn test_load_system_tag_a() {
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
-    let t = Tenant{key: "ffff".to_string(), name: "foo".to_string()};
+    let t = Tenant {
+        key: "ffff".to_string(),
+        name: "foo".to_string(),
+    };
     let t_id = ctx.tenant_insert_or_get(&t).await.unwrap();
 
     let st_id = ctx.system_tag_insert_or_get(t_id, &st).await.unwrap();
@@ -146,7 +152,10 @@ async fn test_system_tag_all_a() {
     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
 
     // this may have already been inserted
-    let t = Tenant{key: "test".to_string(), name: "test".to_string()};
+    let t = Tenant {
+        key: "test".to_string(),
+        name: "test".to_string(),
+    };
     let t_id = ctx.tenant_insert_or_get(&t).await.unwrap();
 
     let post = ctx.system_tag_all(t_id).await.unwrap();
@@ -168,7 +177,14 @@ async fn test_system_tag_pings_a() {
     let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
 
-    let post = ctx.system_tag_pings(None).await.unwrap().to_string();
+    // this may have already been inserted
+    let t = Tenant {
+        key: "test".to_string(),
+        name: "test".to_string(),
+    };
+    let t_id = ctx.tenant_insert_or_get(&t).await.unwrap();
+
+    let post = ctx.system_tag_pings(t_id, None).await.unwrap().to_string();
     println!("{}", post);
     assert_eq!(
         post,
