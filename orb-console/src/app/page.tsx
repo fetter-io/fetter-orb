@@ -196,25 +196,29 @@ export default function Home() {
     <div className="flex flex-col min-h-screen font-[family-name:var(--font-geist-sans)] bg-gradient-to-b from-slate-950 to-slate-900">
       {/* Frosted header with sticky tab selector */}
       <header className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur border-b border-slate-700 px-6 py-4">
-        <div className="flex gap-4 items-center mb-2">
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          <p className="font-semibold text-white">fetter</p>
-        </div>
-        {tenantsState.data && (
-          <TenantSelector
-            tenants={tenantsState.data}
-            selectedId={selectedTenantId}
-            onChange={setSelectedTenantId}
-          />
-        )}
+        <div className="max-w-4xl mx-auto flex flex-col gap-6">
+          <div className="flex gap-4 items-center mb-2">
+            <Image
+              aria-hidden
+              src="/globe.svg"
+              alt="Globe icon"
+              width={16}
+              height={16}
+            />
+            <p className="font-semibold text-white">fetter</p>
+          </div>
 
-        <TabSelector activeTab={activeTab} onTabChange={setActiveTab} />
+          {/* conditionally show if more than 1 tenant */}
+          {tenantsState.data && (
+            <TenantSelector
+              tenants={tenantsState.data}
+              selectedId={selectedTenantId}
+              onChange={setSelectedTenantId}
+            />
+          )}
+
+          <TabSelector activeTab={activeTab} onTabChange={setActiveTab} />
+        </div>
       </header>
 
       {/* Main scrollable content */}
@@ -232,9 +236,10 @@ export default function Home() {
                 vulnCount={auditState.data?.length ?? 0}
               />
 
-{packageCountsState.data && packageCountsState.data.length > 0 && (
-  <PackageCountsChart data={packageCountsState.data} />
-)}
+              {packageCountsState.data &&
+                packageCountsState.data.length > 0 && (
+                  <PackageCountsChart data={packageCountsState.data} />
+                )}
               <div className="flex flex-col gap-2">
                 {packagesState.data?.map((pkg) => (
                   <PackageVersionsCard

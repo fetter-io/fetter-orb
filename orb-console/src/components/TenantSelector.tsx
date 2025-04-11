@@ -5,7 +5,6 @@ type TenantSelectorProps = {
   selectedId: number | null;
   onChange: (id: number | null) => void;
 };
-
 export function TenantSelector({
   tenants,
   selectedId,
@@ -13,7 +12,7 @@ export function TenantSelector({
 }: TenantSelectorProps) {
   return (
     <div className="flex flex-col items-start sm:items-end gap-1 mb-4">
-      {/* <label className="text-sm text-gray-400 mr-2">Tenant:</label> */}
+      <span className="text-xs text-gray-400 font-semibold">Tenant</span>
       <select
         className="text-sm bg-slate-800 text-white border border-slate-600 rounded px-2 py-1"
         value={selectedId ?? ""}
@@ -23,7 +22,7 @@ export function TenantSelector({
         }}
       >
         <option value="" disabled>
-          Select a tenant…
+          Select a tenant
         </option>
 
         {tenants.map(([id, tenant]) => (
