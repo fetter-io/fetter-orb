@@ -1215,7 +1215,8 @@ impl DBContext {
                 let mut args = sqlx::postgres::PgArguments::default();
                 let _ = args.add(tenant_id);
                 (query, args)
-            } else { // unconstrained
+            } else {
+                // unconstrained
                 let query = format!(
                     r#"
                     WITH latest_scans AS (
