@@ -98,7 +98,6 @@ export default function Home() {
     });
   }, [selectedSystemId, selectedTenantId]);
 
-
   // const fetchPackageCounts = useCallback(async (): Promise<
   //   PackageCountsRecord[]
   // > => {
@@ -115,7 +114,9 @@ export default function Home() {
   //   }));
   // }, [selectedSystemId]);
 
-  const fetchPackageCounts = useCallback(async (): Promise<PackageCountsRecord[]> => {
+  const fetchPackageCounts = useCallback(async (): Promise<
+    PackageCountsRecord[]
+  > => {
     const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
 
     let query = "";
@@ -134,7 +135,6 @@ export default function Home() {
       count,
     }));
   }, [selectedSystemId, selectedTenantId]);
-
 
   // const fetchAudit = useCallback(async (): Promise<AuditEntry[]> => {
   //   const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
@@ -157,7 +157,6 @@ export default function Home() {
     const res = await fetch(`${apiBase}/audit${query}`);
     return await res.json();
   }, [selectedSystemId, selectedTenantId]);
-
 
   //----------------------------------------------------------------------------
   const tenantsState = useDashboardData(fetchTenants, {
