@@ -51,6 +51,8 @@ fn package_from_row(row: &PgRow) -> (i32, Package) {
     )
 }
 
+//------------------------------------------------------------------------------
+
 #[derive(Debug)]
 pub struct Tenant {
     pub key: String,
@@ -79,6 +81,8 @@ impl DBContext {
     }
 
     pub async fn tables_create(&self, if_not_exists: bool) -> Result<(), sqlx::Error> {
+        // user_table
+        // user_to_tenant_tabl
         let tenant_table = self.get_table("tenant");
         let system_tag_table = self.get_table("system_tag");
         let package_table = self.get_table("package");
@@ -232,18 +236,23 @@ impl DBContext {
     }
 
     //--------------------------------------------------------------------------
-    pub async fn system_tag_insert_or_get(&self, tag: &SystemTag) -> Result<i32, sqlx::Error> {
+    pub async fn system_tag_insert_or_get(
+        &self,
+        tenant_id: i32,
+        tag: &SystemTag,
+    ) -> Result<i32, sqlx::Error> {
         let table_name = self.get_table("system_tag");
 
-        let query = format!(
+        let select_query = format!(
             r#"
             SELECT id FROM {table_name}
-            WHERE username = $1 AND hostname = $2 AND os_name = $3 AND os_version = $4
-              AND architecture = $5 AND logical_cores = $6
+            WHERE tenant_id = $1 AND username = $2 AND hostname = $3
+              AND os_name = $4 AND os_version = $5 AND architecture = $6 AND logical_cores = $7
             "#
         );
 
-        if let Some(row) = sqlx::query(&query)
+        if let Some(row) = sqlx::query(&select_query)
+            .bind(tenant_id)
             .bind(&tag.username)
             .bind(&tag.hostname)
             .bind(&tag.os_name)
@@ -259,13 +268,14 @@ impl DBContext {
         let insert_query = format!(
             r#"
             INSERT INTO {table_name}
-            (username, hostname, os_name, os_version, architecture, logical_cores)
-            VALUES ($1, $2, $3, $4, $5, $6)
+            (tenant_id, username, hostname, os_name, os_version, architecture, logical_cores)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
             RETURNING id
             "#
         );
 
         let row = sqlx::query(&insert_query)
+            .bind(tenant_id)
             .bind(&tag.username)
             .bind(&tag.hostname)
             .bind(&tag.os_name)
@@ -278,47 +288,51 @@ impl DBContext {
         Ok(row.get("id"))
     }
 
-    pub async fn system_tag_from_id(&self, id: i32) -> Result<Option<SystemTag>, sqlx::Error> {
-        let table_name = self.get_table("system_tag");
+    // pub async fn system_tag_from_id(&self, id: i32) -> Result<Option<SystemTag>, sqlx::Error> {
+    //     let table_name = self.get_table("system_tag");
 
-        let query = format!(
-            r#"
-            SELECT username, hostname, os_name, os_version, architecture, logical_cores
-            FROM {table_name}
-            WHERE id = $1
-            "#
-        );
+    //     let query = format!(
+    //         r#"
+    //         SELECT username, hostname, os_name, os_version, architecture, logical_cores
+    //         FROM {table_name}
+    //         WHERE id = $1
+    //         "#
+    //     );
 
-        if let Some(row) = sqlx::query(&query)
-            .bind(id)
-            .fetch_optional(&self.pool)
-            .await?
-        {
-            Ok(Some(SystemTag {
-                username: row.get("username"),
-                hostname: row.get("hostname"),
-                os_name: row.get("os_name"),
-                os_version: row.get("os_version"),
-                architecture: row.get("architecture"),
-                logical_cores: row.get::<i16, _>("logical_cores") as usize,
-            }))
-        } else {
-            Ok(None)
-        }
-    }
+    //     if let Some(row) = sqlx::query(&query)
+    //         .bind(id)
+    //         .fetch_optional(&self.pool)
+    //         .await?
+    //     {
+    //         Ok(Some(SystemTag {
+    //             username: row.get("username"),
+    //             hostname: row.get("hostname"),
+    //             os_name: row.get("os_name"),
+    //             os_version: row.get("os_version"),
+    //             architecture: row.get("architecture"),
+    //             logical_cores: row.get::<i16, _>("logical_cores") as usize,
+    //         }))
+    //     } else {
+    //         Ok(None)
+    //     }
+    // }
 
     // Return all SystemTag, in pairs of int, SystemTag.
-    pub async fn system_tag_all(&self) -> Result<Vec<(i32, SystemTag)>, sqlx::Error> {
+    pub async fn system_tag_all(&self, tenant_id: i32) -> Result<Vec<(i32, SystemTag)>, sqlx::Error> {
         let table_name = self.get_table("system_tag");
 
         let query = format!(
             r#"
             SELECT id, username, hostname, os_name, os_version, architecture, logical_cores
             FROM {table_name}
+            WHERE tenant_id = $1
             "#
         );
 
-        let rows = sqlx::query(&query).fetch_all(&self.pool).await?;
+        let rows = sqlx::query(&query)
+            .bind(tenant_id)
+            .fetch_all(&self.pool)
+            .await?;
 
         let result = rows
             .into_iter()
@@ -539,84 +553,6 @@ impl DBContext {
         let result = rows.into_iter().map(|row| package_from_row(&row)).collect();
         Ok(result)
     }
-
-    // pub async fn package_versions(&self, system_tag_id: Option<i32>) -> Result<Value, sqlx::Error> {
-    //     let system_tag_table = self.get_table("system_tag");
-    //     let package_table = self.get_table("package");
-    //     let site_packages_table = self.get_table("site_packages");
-    //     let monitor_scan_table = self.get_table("monitor_scan");
-    //     let ping_table = self.get_table("ping");
-
-    //     let query = format!(
-    //         r#"
-    //         SELECT p.key, p.name, p.version, sp.path,
-    //                pi.system_tag_id, st.username, st.hostname
-    //         FROM {monitor_scan_table} ms
-    //         JOIN (
-    //             SELECT DISTINCT ON (system_tag_id) id, system_tag_id
-    //             FROM {ping_table}
-    //             WHERE scanned = true
-    //             ORDER BY system_tag_id, timestamp DESC
-    //         ) pi ON ms.ping_id = pi.id
-    //         JOIN {package_table} p ON ms.package_id = p.id
-    //         JOIN {site_packages_table} sp ON ms.site_packages_id = sp.id
-    //         JOIN {system_tag_table} st ON pi.system_tag_id = st.id
-    //         {}
-    //         "#,
-    //         if system_tag_id.is_some() {
-    //             "WHERE pi.system_tag_id = $1"
-    //         } else {
-    //             ""
-    //         }
-    //     );
-
-    //     let mut args = sqlx::postgres::PgArguments::default();
-    //     if let Some(id) = system_tag_id {
-    //         let _ = args.add(id);
-    //     }
-
-    //     let rows = sqlx::query_with(&query, args).fetch_all(&self.pool).await?;
-
-    //     let mut summary: HashMap<String, Value> = HashMap::new();
-
-    //     for row in rows {
-    //         let key: String = row.get("key");
-    //         let name: String = row.get("name");
-    //         let version: String = row.get("version");
-    //         let path: String = row.get("path");
-    //         let system_tag_id: i32 = row.get("system_tag_id");
-    //         let system_tag_username: String = row.get("username");
-    //         let system_tag_hostname: String = row.get("hostname");
-
-    //         summary
-    //             .entry(key.clone())
-    //             .and_modify(|entry| {
-    //                 if let Some(data) = entry.get_mut("data").and_then(|v| v.as_array_mut()) {
-    //                     data.push(json!({
-    //                         "version": version,
-    //                         "path": path,
-    //                         "system_tag_id": system_tag_id,
-    //                         "system_tag_username": system_tag_username,
-    //                         "system_tag_hostname": system_tag_hostname
-    //                     }));
-    //                 }
-    //             })
-    //             .or_insert_with(|| {
-    //                 json!({
-    //                     "name": name,
-    //                     "data": [{
-    //                         "version": version,
-    //                         "path": path,
-    //                         "system_tag_id": system_tag_id,
-    //                         "system_tag_username": system_tag_username,
-    //                         "system_tag_hostname": system_tag_hostname
-    //                     }]
-    //                 })
-    //             });
-    //     }
-
-    //     Ok(json!(summary))
-    // }
 
     pub async fn package_versions(&self, system_tag_id: Option<i32>) -> Result<Value, sqlx::Error> {
         let system_tag_table = self.get_table("system_tag");
@@ -1027,7 +963,14 @@ impl DBContext {
         let (st, scan_fs, ts): (SystemTag, Option<ScanFS>, Duration) =
             serde_json::from_str(payload).expect("Invalid JSON payload");
 
-        let st_id = self.system_tag_insert_or_get(&st).await?;
+        // TODO: get tenant key from payload
+        let tenant = Tenant {
+            key: "test".to_string(),
+            name: "test".to_string(),
+        };
+        let tenant_id = self.tenant_insert_or_get(&tenant).await?;
+
+        let st_id = self.system_tag_insert_or_get(tenant_id, &st).await?;
         self.monitor_scan_load(&scan_fs, st_id, &ts).await
     }
 }

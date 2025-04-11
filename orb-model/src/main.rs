@@ -32,7 +32,8 @@ pub async fn post_monitor_scan_load(
 pub async fn get_system_tag_all(
     State(db): State<DBContext>,
 ) -> Result<Json<Vec<(i32, SystemTag)>>, (StatusCode, String)> {
-    match db.system_tag_all().await {
+    // TODO: take system_tag id
+    match db.system_tag_all(1).await {
         Ok(sts) => Ok(Json(sts)),
         Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
     }
