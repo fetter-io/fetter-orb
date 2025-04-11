@@ -94,6 +94,7 @@ async fn test_package_all_a() {
 
     let pool = get_db_pool().await;
     let ctx = DBContext::new(pool, Some("paa".into()));
+    ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
@@ -239,7 +240,7 @@ async fn test_package_counts_a() {
 async fn test_load_site_packages_a() {
     let pool = get_db_pool().await;
     let ctx = DBContext::new(pool, Some("lspa1".into()));
-
+    ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
     let p1 = PathShared::from("/home/ariza/src/py_src/lib/python3.11/site-packages");
