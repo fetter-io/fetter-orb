@@ -21,6 +21,7 @@ import { SystemTagSelector } from "@/components/SystemTagSelector";
 import { PackageCountsChart } from "@/components/PackageCountsChart";
 import { VulnCard } from "@/components/VulnCard";
 import { TenantSelector } from "@/components/TenantSelector";
+import { AllowListEditor } from "@/components/AllowListEditor";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<Tab>("packages");
@@ -274,9 +275,21 @@ export default function Home() {
             </>
           )}
 
-          {activeTab === "allow" && (
-            <div className="text-gray-400">Allow list content here</div>
-          )}
+{activeTab === "allow" && selectedTenantId !== null && (
+  <>
+    <AllowListEditor
+      initialValue="https://example.com/fetter.lock"
+      onSubmit={async (val) => {
+        const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
+        await fetch(`${apiBase}/allow_list`, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain" },
+          body: val,
+        });
+      }}
+    />
+  </>
+)}
 
           {activeTab === "vulns" && (
             <>
