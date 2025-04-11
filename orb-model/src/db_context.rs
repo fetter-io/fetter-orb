@@ -90,6 +90,7 @@ impl DBContext {
         let site_packages_table = self.get_table("site_packages");
         let monitor_scan_table = self.get_table("monitor_scan");
         let ping_table = self.get_table("ping");
+        let dep_manifest_table = self.get_table("dep_manifest");
 
         let if_clause = if if_not_exists { "IF NOT EXISTS " } else { "" };
 
@@ -99,6 +100,15 @@ impl DBContext {
                 id SERIAL PRIMARY KEY,
                 key TEXT NOT NULL UNIQUE,
                 name TEXT NOT NULL
+            );
+            "#
+        );
+
+        let create_dep_manifest = format!(
+            r#"
+            CREATE TABLE {if_clause}{dep_manifest_table} (
+                tenant_id INTEGER PRIMARY KEY REFERENCES {tenant_table}(id) ON DELETE RESTRICT,
+                content TEXT NOT NULL
             );
             "#
         );
@@ -165,6 +175,7 @@ impl DBContext {
         );
 
         self.pool.execute(&*create_tenant).await?;
+        self.pool.execute(&*create_dep_manifest).await?;
         self.pool.execute(&*create_system_tag).await?;
         self.pool.execute(&*create_package).await?;
         self.pool.execute(&*create_site_packages).await?;
@@ -191,6 +202,7 @@ impl DBContext {
         let site_packages_table = self.get_table("site_packages");
         let ping_table = self.get_table("ping");
         let monitor_scan_table = self.get_table("monitor_scan");
+        let dep_manifest_table = self.get_table("dep_manifest");
         let tenant_table = self.get_table("tenant");
 
         let drop_monitor_scan = format!(r#"DROP TABLE IF EXISTS {monitor_scan_table} CASCADE;"#);
@@ -198,6 +210,7 @@ impl DBContext {
         let drop_site_packages = format!(r#"DROP TABLE IF EXISTS {site_packages_table} CASCADE;"#);
         let drop_package = format!(r#"DROP TABLE IF EXISTS {package_table} CASCADE;"#);
         let drop_system_tag = format!(r#"DROP TABLE IF EXISTS {system_tag_table} CASCADE;"#);
+        let drop_dep_manifest = format!(r#"DROP TABLE IF EXISTS {dep_manifest_table} CASCADE;"#);
         let drop_tenant = format!(r#"DROP TABLE IF EXISTS {tenant_table} CASCADE;"#);
 
         self.pool.execute(&*drop_monitor_scan).await?;
@@ -205,6 +218,7 @@ impl DBContext {
         self.pool.execute(&*drop_site_packages).await?;
         self.pool.execute(&*drop_package).await?;
         self.pool.execute(&*drop_system_tag).await?;
+        self.pool.execute(&*drop_dep_manifest).await?;
         self.pool.execute(&*drop_tenant).await?;
 
         Ok(())
