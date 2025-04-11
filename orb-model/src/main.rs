@@ -112,7 +112,8 @@ pub async fn get_audit(
     State(db): State<DBContext>,
     Query(params): Query<AuditParams>,
 ) -> Result<Json<Value>, (StatusCode, String)> {
-    db.audit(params.system_tag_id)
+    // todo: add tenant
+    db.audit(params.system_tag_id, Some(1))
         .await
         .map(Json)
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
