@@ -27,12 +27,13 @@ export function VulnCard({
     >
       <h3 className="text-white font-semibold text-base flex items-center gap-2">
         {pkg.name}
+        <span className="text-gray-400 text-sm">{pkg.version}</span>
         <button
+          title="Package details"
+          className="border-b border-transparent hover:border-blue-400 cursor-pointer"
           onClick={() => onPackageClick?.(pkg.key)}
-          className="text-sm text-gray-400 hover:underline"
-          title="View in package list"
         >
-          {pkg.version}
+          📦
         </button>
       </h3>
 
