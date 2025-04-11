@@ -121,8 +121,6 @@ pub struct SystemTagPingsParams {
 //         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
 // }
 
-
-
 pub async fn get_system_tag_pings(
     State(db): State<DBContext>,
     Query(params): Query<SystemTagPingsParams>,
@@ -158,7 +156,6 @@ pub async fn get_audit(
         None => Ok(Json(serde_json::json!([]))),
     }
 }
-
 
 //------------------------------------------------------------------------------
 #[tokio::main]
