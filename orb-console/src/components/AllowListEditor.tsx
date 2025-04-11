@@ -4,11 +4,14 @@ import { useState } from "react";
 
 type AllowListEditorProps = {
   initialValue: string;
-  onSubmit: (value: string) => Promise<void>;
+  tenantId: number;
+  onSubmit: (value: string, tenantId: number) => Promise<void>;
 };
+
 
 export function AllowListEditor({
   initialValue,
+  tenantId,
   onSubmit,
 }: AllowListEditorProps) {
   const [isEditing, setIsEditing] = useState(false);
@@ -21,7 +24,7 @@ export function AllowListEditor({
     setSubmitting(true);
     setError(null);
     try {
-      await onSubmit(editValue.trim());
+      await onSubmit(editValue.trim(), tenantId);
       setValue(editValue.trim());
       setIsEditing(false);
     } catch (err) {

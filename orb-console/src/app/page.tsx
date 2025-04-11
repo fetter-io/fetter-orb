@@ -278,7 +278,9 @@ export default function Home() {
           {activeTab === "allow" && selectedTenantId !== null && (
             <>
               <AllowListEditor
-                initialValue="https://example.com/fetter.lock"
+                key={selectedTenantId} // not sure if this does what we want
+                initialValue=""
+                tenantId={selectedTenantId}
                 onSubmit={async (val) => {
                   const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
                   await fetch(`${apiBase}/allow_list`, {
