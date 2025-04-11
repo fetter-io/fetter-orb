@@ -30,7 +30,6 @@ pub async fn post_monitor_scan_load(
     }
 }
 
-
 //------------------------------------------------------------------------------
 pub async fn get_tenant_all(
     State(db): State<DBContext>,

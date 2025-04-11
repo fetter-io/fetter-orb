@@ -8,7 +8,6 @@ type AllowListEditorProps = {
   onSubmit: (value: string, tenantId: number) => Promise<void>;
 };
 
-
 export function AllowListEditor({
   initialValue,
   tenantId,
