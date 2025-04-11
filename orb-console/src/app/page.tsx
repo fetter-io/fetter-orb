@@ -42,13 +42,6 @@ export default function Home() {
     return await res.json(); // assuming it returns [[id, {key, name}], ...]
   }, []);
 
-  // const fetchSystemTags = useCallback(async (): Promise<SystemTag[]> => {
-  //   const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
-  //   const res = await fetch(`${apiBase}/system_tag_pings`);
-  //   const raw = await res.json();
-  //   return raw as SystemTag[];
-  // }, []);
-
   const fetchSystemTags = useCallback(async (): Promise<SystemTag[]> => {
     const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
     const query =
@@ -57,23 +50,6 @@ export default function Home() {
     const raw = await res.json();
     return raw as SystemTag[];
   }, [selectedTenantId]);
-
-  // const fetchPackages = useCallback(async (): Promise<PackageVersions[]> => {
-  //   const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
-  //   const query =
-  //     selectedSystemId !== null ? `?system_tag_id=${selectedSystemId}` : "";
-  //   const res = await fetch(`${apiBase}/package_versions${query}`);
-  //   const raw = await res.json();
-
-  //   return Object.entries(raw).map(([key, value]) => {
-  //     const casted = value as Omit<PackageVersions, "key">;
-  //     return {
-  //       key,
-  //       name: casted.name,
-  //       data: casted.data,
-  //     };
-  //   });
-  // }, [selectedSystemId]);
 
   const fetchPackages = useCallback(async (): Promise<PackageVersions[]> => {
     const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
@@ -98,22 +74,6 @@ export default function Home() {
     });
   }, [selectedSystemId, selectedTenantId]);
 
-  // const fetchPackageCounts = useCallback(async (): Promise<
-  //   PackageCountsRecord[]
-  // > => {
-  //   const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
-  //   const query =
-  //     selectedSystemId !== null ? `?system_tag_id=${selectedSystemId}` : "";
-  //   const res = await fetch(`${apiBase}/package_counts${query}`);
-  //   const raw = await res.json();
-
-  //   return raw.map(([start, end, count]: [string, string, number]) => ({
-  //     start,
-  //     end,
-  //     count,
-  //   }));
-  // }, [selectedSystemId]);
-
   const fetchPackageCounts = useCallback(async (): Promise<
     PackageCountsRecord[]
   > => {
@@ -135,14 +95,6 @@ export default function Home() {
       count,
     }));
   }, [selectedSystemId, selectedTenantId]);
-
-  // const fetchAudit = useCallback(async (): Promise<AuditEntry[]> => {
-  //   const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
-  //   const query =
-  //     selectedSystemId !== null ? `?system_tag_id=${selectedSystemId}` : "";
-  //   const res = await fetch(`${apiBase}/audit${query}`);
-  //   return await res.json();
-  // }, [selectedSystemId]);
 
   const fetchAudit = useCallback(async (): Promise<AuditEntry[]> => {
     const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
