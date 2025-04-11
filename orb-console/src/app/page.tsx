@@ -98,6 +98,7 @@ export default function Home() {
     pollInterval: 30000,
   });
 
+   //----------------------------------------------------------------------------
   const auditState = useDashboardData(fetchAudit, {
     active: false,
     pollInterval: 0,
@@ -155,6 +156,8 @@ export default function Home() {
       setTimeout(() => setHighlightedVulnId(null), 3000);
     }, 100);
   };
+
+  //----------------------------------------------------------------------------
 
   return (
     <div className="flex flex-col min-h-screen font-[family-name:var(--font-geist-sans)] bg-gradient-to-b from-slate-950 to-slate-900">

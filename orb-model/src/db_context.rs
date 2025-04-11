@@ -1257,9 +1257,17 @@ impl DBContext {
         let packages: Vec<Package> = package_to_id.keys().cloned().collect();
         let client = Arc::new(UreqClientLive);
         let audit = AuditReport::from_packages(client, &packages);
+        let mut records = audit.records;
 
-        let paired: Vec<Value> = audit
-            .records
+        // Sort by key, then version
+        records.sort_by(|a, b| {
+            a.package
+                .key
+                .cmp(&b.package.key)
+                .then_with(|| a.package.version.cmp(&b.package.version))
+        });
+
+        let paired: Vec<Value> = records
             .into_iter()
             .map(|record| {
                 json!({
