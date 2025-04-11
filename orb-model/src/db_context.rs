@@ -1305,22 +1305,22 @@ impl DBContext {
         Ok(row.get("id"))
     }
 
-    pub async fn site_packages_from_id(&self, id: i32) -> Result<Option<PathShared>, sqlx::Error> {
-        let table_name = self.get_table("site_packages");
+    // pub async fn site_packages_from_id(&self, id: i32) -> Result<Option<PathShared>, sqlx::Error> {
+    //     let table_name = self.get_table("site_packages");
 
-        let query = format!("SELECT path FROM {table_name} WHERE id = $1");
+    //     let query = format!("SELECT path FROM {table_name} WHERE id = $1");
 
-        if let Some(row) = sqlx::query(&query)
-            .bind(id)
-            .fetch_optional(&self.pool)
-            .await?
-        {
-            let path: String = row.get("path");
-            Ok(Some(PathShared::from(path.as_str())))
-        } else {
-            Ok(None)
-        }
-    }
+    //     if let Some(row) = sqlx::query(&query)
+    //         .bind(id)
+    //         .fetch_optional(&self.pool)
+    //         .await?
+    //     {
+    //         let path: String = row.get("path");
+    //         Ok(Some(PathShared::from(path.as_str())))
+    //     } else {
+    //         Ok(None)
+    //     }
+    // }
 
     //--------------------------------------------------------------------------
     pub async fn monitor_scan_load(

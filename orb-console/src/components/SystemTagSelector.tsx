@@ -4,14 +4,16 @@ type SystemTagSelectorProps = {
   selectedId: number | null;
   onChange: (id: number | null) => void;
   systemTags: SystemTag[] | undefined;
-  resultCount: number;
+  packageCount: number;
+  vulnCount: number;
 };
 
 export function SystemTagSelector({
   selectedId,
   onChange,
   systemTags,
-  resultCount,
+  packageCount,
+  vulnCount,
 }: SystemTagSelectorProps) {
   return (
     <div className="flex flex-col items-start sm:items-end gap-1">
@@ -31,7 +33,10 @@ export function SystemTagSelector({
         ))}
       </select>
 
-      <p className="text-xs text-gray-500">Viewing {resultCount} packages</p>
+      <p className="text-xs text-gray-500">
+        {packageCount} {packageCount === 1 ? "package" : "packages"},{" "}
+        {vulnCount} {vulnCount === 1 ? "vulnerability" : "vulnerabilities"}
+      </p>
     </div>
   );
 }

@@ -187,7 +187,8 @@ export default function Home() {
                 selectedId={selectedSystemId}
                 onChange={setSelectedSystemId}
                 systemTags={systemTagsState.data ?? undefined}
-                resultCount={packagesState.data?.length ?? 0}
+                packageCount={packagesState.data?.length ?? 0}
+                vulnCount={auditState.data?.length ?? 0}
               />
 
               {packageCountsState.data && (
@@ -240,7 +241,8 @@ export default function Home() {
                 selectedId={selectedSystemId}
                 onChange={setSelectedSystemId}
                 systemTags={systemTagsState.data ?? undefined}
-                resultCount={packagesState.data?.length ?? 0}
+                packageCount={packagesState.data?.length ?? 0}
+                vulnCount={auditState.data?.length ?? 0}
               />
 
               <div className="flex flex-col gap-2">
