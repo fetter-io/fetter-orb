@@ -54,51 +54,87 @@ pub async fn get_tenant_all(
 #[derive(Deserialize)]
 pub struct PackageVersionsParams {
     pub system_tag_id: Option<i32>,
+    pub tenant_id: Option<i32>,
 }
 
 pub async fn get_package_versions(
     State(db): State<DBContext>,
     Query(params): Query<PackageVersionsParams>,
 ) -> Result<Json<Value>, (StatusCode, String)> {
-    // TODO: get tenant
-    db.package_versions(Some(1), params.system_tag_id)
-        .await
-        .map(Json)
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
+    match params.tenant_id {
+        Some(tenant_id) => db
+            .package_versions(params.system_tag_id, Some(tenant_id))
+            .await
+            .map(Json)
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
+        None => Ok(Json(serde_json::json!({}))),
+    }
 }
 
 #[derive(Deserialize)]
 pub struct PackageCountsParams {
     pub system_tag_id: Option<i32>,
+    pub tenant_id: Option<i32>,
+    pub limit: Option<usize>,
 }
+
+// pub async fn get_package_counts(
+//     State(db): State<DBContext>,
+//     Query(params): Query<PackageCountsParams>,
+// ) -> Result<Json<Value>, (StatusCode, String)> {
+//     // TODO: get tenant
+//     db.package_counts(params.system_tag_id, Some(1), None)
+//         .await
+//         .map(Json)
+//         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
+// }
 
 pub async fn get_package_counts(
     State(db): State<DBContext>,
     Query(params): Query<PackageCountsParams>,
 ) -> Result<Json<Value>, (StatusCode, String)> {
-    // TODO: get tenant
-    db.package_counts(params.system_tag_id, Some(1), None)
-        .await
-        .map(Json)
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
+    match params.tenant_id {
+        Some(tenant_id) => db
+            .package_counts(params.system_tag_id, Some(tenant_id), params.limit)
+            .await
+            .map(Json)
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
+        None => Ok(Json(serde_json::json!([]))),
+    }
 }
-
 //------------------------------------------------------------------------------
 
 #[derive(Deserialize)]
 pub struct SystemTagPingsParams {
+    pub tenant_id: Option<i32>,
     pub limit: Option<usize>,
 }
+
+// pub async fn get_system_tag_pings(
+//     State(db): State<DBContext>,
+//     Query(params): Query<SystemTagPingsParams>,
+// ) -> Result<Json<Value>, (StatusCode, String)> {
+//     // TODO: get tenant
+//     db.system_tag_pings(1, params.limit)
+//         .await
+//         .map(Json)
+//         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
+// }
+
+
 
 pub async fn get_system_tag_pings(
     State(db): State<DBContext>,
     Query(params): Query<SystemTagPingsParams>,
 ) -> Result<Json<Value>, (StatusCode, String)> {
-    // TODO: get tenant
-    db.system_tag_pings(1, params.limit)
-        .await
-        .map(Json)
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
+    match params.tenant_id {
+        Some(tenant_id) => db
+            .system_tag_pings(tenant_id, params.limit)
+            .await
+            .map(Json)
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
+        None => Ok(Json(Value::Array(vec![]))),
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -106,18 +142,23 @@ pub async fn get_system_tag_pings(
 #[derive(Deserialize)]
 pub struct AuditParams {
     pub system_tag_id: Option<i32>,
+    pub tenant_id: Option<i32>,
 }
 
 pub async fn get_audit(
     State(db): State<DBContext>,
     Query(params): Query<AuditParams>,
 ) -> Result<Json<Value>, (StatusCode, String)> {
-    // todo: add tenant
-    db.audit(params.system_tag_id, Some(1))
-        .await
-        .map(Json)
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
+    match params.tenant_id {
+        Some(tenant_id) => db
+            .audit(params.system_tag_id, Some(tenant_id))
+            .await
+            .map(Json)
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
+        None => Ok(Json(serde_json::json!([]))),
+    }
 }
+
 
 //------------------------------------------------------------------------------
 #[tokio::main]

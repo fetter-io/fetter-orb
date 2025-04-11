@@ -3,8 +3,8 @@ use fetter::{
     AuditReport, DirectURL, Package, PathShared, ScanFS, SystemTag, UreqClientLive, VcsInfo,
     VersionSpec,
 };
+use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
-use serde::{Serialize, Deserialize};
 use sqlx::postgres::PgRow;
 use sqlx::types::chrono::DateTime;
 use sqlx::Executor;
