@@ -137,8 +137,8 @@ async fn main() {
 
     let app = Router::new()
         // .route("/system_tag", get(get_system_tag_all))
-        .route("/system_tag_pings", get(get_system_tag_pings))
         .route("/tenant", get(get_tenant_all))
+        .route("/system_tag_pings", get(get_system_tag_pings))
         // .route("/package", get(get_package_all))
         .route("/package_versions", get(get_package_versions))
         .route("/package_counts", get(get_package_counts))

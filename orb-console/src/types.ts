@@ -77,3 +77,8 @@ export type AuditEntry = {
   package_id: number; // this is a package id!
   record: VulnRecord;
 };
+
+export type Tenant = {
+  key: string;
+  name: string;
+};
