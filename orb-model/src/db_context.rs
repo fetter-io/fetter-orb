@@ -590,29 +590,114 @@ impl DBContext {
         Ok(result)
     }
 
-    // pub async fn package_all(&self) -> Result<Vec<(i32, Package)>, sqlx::Error> {
-    //     let table_name = self.get_table("package");
+    // pub async fn package_versions(&self, system_tag_id: Option<i32>) -> Result<Value, sqlx::Error> {
+    //     let system_tag_table = self.get_table("system_tag");
+    //     let package_table = self.get_table("package");
+    //     let site_packages_table = self.get_table("site_packages");
+    //     let monitor_scan_table = self.get_table("monitor_scan");
+    //     let ping_table = self.get_table("ping");
 
     //     let query = format!(
     //         r#"
-    //         SELECT id, name, key, version, url, commit_id, vcs, revision
-    //         FROM {table_name}
-    //         ORDER BY key
-    //         "#
+    //         SELECT p.id AS package_id, p.key, p.name, p.version, sp.path,
+    //                pi.system_tag_id, st.username, st.hostname
+    //         FROM {monitor_scan_table} ms
+    //         JOIN (
+    //             SELECT DISTINCT ON (system_tag_id) id, system_tag_id
+    //             FROM {ping_table}
+    //             WHERE scanned = true
+    //             ORDER BY system_tag_id, timestamp DESC
+    //         ) pi ON ms.ping_id = pi.id
+    //         JOIN {package_table} p ON ms.package_id = p.id
+    //         JOIN {site_packages_table} sp ON ms.site_packages_id = sp.id
+    //         JOIN {system_tag_table} st ON pi.system_tag_id = st.id
+    //         {where_clause}
+    //         "#,
+    //         where_clause = if system_tag_id.is_some() {
+    //             "WHERE pi.system_tag_id = $1"
+    //         } else {
+    //             ""
+    //         }
     //     );
 
-    //     let rows = sqlx::query(&query).fetch_all(&self.pool).await?;
+    //     let mut args = sqlx::postgres::PgArguments::default();
+    //     if let Some(id) = system_tag_id {
+    //         let _ = args.add(id);
+    //     }
 
-    //     let result = rows.into_iter().map(|row| package_from_row(&row)).collect();
-    //     Ok(result)
+    //     let rows = sqlx::query_with(&query, args).fetch_all(&self.pool).await?;
+
+    //     let mut summary: HashMap<String, Value> = HashMap::new();
+
+    //     for row in rows {
+    //         let package_id: i32 = row.get("package_id");
+    //         let key: String = row.get("key");
+    //         let name: String = row.get("name");
+    //         let version: String = row.get("version");
+    //         let path: String = row.get("path");
+    //         let system_tag_id: i32 = row.get("system_tag_id");
+    //         let system_tag_username: String = row.get("username");
+    //         let system_tag_hostname: String = row.get("hostname");
+
+    //         summary
+    //             .entry(key.clone())
+    //             .and_modify(|entry| {
+    //                 if let Some(data) = entry.get_mut("data").and_then(|v| v.as_array_mut()) {
+    //                     data.push(json!({
+    //                         "package_id": package_id,
+    //                         "version": version,
+    //                         "path": path,
+    //                         "system_tag_id": system_tag_id,
+    //                         "system_tag_username": system_tag_username,
+    //                         "system_tag_hostname": system_tag_hostname
+    //                     }));
+    //                 }
+    //             })
+    //             .or_insert_with(|| {
+    //                 json!({
+    //                     "name": name,
+    //                     "data": [{
+    //                         "package_id": package_id,
+    //                         "version": version,
+    //                         "path": path,
+    //                         "system_tag_id": system_tag_id,
+    //                         "system_tag_username": system_tag_username,
+    //                         "system_tag_hostname": system_tag_hostname
+    //                     }]
+    //                 })
+    //             });
+    //     }
+
+    //     Ok(json!(summary))
     // }
 
-    pub async fn package_versions(&self, system_tag_id: Option<i32>) -> Result<Value, sqlx::Error> {
+    pub async fn package_versions(
+        &self,
+        system_tag_id: Option<i32>,
+        tenant_id: Option<i32>,
+    ) -> Result<Value, sqlx::Error> {
         let system_tag_table = self.get_table("system_tag");
         let package_table = self.get_table("package");
         let site_packages_table = self.get_table("site_packages");
         let monitor_scan_table = self.get_table("monitor_scan");
         let ping_table = self.get_table("ping");
+
+        let mut where_clauses = Vec::new();
+        let mut args = sqlx::postgres::PgArguments::default();
+
+        if let Some(id) = system_tag_id {
+            where_clauses.push("pi.system_tag_id = $1");
+            let _ = args.add(id);
+        } else if let Some(tid) = tenant_id {
+            where_clauses.push("st.tenant_id = $1");
+            let _ = args.add(tid);
+        }
+
+        let where_clause = if !where_clauses.is_empty() {
+            format!("WHERE {}", where_clauses.join(" AND "))
+        } else {
+            "".to_string()
+        };
 
         let query = format!(
             r#"
@@ -629,18 +714,8 @@ impl DBContext {
             JOIN {site_packages_table} sp ON ms.site_packages_id = sp.id
             JOIN {system_tag_table} st ON pi.system_tag_id = st.id
             {where_clause}
-            "#,
-            where_clause = if system_tag_id.is_some() {
-                "WHERE pi.system_tag_id = $1"
-            } else {
-                ""
-            }
+            "#
         );
-
-        let mut args = sqlx::postgres::PgArguments::default();
-        if let Some(id) = system_tag_id {
-            let _ = args.add(id);
-        }
 
         let rows = sqlx::query_with(&query, args).fetch_all(&self.pool).await?;
 

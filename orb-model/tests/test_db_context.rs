@@ -277,7 +277,7 @@ async fn test_monitor_scan_load_a() {
 
     ctx.monitor_scan_load_from_json(&msg).await.unwrap();
 
-    let post = ctx.package_versions(None).await.unwrap();
+    let post = ctx.package_versions(Some(1), None).await.unwrap();
     // variability due to home path substitution
     assert!(post.to_string().len() >= 37949);
     ctx.tables_drop().await.unwrap();

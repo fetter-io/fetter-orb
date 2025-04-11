@@ -60,7 +60,8 @@ pub async fn get_package_versions(
     State(db): State<DBContext>,
     Query(params): Query<PackageVersionsParams>,
 ) -> Result<Json<Value>, (StatusCode, String)> {
-    db.package_versions(params.system_tag_id)
+    // TODO: get tenant
+    db.package_versions(Some(1), params.system_tag_id)
         .await
         .map(Json)
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
