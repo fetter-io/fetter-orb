@@ -25,6 +25,7 @@ export function AllowListEditor({
       setValue(editValue.trim());
       setIsEditing(false);
     } catch (err) {
+      console.error("Submit error:", err);
       setError("Failed to submit allow list.");
     } finally {
       setSubmitting(false);

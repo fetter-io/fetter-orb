@@ -275,21 +275,21 @@ export default function Home() {
             </>
           )}
 
-{activeTab === "allow" && selectedTenantId !== null && (
-  <>
-    <AllowListEditor
-      initialValue="https://example.com/fetter.lock"
-      onSubmit={async (val) => {
-        const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
-        await fetch(`${apiBase}/allow_list`, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain" },
-          body: val,
-        });
-      }}
-    />
-  </>
-)}
+          {activeTab === "allow" && selectedTenantId !== null && (
+            <>
+              <AllowListEditor
+                initialValue="https://example.com/fetter.lock"
+                onSubmit={async (val) => {
+                  const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
+                  await fetch(`${apiBase}/allow_list`, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain" },
+                    body: val,
+                  });
+                }}
+              />
+            </>
+          )}
 
           {activeTab === "vulns" && (
             <>
