@@ -12,7 +12,6 @@ use std::net::SocketAddr;
 use tokio::net::TcpListener;
 use tower_http::cors::{Any, CorsLayer};
 
-// use fetter::Package;
 use orb_model::db_context::DBContext;
 use orb_model::db_context::Tenant;
 use orb_model::db_via_container::get_db_pool;
@@ -52,7 +51,7 @@ pub async fn get_package_versions(
     State(db): State<DBContext>,
     Query(params): Query<PackageVersionsParams>,
 ) -> Result<Json<Value>, (StatusCode, String)> {
-    println!("{:?}", params);
+    // println!("{:?}", params);
     match params.tenant_id {
         Some(tenant_id) => db
             .package_versions(params.system_tag_id, Some(tenant_id))
