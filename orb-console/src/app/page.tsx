@@ -64,7 +64,9 @@ export default function Home() {
     }
 
     const query = params.toString();
-    const res = await fetch(`${apiBase}/package_versions${query ? `?${query}` : ""}`);
+    const res = await fetch(
+      `${apiBase}/package_versions${query ? `?${query}` : ""}`,
+    );
     const raw = await res.json();
 
     return Object.entries(raw).map(([key, value]) => {
@@ -97,7 +99,9 @@ export default function Home() {
     //   query = `?tenant_id=${selectedTenantId}`;
     // }
     const query = params.toString();
-    const res = await fetch(`${apiBase}/package_counts${query ? `?${query}` : ""}`);
+    const res = await fetch(
+      `${apiBase}/package_counts${query ? `?${query}` : ""}`,
+    );
 
     // const res = await fetch(`${apiBase}/package_counts${query}`);
     const raw = await res.json();
