@@ -197,8 +197,8 @@ export default function Home() {
     <div className="flex flex-col min-h-screen font-[family-name:var(--font-geist-sans)] bg-gradient-to-b from-slate-950 to-slate-900">
       {/* Frosted header with sticky tab selector */}
       <header className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur border-b border-slate-700 px-6 py-4">
-        <div className="max-w-4xl mx-auto flex flex-col gap-6">
-          <div className="flex gap-4 items-center mb-2">
+        <div className="max-w-4xl mx-auto flex flex-col gap-2">
+          <div className="flex gap-4 items-center mb-0">
             <Image
               aria-hidden
               src="/globe.svg"
