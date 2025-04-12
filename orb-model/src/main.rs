@@ -42,7 +42,7 @@ pub async fn get_tenant_all(
 
 //------------------------------------------------------------------------------
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 pub struct PackageVersionsParams {
     pub system_tag_id: Option<i32>,
     pub tenant_id: Option<i32>,
@@ -52,6 +52,7 @@ pub async fn get_package_versions(
     State(db): State<DBContext>,
     Query(params): Query<PackageVersionsParams>,
 ) -> Result<Json<Value>, (StatusCode, String)> {
+    println!("{:?}", params);
     match params.tenant_id {
         Some(tenant_id) => db
             .package_versions(params.system_tag_id, Some(tenant_id))

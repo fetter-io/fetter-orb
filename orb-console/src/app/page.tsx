@@ -55,14 +55,16 @@ export default function Home() {
   const fetchPackages = useCallback(async (): Promise<PackageVersions[]> => {
     const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
 
-    let query = "";
+    const params = new URLSearchParams();
     if (selectedSystemId !== null) {
-      query = `?system_tag_id=${selectedSystemId}`;
-    } else if (selectedTenantId !== null) {
-      query = `?tenant_id=${selectedTenantId}`;
+      params.set("system_tag_id", selectedSystemId.toString());
+    }
+    if (selectedTenantId !== null) {
+      params.set("tenant_id", selectedTenantId.toString());
     }
 
-    const res = await fetch(`${apiBase}/package_versions${query}`);
+    const query = params.toString();
+    const res = await fetch(`${apiBase}/package_versions${query ? `?${query}` : ""}`);
     const raw = await res.json();
 
     return Object.entries(raw).map(([key, value]) => {
@@ -80,14 +82,24 @@ export default function Home() {
   > => {
     const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
 
-    let query = "";
+    const params = new URLSearchParams();
     if (selectedSystemId !== null) {
-      query = `?system_tag_id=${selectedSystemId}`;
-    } else if (selectedTenantId !== null) {
-      query = `?tenant_id=${selectedTenantId}`;
+      params.set("system_tag_id", selectedSystemId.toString());
+    }
+    if (selectedTenantId !== null) {
+      params.set("tenant_id", selectedTenantId.toString());
     }
 
-    const res = await fetch(`${apiBase}/package_counts${query}`);
+    // let query = "";
+    // if (selectedSystemId !== null) {
+    //   query = `?system_tag_id=${selectedSystemId}`;
+    // } else if (selectedTenantId !== null) {
+    //   query = `?tenant_id=${selectedTenantId}`;
+    // }
+    const query = params.toString();
+    const res = await fetch(`${apiBase}/package_counts${query ? `?${query}` : ""}`);
+
+    // const res = await fetch(`${apiBase}/package_counts${query}`);
     const raw = await res.json();
 
     return raw.map(([start, end, count]: [string, string, number]) => ({
@@ -100,14 +112,25 @@ export default function Home() {
   const fetchAudit = useCallback(async (): Promise<AuditEntry[]> => {
     const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
 
-    let query = "";
+    // let query = "";
+    // if (selectedSystemId !== null) {
+    //   query = `?system_tag_id=${selectedSystemId}`;
+    // } else if (selectedTenantId !== null) {
+    //   query = `?tenant_id=${selectedTenantId}`;
+    // }
+
+    const params = new URLSearchParams();
     if (selectedSystemId !== null) {
-      query = `?system_tag_id=${selectedSystemId}`;
-    } else if (selectedTenantId !== null) {
-      query = `?tenant_id=${selectedTenantId}`;
+      params.set("system_tag_id", selectedSystemId.toString());
+    }
+    if (selectedTenantId !== null) {
+      params.set("tenant_id", selectedTenantId.toString());
     }
 
-    const res = await fetch(`${apiBase}/audit${query}`);
+    // const res = await fetch(`${apiBase}/audit${query}`);
+    const query = params.toString();
+    const res = await fetch(`${apiBase}/audit${query ? `?${query}` : ""}`);
+
     return await res.json();
   }, [selectedSystemId, selectedTenantId]);
 
