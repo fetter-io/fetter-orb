@@ -369,7 +369,7 @@ async fn test_dep_manifest_load_a() {
     let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
 
     let pool = get_db_pool().await;
-    let ctx = DBContext::new(pool, Some("mslb".into()));
+    let ctx = DBContext::new(pool, Some("dmla".into()));
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
     // do first to force tenant creation
@@ -379,5 +379,7 @@ async fn test_dep_manifest_load_a() {
     ctx.dep_manifest_load_from_json(msg).await.unwrap();
 
     let dm = ctx.dep_manifest_from_tenant_id(1).await.unwrap().unwrap();
-    assert_eq!(dm, "numpy==2.0.0\nstatic-frame==2.0.0\n")
+    assert_eq!(dm, "numpy==2.0.0\nstatic-frame==2.0.0\n");
+
+    ctx.tables_drop().await.unwrap();
 }

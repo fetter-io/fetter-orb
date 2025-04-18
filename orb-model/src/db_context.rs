@@ -929,7 +929,7 @@ impl DBContext {
 
         let query = format!(
             r#"
-            SELECT tenant_id, content
+            SELECT content
             FROM {table_name}
             WHERE tenant_id = $1
             "#
@@ -940,7 +940,6 @@ impl DBContext {
             .fetch_optional(&self.pool)
             .await?
         {
-            let tenant_id: i32 = row.get("tenant_id");
             let content: String = row.get("content");
             Ok(Some(content))
         } else {
