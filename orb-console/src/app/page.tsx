@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+// import Image from "next/image";
 import { useState, useCallback, useEffect, useMemo } from "react";
 // import { PackageCard } from "@/components/PackageCard";
 import { Footer } from "@/components/Footer";
@@ -22,6 +22,8 @@ import { PackageCountsChart } from "@/components/PackageCountsChart";
 import { VulnCard } from "@/components/VulnCard";
 import { TenantSelector } from "@/components/TenantSelector";
 import { AllowListEditor } from "@/components/AllowListEditor";
+import { Weave } from "@/components/Weave";
+import colors from "tailwindcss/colors";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<Tab>("packages");
@@ -208,15 +210,12 @@ export default function Home() {
       {/* Frosted header with sticky tab selector */}
       <header className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur border-b border-slate-700 px-6 py-4">
         <div className="max-w-4xl mx-auto flex flex-col gap-2">
-          <div className="flex gap-4 items-center mb-0">
-            <Image
-              aria-hidden
-              src="/globe.svg"
-              alt="Globe icon"
-              width={16}
-              height={16}
-            />
-            <p className="font-semibold text-white">fetter</p>
+          <div className="flex gap-4 items-center mb-0 items-center justify-center">
+            <div className="flex w-20 h-20 ">
+              <Weave fill={colors.slate[600]} className="w-full h-full" />
+            </div>
+            {/* <p className="font-semibold text-white">fetter</p> */}
+
           </div>
 
           {/* conditionally show if more than 1 tenant */}
