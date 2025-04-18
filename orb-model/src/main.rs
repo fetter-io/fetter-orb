@@ -60,15 +60,16 @@ pub async fn get_dep_manifest(
     Query(params): Query<DepManifestParams>,
 ) -> Result<Json<Value>, (StatusCode, String)> {
     match params.tenant_id {
-        Some(tenant_id) => {
-            db.dep_manifest_from_tenant_id(tenant_id)
-                .await
-                .map(|opt| Json(match opt {
+        Some(tenant_id) => db
+            .dep_manifest_from_tenant_id(tenant_id)
+            .await
+            .map(|opt| {
+                Json(match opt {
                     Some(text) => serde_json::json!({ "content": text }),
                     None => serde_json::json!(null),
-                }))
-                .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
-        }
+                })
+            })
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
         None => Ok(Json(serde_json::json!([]))),
     }
 }
