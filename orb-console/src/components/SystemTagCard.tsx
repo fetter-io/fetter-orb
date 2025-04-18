@@ -48,7 +48,7 @@ export function SystemTagCard({
         </div>
         <div>
           <button
-            className="text-gray-500 hover:underline hover:text-gray-300"
+            className="text-gray-500 hover:underline hover:text-gray-300 cursor-pointer"
             onClick={() => onPackagesClick?.(tag.id)}
           >
             📦

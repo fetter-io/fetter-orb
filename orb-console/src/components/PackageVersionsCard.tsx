@@ -34,7 +34,7 @@ export function PackageVersionsCard({
           return (
             <div
               key={index}
-              className="grid grid-cols-6 gap-2 bg-gray-900 rounded-md text-gray-400 items-center"
+              className="grid grid-cols-6 gap-2 p-2 bg-gray-900 rounded-md text-gray-400 items-center"
             >
               <div>
                 <span className="inline-flex items-center gap-1">
@@ -69,7 +69,7 @@ export function PackageVersionsCard({
               <div className="col-span-1">
                 {entry.system_tag_username && entry.system_tag_hostname && (
                   <button
-                    className="hover:text-gray-300 hover:underline ml-auto"
+                    className="hover:text-gray-300 hover:underline ml-auto cursor-pointer"
                     onClick={() => onTagClick?.(entry.system_tag_id)}
                   >
                     {entry.system_tag_username}: {entry.system_tag_hostname}

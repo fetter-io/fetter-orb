@@ -25,7 +25,7 @@ export function TabSelector({ activeTab, onTabChange }: TabSelectorProps) {
               ${
                 activeTab === tab.id
                   ? "bg-slate-900 text-gray-400 ring-1 ring-slate-700"
-                  : "hover:bg-slate-700 hover:text-gray-300"
+                  : "hover:bg-slate-700 hover:text-gray-300 cursor-pointer"
               }`}
           >
             {tab.label}
