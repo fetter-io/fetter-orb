@@ -921,6 +921,34 @@ impl DBContext {
     }
 
     //--------------------------------------------------------------------------
+    pub async fn dep_manifest_from_tenant_id(
+        &self,
+        tenant_id: i32,
+    ) -> Result<Option<String>, sqlx::Error> {
+        let table_name = self.get_table("dep_manifest");
+
+        let query = format!(
+            r#"
+            SELECT tenant_id, content
+            FROM {table_name}
+            WHERE tenant_id = $1
+            "#
+        );
+
+        if let Some(row) = sqlx::query(&query)
+            .bind(tenant_id)
+            .fetch_optional(&self.pool)
+            .await?
+        {
+            let tenant_id: i32 = row.get("tenant_id");
+            let content: String = row.get("content");
+            Ok(Some(content))
+        } else {
+            Ok(None)
+        }
+    }
+
+    //--------------------------------------------------------------------------
     pub async fn site_packages_insert_or_get(&self, fp: PathShared) -> Result<i32, sqlx::Error> {
         let table_name = self.get_table("site_packages");
         let path_str = fp.to_string();
@@ -1012,5 +1040,36 @@ impl DBContext {
         let tenant_id = self.tenant_insert_or_get(&t).await?;
         let st_id = self.system_tag_insert_or_get(tenant_id, &st).await?;
         self.monitor_scan_load(&scan_fs, st_id, &ts).await
+    }
+
+    pub async fn dep_manifest_load(
+        &self,
+        tenant_id: i32,
+        content: &String,
+    ) -> Result<(), sqlx::Error> {
+        let dep_manifest_table = self.get_table("dep_manifest");
+
+        let insert_query = format!(
+            r#"
+            INSERT INTO {dep_manifest_table} (tenant_id, content)
+            VALUES ($1, $2)
+            ON CONFLICT DO NOTHING
+            "#
+        );
+
+        sqlx::query(&insert_query)
+            .bind(tenant_id)
+            .bind(content)
+            .execute(&self.pool)
+            .await?;
+
+        Ok(())
+    }
+
+    pub async fn dep_manifest_load_from_json(&self, payload: &str) -> Result<(), sqlx::Error> {
+        let (tenant_id, body): (i32, String) =
+            serde_json::from_str(payload).expect("Invalid JSON payload");
+        // TODO: validate tenant against defined list
+        self.dep_manifest_load(tenant_id, &body).await
     }
 }

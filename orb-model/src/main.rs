@@ -19,11 +19,21 @@ use orb_model::db_via_container::get_db_pool;
 //------------------------------------------------------------------------------
 // endpoint implementations
 
-pub async fn post_monitor_scan_load(
+pub async fn post_monitor_scan(
     State(db): State<DBContext>,
     body: String,
 ) -> Result<StatusCode, (StatusCode, String)> {
     match db.monitor_scan_load_from_json(&body).await {
+        Ok(_) => Ok(StatusCode::NO_CONTENT),
+        Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
+    }
+}
+
+pub async fn post_dep_manifest(
+    State(db): State<DBContext>,
+    body: String,
+) -> Result<StatusCode, (StatusCode, String)> {
+    match db.dep_manifest_load_from_json(&body).await {
         Ok(_) => Ok(StatusCode::NO_CONTENT),
         Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
     }
@@ -155,7 +165,8 @@ async fn main() {
         .route("/package_counts", get(get_package_counts))
         .route("/audit", get(get_audit))
         // post requests
-        .route("/monitor_scan", post(post_monitor_scan_load))
+        .route("/monitor_scan", post(post_monitor_scan))
+        .route("/dep_manifest", post(post_dep_manifest))
         .layer(cors)
         .with_state(dbx);
 

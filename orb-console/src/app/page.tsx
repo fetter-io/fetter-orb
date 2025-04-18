@@ -92,18 +92,10 @@ export default function Home() {
       params.set("tenant_id", selectedTenantId.toString());
     }
 
-    // let query = "";
-    // if (selectedSystemId !== null) {
-    //   query = `?system_tag_id=${selectedSystemId}`;
-    // } else if (selectedTenantId !== null) {
-    //   query = `?tenant_id=${selectedTenantId}`;
-    // }
     const query = params.toString();
     const res = await fetch(
       `${apiBase}/package_counts${query ? `?${query}` : ""}`,
     );
-
-    // const res = await fetch(`${apiBase}/package_counts${query}`);
     const raw = await res.json();
 
     return raw.map(([start, end, count]: [string, string, number]) => ({
@@ -116,13 +108,6 @@ export default function Home() {
   const fetchAudit = useCallback(async (): Promise<AuditEntry[]> => {
     const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
 
-    // let query = "";
-    // if (selectedSystemId !== null) {
-    //   query = `?system_tag_id=${selectedSystemId}`;
-    // } else if (selectedTenantId !== null) {
-    //   query = `?tenant_id=${selectedTenantId}`;
-    // }
-
     const params = new URLSearchParams();
     if (selectedSystemId !== null) {
       params.set("system_tag_id", selectedSystemId.toString());
@@ -130,8 +115,6 @@ export default function Home() {
     if (selectedTenantId !== null) {
       params.set("tenant_id", selectedTenantId.toString());
     }
-
-    // const res = await fetch(`${apiBase}/audit${query}`);
     const query = params.toString();
     const res = await fetch(`${apiBase}/audit${query ? `?${query}` : ""}`);
 
@@ -141,7 +124,7 @@ export default function Home() {
   //----------------------------------------------------------------------------
   const tenantsState = useDashboardData(fetchTenants, {
     active: true,
-    pollInterval: 10000,
+    pollInterval: 20000,
   });
 
   const packagesState = useDashboardData(fetchPackages, {

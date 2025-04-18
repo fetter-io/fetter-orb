@@ -34,7 +34,7 @@ export function PackageVersionsCard({
           return (
             <div
               key={index}
-              className="grid grid-cols-6 gap-2 text-gray-400 items-center"
+              className="grid grid-cols-6 gap-2 bg-gray-900 rounded-md text-gray-400 items-center"
             >
               <div>
                 <span className="inline-flex items-center gap-1">

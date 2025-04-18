@@ -359,3 +359,25 @@ async fn test_monitor_scan_load_b() {
     //     .unwrap();
     // assert_eq!(post3.len(), 779);
 }
+
+//------------------------------------------------------------------------------
+
+#[tokio::test]
+async fn test_dep_manifest_load_a() {
+    let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path1.push("tests/fixtures/monitor-scan-04.json");
+    let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
+
+    let pool = get_db_pool().await;
+    let ctx = DBContext::new(pool, Some("mslb".into()));
+    ctx.tables_drop().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
+    // do first to force tenant creation
+    ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
+
+    let msg = r#"[1, "numpy==2.0.0\nstatic-frame==2.0.0\n"]"#;
+    ctx.dep_manifest_load_from_json(msg).await.unwrap();
+
+    let dm = ctx.dep_manifest_from_tenant_id(1).await.unwrap().unwrap();
+    assert_eq!(dm, "numpy==2.0.0\nstatic-frame==2.0.0\n")
+}
