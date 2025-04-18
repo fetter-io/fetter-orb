@@ -50,6 +50,30 @@ pub async fn get_tenant_all(
 }
 
 //------------------------------------------------------------------------------
+#[derive(Deserialize)]
+pub struct DepManifestParams {
+    pub tenant_id: Option<i32>,
+}
+
+pub async fn get_dep_manifest(
+    State(db): State<DBContext>,
+    Query(params): Query<DepManifestParams>,
+) -> Result<Json<Value>, (StatusCode, String)> {
+    match params.tenant_id {
+        Some(tenant_id) => {
+            db.dep_manifest_from_tenant_id(tenant_id)
+                .await
+                .map(|opt| Json(match opt {
+                    Some(text) => serde_json::json!({ "content": text }),
+                    None => serde_json::json!(null),
+                }))
+                .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
+        }
+        None => Ok(Json(serde_json::json!([]))),
+    }
+}
+
+//------------------------------------------------------------------------------
 
 #[derive(Deserialize, Debug)]
 pub struct PackageVersionsParams {
@@ -164,6 +188,7 @@ async fn main() {
         .route("/package_versions", get(get_package_versions))
         .route("/package_counts", get(get_package_counts))
         .route("/audit", get(get_audit))
+        .route("/validate", get(get_dep_manifest))
         // post requests
         .route("/monitor_scan", post(post_monitor_scan))
         .route("/dep_manifest", post(post_dep_manifest))

@@ -288,14 +288,15 @@ export default function Home() {
             <>
               <AllowListEditor
                 key={selectedTenantId} // not sure if this does what we want
-                initialValue=""
+                initialValue="foo"
                 tenantId={selectedTenantId}
-                onSubmit={async (val) => {
+                onSubmit={async ([tenantId, content]) => {
                   const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
-                  await fetch(`${apiBase}/allow_list`, {
+                  const body = JSON.stringify([tenantId, content]);
+                  await fetch(`${apiBase}/dep_manifest`, {
                     method: "POST",
-                    headers: { "Content-Type": "text/plain" },
-                    body: val,
+                    headers: { "Content-Type": "application/json" },
+                    body,
                   });
                 }}
               />

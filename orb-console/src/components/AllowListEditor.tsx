@@ -5,7 +5,7 @@ import { useState } from "react";
 type AllowListEditorProps = {
   initialValue: string;
   tenantId: number;
-  onSubmit: (value: string, tenantId: number) => Promise<void>;
+  onSubmit: (args: [number, string]) => Promise<void>;
 };
 
 export function AllowListEditor({
@@ -23,7 +23,7 @@ export function AllowListEditor({
     setSubmitting(true);
     setError(null);
     try {
-      await onSubmit(editValue.trim(), tenantId);
+      await onSubmit([tenantId, editValue.trim()]);
       setValue(editValue.trim());
       setIsEditing(false);
     } catch (err) {
