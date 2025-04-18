@@ -215,7 +215,6 @@ export default function Home() {
               <Weave fill={colors.slate[600]} className="w-full h-full" />
             </div>
             {/* <p className="font-semibold text-white">fetter</p> */}
-
           </div>
 
           {/* conditionally show if more than 1 tenant */}
