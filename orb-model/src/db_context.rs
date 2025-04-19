@@ -941,6 +941,7 @@ impl DBContext {
             .await?
         {
             let content: String = row.get("content");
+            println!("dep_manifest_from_tenant_id: {:?} {:?}", tenant_id, content);
             Ok(Some(content))
         } else {
             Ok(None)
@@ -1052,7 +1053,8 @@ impl DBContext {
             r#"
             INSERT INTO {dep_manifest_table} (tenant_id, content)
             VALUES ($1, $2)
-            ON CONFLICT DO NOTHING
+            ON CONFLICT (tenant_id)
+            DO UPDATE SET content = EXCLUDED.content
             "#
         );
 
@@ -1069,6 +1071,7 @@ impl DBContext {
         let (tenant_id, body): (i32, String) =
             serde_json::from_str(payload).expect("Invalid JSON payload");
         // TODO: validate tenant against defined list
+        println!("{:?} {:?}", tenant_id, body);
         self.dep_manifest_load(tenant_id, &body).await
     }
 }

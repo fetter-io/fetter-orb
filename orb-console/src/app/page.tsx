@@ -123,6 +123,24 @@ export default function Home() {
     return await res.json();
   }, [selectedSystemId, selectedTenantId]);
 
+
+  const fetchValidation = useCallback(async () => {
+    const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
+    const params = new URLSearchParams();
+    if (selectedTenantId !== null) {
+      params.set("tenant_id", selectedTenantId.toString());
+    }
+    if (selectedSystemId !== null) {
+      params.set("system_tag_id", selectedSystemId.toString());
+    }
+    const query = params.toString();
+    const res = await fetch(`${apiBase}/validate${query ? `?${query}` : ""}`);
+
+    // returns { dep_manifest, missing, unrequired, misdefined, undefined }
+    return await res.json();
+  }, [selectedTenantId, selectedSystemId]);
+
+
   //----------------------------------------------------------------------------
   const tenantsState = useDashboardData(fetchTenants, {
     active: true,
@@ -140,10 +158,14 @@ export default function Home() {
   });
 
   const systemTagsState = useDashboardData(fetchSystemTags, {
-    active: activeTab === "tags" || activeTab === "packages",
+    active: activeTab === "packages" || activeTab === "tabs",
     pollInterval: 30000,
   });
 
+  const validationState = useDashboardData(fetchValidation, {
+    active: activeTab === "packages" || activeTab === "allow",
+    pollInterval: 0,
+  });
   //----------------------------------------------------------------------------
   const auditState = useDashboardData(fetchAudit, {
     active: false,
@@ -287,7 +309,7 @@ export default function Home() {
             <>
               <AllowListEditor
                 key={selectedTenantId} // not sure if this does what we want
-                initialValue="foo"
+                initialValue={validationState.data?.dep_manifest ?? ""}
                 tenantId={selectedTenantId}
                 onSubmit={async ([tenantId, content]) => {
                   const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;

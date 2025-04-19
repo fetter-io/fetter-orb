@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type AllowListEditorProps = {
   initialValue: string;
@@ -16,6 +16,14 @@ export function AllowListEditor({
   const [isEditing, setIsEditing] = useState(false);
   const [value, setValue] = useState(initialValue);
   const [editValue, setEditValue] = useState(initialValue);
+
+  useEffect(() => {
+    if (!isEditing) {
+      setValue(initialValue);
+      setEditValue(initialValue);
+    }
+  }, [initialValue, isEditing]);
+
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

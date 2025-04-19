@@ -50,8 +50,9 @@ pub async fn get_tenant_all(
 }
 
 //------------------------------------------------------------------------------
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 pub struct DepManifestParams {
+    pub system_tag_id: Option<i32>,
     pub tenant_id: Option<i32>,
 }
 
@@ -59,13 +60,14 @@ pub async fn get_dep_manifest(
     State(db): State<DBContext>,
     Query(params): Query<DepManifestParams>,
 ) -> Result<Json<Value>, (StatusCode, String)> {
+    println!("{:?}", params);
     match params.tenant_id {
         Some(tenant_id) => db
             .dep_manifest_from_tenant_id(tenant_id)
             .await
             .map(|opt| {
                 Json(match opt {
-                    Some(text) => serde_json::json!({ "content": text }),
+                    Some(text) => serde_json::json!({ "dep_manifest": text }),
                     None => serde_json::json!(null),
                 })
             })
