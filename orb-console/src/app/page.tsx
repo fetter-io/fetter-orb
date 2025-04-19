@@ -156,7 +156,7 @@ export default function Home() {
   });
 
   const systemTagsState = useDashboardData(fetchSystemTags, {
-    active: activeTab === "packages" || activeTab === "tabs",
+    active: true, // not sure how often to update
     pollInterval: 30000,
   });
 
