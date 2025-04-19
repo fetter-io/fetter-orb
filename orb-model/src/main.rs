@@ -60,7 +60,7 @@ pub async fn get_dep_manifest(
     State(db): State<DBContext>,
     Query(params): Query<DepManifestParams>,
 ) -> Result<Json<Value>, (StatusCode, String)> {
-    println!("{:?}", params);
+    // println!("{:?}", params);
     match params.tenant_id {
         Some(tenant_id) => db
             .dep_manifest_from_tenant_id(tenant_id)

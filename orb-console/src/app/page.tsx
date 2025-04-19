@@ -123,7 +123,6 @@ export default function Home() {
     return await res.json();
   }, [selectedSystemId, selectedTenantId]);
 
-
   const fetchValidation = useCallback(async () => {
     const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
     const params = new URLSearchParams();
@@ -139,7 +138,6 @@ export default function Home() {
     // returns { dep_manifest, missing, unrequired, misdefined, undefined }
     return await res.json();
   }, [selectedTenantId, selectedSystemId]);
-
 
   //----------------------------------------------------------------------------
   const tenantsState = useDashboardData(fetchTenants, {
