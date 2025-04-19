@@ -164,6 +164,7 @@ export default function Home() {
     active: activeTab === "packages" || activeTab === "allow",
     pollInterval: 0,
   });
+
   //----------------------------------------------------------------------------
   const auditState = useDashboardData(fetchAudit, {
     active: false,
@@ -317,6 +318,7 @@ export default function Home() {
                     headers: { "Content-Type": "application/json" },
                     body,
                   });
+                  validationState.refresh();
                 }}
               />
             </>
