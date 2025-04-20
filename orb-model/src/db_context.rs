@@ -788,11 +788,12 @@ impl DBContext {
     }
 
     //--------------------------------------------------------------------------
-    pub async fn audit(
+
+    async fn get_latest_packages(
         &self,
         system_tag_id: Option<i32>,
         tenant_id: Option<i32>,
-    ) -> Result<Value, sqlx::Error> {
+    ) -> Result<(Vec<Package>, HashMap<Package, i32>), sqlx::Error> {
         let ping_table = self.get_table("ping");
         let package_table = self.get_table("package");
         let monitor_scan_table = self.get_table("monitor_scan");
@@ -856,7 +857,7 @@ impl DBContext {
                 let _ = args.add(tenant_id);
                 (query, args)
             } else {
-                // unconstrained
+                // latest of all tenants and systems
                 let query = format!(
                     r#"
                     WITH latest_scans AS (
@@ -895,6 +896,120 @@ impl DBContext {
         }
 
         let packages: Vec<Package> = package_to_id.keys().cloned().collect();
+        Ok((packages, package_to_id))
+    }
+
+
+
+    pub async fn audit(
+        &self,
+        system_tag_id: Option<i32>,
+        tenant_id: Option<i32>,
+    ) -> Result<Value, sqlx::Error> {
+        // let ping_table = self.get_table("ping");
+        // let package_table = self.get_table("package");
+        // let monitor_scan_table = self.get_table("monitor_scan");
+
+        // let (query, args): (String, sqlx::postgres::PgArguments) =
+        //     if let Some(system_id) = system_tag_id {
+        //         let query = format!(
+        //             r#"
+        //             WITH latest_scan AS (
+        //                 SELECT MAX(timestamp) as latest_ts
+        //                 FROM {ping_table}
+        //                 WHERE scanned = true AND system_tag_id = $1
+        //             )
+        //             SELECT
+        //                 p.id,
+        //                 p.name,
+        //                 p.key,
+        //                 p.version,
+        //                 p.url,
+        //                 p.commit_id,
+        //                 p.vcs,
+        //                 p.revision
+        //             FROM {monitor_scan_table} ms
+        //             JOIN {ping_table} pi ON ms.ping_id = pi.id
+        //             JOIN latest_scan ls ON pi.timestamp = ls.latest_ts
+        //             JOIN {package_table} p ON ms.package_id = p.id
+        //             WHERE pi.system_tag_id = $1
+        //             "#
+        //         );
+        //         let mut args = sqlx::postgres::PgArguments::default();
+        //         let _ = args.add(system_id);
+        //         (query, args)
+        //     } else if let Some(tenant_id) = tenant_id {
+        //         let query = format!(
+        //             r#"
+        //             WITH latest_scans AS (
+        //                 SELECT pi.system_tag_id, MAX(pi.timestamp) as latest_ts
+        //                 FROM {ping_table} pi
+        //                 JOIN system_tag st ON pi.system_tag_id = st.id
+        //                 WHERE pi.scanned = true AND st.tenant_id = $1
+        //                 GROUP BY pi.system_tag_id
+        //             )
+        //             SELECT
+        //                 p.id,
+        //                 p.name,
+        //                 p.key,
+        //                 p.version,
+        //                 p.url,
+        //                 p.commit_id,
+        //                 p.vcs,
+        //                 p.revision
+        //             FROM {monitor_scan_table} ms
+        //             JOIN {ping_table} pi ON ms.ping_id = pi.id
+        //             JOIN latest_scans ls
+        //                 ON pi.system_tag_id = ls.system_tag_id
+        //                AND pi.timestamp = ls.latest_ts
+        //             JOIN {package_table} p ON ms.package_id = p.id
+        //             "#
+        //         );
+        //         let mut args = sqlx::postgres::PgArguments::default();
+        //         let _ = args.add(tenant_id);
+        //         (query, args)
+        //     } else {
+        //         // unconstrained
+        //         let query = format!(
+        //             r#"
+        //             WITH latest_scans AS (
+        //                 SELECT system_tag_id, MAX(timestamp) as latest_ts
+        //                 FROM {ping_table}
+        //                 WHERE scanned = true
+        //                 GROUP BY system_tag_id
+        //             )
+        //             SELECT
+        //                 p.id,
+        //                 p.name,
+        //                 p.key,
+        //                 p.version,
+        //                 p.url,
+        //                 p.commit_id,
+        //                 p.vcs,
+        //                 p.revision
+        //             FROM {monitor_scan_table} ms
+        //             JOIN {ping_table} pi ON ms.ping_id = pi.id
+        //             JOIN latest_scans ls
+        //                 ON pi.system_tag_id = ls.system_tag_id
+        //                AND pi.timestamp = ls.latest_ts
+        //             JOIN {package_table} p ON ms.package_id = p.id
+        //             "#
+        //         );
+        //         let args = sqlx::postgres::PgArguments::default();
+        //         (query, args)
+        //     };
+
+        // let rows = sqlx::query_with(&query, args).fetch_all(&self.pool).await?;
+        // let mut package_to_id: HashMap<Package, i32> = HashMap::new();
+
+        // for row in rows {
+        //     let (id, pkg) = package_from_row(&row);
+        //     package_to_id.insert(pkg, id);
+        // }
+
+        // let packages: Vec<Package> = package_to_id.keys().cloned().collect();
+
+        let (packages, package_to_id) = self.get_latest_packages(system_tag_id, tenant_id).await?;
         let client = Arc::new(UreqClientLive);
         let audit = AuditReport::from_packages(client, &packages);
         let mut records = audit.records;

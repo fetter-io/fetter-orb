@@ -17,13 +17,19 @@ export function DashboardStatus({ label, state }: DashboardStatusProps) {
         <button
           onClick={refresh}
           disabled={loading}
-          className={`text-sm rounded-full px-2 py-1 border border-slate-600 bg-gray-800 transition text-zinc-400
-            hover:bg-gray-700 hover:text-zinc-300
-            ${loading ? "cursor-not-allowed opacity-75" : ""}`}
+          className={`text-sm rounded-full px-2 py-1 border border-slate-600 transition-colors duration-200
+    text-zinc-400 hover:text-zinc-300
+    ${
+      loading
+        ? "bg-gray-700 animate-pulse cursor-not-allowed opacity-90"
+        : "bg-gray-800 hover:bg-gray-600"
+    }`}
           aria-label="Refresh"
           title="Refresh"
         >
-          {loading ? <span className="inline-block animate-spin">⟳</span> : "↻"}
+          <span className={`inline-block ${loading ? "text-gray-300" : ""}`}>
+            ↻
+          </span>
         </button>
 
         <div className="text-xs text-gray-500">
