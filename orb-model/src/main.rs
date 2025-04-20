@@ -7,6 +7,7 @@ use axum::{
 };
 // use serde::Serialize;
 use serde::Deserialize;
+use serde_json::json;
 use serde_json::Value;
 use std::net::SocketAddr;
 use tokio::net::TcpListener;
@@ -73,6 +74,26 @@ pub async fn get_dep_manifest(
             })
             .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
         None => Ok(Json(serde_json::json!([]))),
+    }
+}
+
+pub async fn get_validate(
+    State(db): State<DBContext>,
+    Query(params): Query<DepManifestParams>,
+) -> Result<Json<Value>, (StatusCode, String)> {
+    match params.tenant_id {
+        Some(tenant_id) => db
+            .validate(params.system_tag_id, Some(tenant_id))
+            .await
+            .map(Json)
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
+        None => Ok(Json(json!({
+            "dep_manifest": "",
+            "missing": [],
+            "unrequired": [],
+            "misdefined": [],
+            "undefined": []
+        }))),
     }
 }
 
@@ -191,7 +212,8 @@ async fn main() {
         .route("/package_versions", get(get_package_versions))
         .route("/package_counts", get(get_package_counts))
         .route("/audit", get(get_audit))
-        .route("/validate", get(get_dep_manifest))
+        .route("/validate", get(get_validate))
+        // .route("/validate", get(get_dep_manifest))
         // post requests
         .route("/monitor_scan", post(post_monitor_scan))
         .route("/dep_manifest", post(post_dep_manifest))
