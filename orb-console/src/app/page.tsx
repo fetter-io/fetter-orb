@@ -308,6 +308,7 @@ export default function Home() {
           {activeTab === "tags" && (
             <>
               <DashboardStatus label="system tags" state={systemTagsState} />
+
               <div className="flex flex-col gap-2">
                 {systemTagsState.data?.map((tag) => (
                   <SystemTagCard
@@ -326,6 +327,8 @@ export default function Home() {
 
           {activeTab === "allow" && selectedTenantId !== null && (
             <>
+              <DashboardStatus label="validation" state={validationState} />
+
               <AllowListEditor
                 key={selectedTenantId} // not sure if this does what we want
                 initialValue={validationState.data?.dep_manifest ?? ""}
