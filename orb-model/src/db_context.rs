@@ -937,8 +937,15 @@ impl DBContext {
     ) -> Result<Value, sqlx::Error> {
         let (_packages, package_to_id) = self.get_latest_packages(system_tag_id, tenant_id).await?;
 
-        // Placeholder content
-        let dep_manifest = "numpy==1.25.0\npandas>=2.0.0\nrequests";
+        let dep_manifest = match tenant_id {
+            Some(t_id) => {
+                match self.dep_manifest_from_tenant_id(t_id).await? {
+                    Some(text) => text,
+                    None => "".to_string(),
+                }
+            }
+            None => "".to_string(),
+        };
 
         // For now, we'll simulate classifications by picking from the package_to_id keys
         let ids: Vec<i32> = package_to_id.values().cloned().collect();
