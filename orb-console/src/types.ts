@@ -82,3 +82,11 @@ export type Tenant = {
   key: string;
   name: string;
 };
+
+export type ValidationResult = {
+  dep_manifest: string;
+  missing: number[];
+  unrequired: number[];
+  misdefined: number[];
+  undefined: number[];
+};

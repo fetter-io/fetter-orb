@@ -938,12 +938,10 @@ impl DBContext {
         let (_packages, package_to_id) = self.get_latest_packages(system_tag_id, tenant_id).await?;
 
         let dep_manifest = match tenant_id {
-            Some(t_id) => {
-                match self.dep_manifest_from_tenant_id(t_id).await? {
-                    Some(text) => text,
-                    None => "".to_string(),
-                }
-            }
+            Some(t_id) => match self.dep_manifest_from_tenant_id(t_id).await? {
+                Some(text) => text,
+                None => "".to_string(),
+            },
             None => "".to_string(),
         };
 

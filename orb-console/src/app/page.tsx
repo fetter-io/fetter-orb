@@ -15,6 +15,7 @@ import {
   Tab,
   AuditEntry,
   Tenant,
+  ValidationResult,
 } from "@/types";
 import { PackageVersionsCard } from "@/components/PackageVersionsCard";
 import { SystemTagSelector } from "@/components/SystemTagSelector";
@@ -24,6 +25,7 @@ import { TenantSelector } from "@/components/TenantSelector";
 import { AllowListEditor } from "@/components/AllowListEditor";
 import { Weave } from "@/components/Weave";
 import colors from "tailwindcss/colors";
+import { ValidationPanel } from "@/components/ValidationPanel";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<Tab>("packages");
@@ -123,7 +125,7 @@ export default function Home() {
     return await res.json();
   }, [selectedSystemId, selectedTenantId]);
 
-  const fetchValidation = useCallback(async () => {
+  const fetchValidation = useCallback(async (): Promise<ValidationResult> => {
     const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
     const params = new URLSearchParams();
     if (selectedTenantId !== null) {
@@ -135,7 +137,6 @@ export default function Home() {
     const query = params.toString();
     const res = await fetch(`${apiBase}/validate${query ? `?${query}` : ""}`);
 
-    // returns { dep_manifest, missing, unrequired, misdefined, undefined }
     return await res.json();
   }, [selectedTenantId, selectedSystemId]);
 
@@ -160,10 +161,29 @@ export default function Home() {
     pollInterval: 30000,
   });
 
+  //----------------------------------------------------------------------------
   const validationState = useDashboardData(fetchValidation, {
     active: activeTab === "packages" || activeTab === "allow",
     pollInterval: 0,
   });
+
+  const validationSets = useMemo(() => {
+    if (!validationState.data) {
+      return {
+        missing: new Set<number>(),
+        unrequired: new Set<number>(),
+        misdefined: new Set<number>(),
+        undefined: new Set<number>(),
+      };
+    }
+
+    return {
+      missing: new Set(validationState.data.missing),
+      unrequired: new Set(validationState.data.unrequired),
+      misdefined: new Set(validationState.data.misdefined),
+      undefined: new Set(validationState.data.undefined),
+    };
+  }, [validationState.data]);
 
   //----------------------------------------------------------------------------
   const auditState = useDashboardData(fetchAudit, {
@@ -321,6 +341,13 @@ export default function Home() {
                   validationState.refresh();
                 }}
               />
+
+              {validationState.data && packagesState.data && (
+                <ValidationPanel
+                  validationSets={validationSets}
+                  packages={packagesState.data}
+                />
+              )}
             </>
           )}
 
