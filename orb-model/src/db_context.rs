@@ -914,7 +914,7 @@ impl DBContext {
         let query = format!(
             r#"
             SELECT DISTINCT ON (p.id, sp.id)
-                p.id AS package_id,
+                p.id AS id,
                 p.name, p.key, p.version, p.url, p.commit_id, p.vcs, p.revision,
                 sp.path
             FROM {monitor_scan_table} ms
@@ -1008,16 +1008,20 @@ impl DBContext {
             permit_superset: false,
             permit_subset: false,
         };
+        let package_to_sites = self.get_latest_packages_to_sites(None, Some(1)).await?;
+        let mut packages: Vec<_> = package_to_sites.keys().cloned().collect();
+        packages.sort(); // relies on Package implementing Ord
+        let site_to_exe: HashMap<PathShared, PathBuf> = HashMap::new();
 
-        // let vr = ValidationReport::from_components(
-        //     packages: &Vec<Package>,
-        //     package_to_sites: &HashMap<Package, Vec<PathShared>>,
-        //     site_to_exe: &HashMap<PathShared, PathBuf>,
-        //     exe_to_ems: &Option<HashMap<PathBuf, EnvMarkerState>>,
-        //     dm: &dm,
-        //     vf: &ValidationFlags,
-        //     ignore: None,
-        // )
+        let vr = ValidationReport::from_components(
+            &packages,
+            &package_to_sites,
+            &site_to_exe,
+            &None,
+            &dm,
+            &vf,
+            None,
+        );
         // For now, we'll simulate classifications by picking from the package_to_id keys
         let ids: Vec<i32> = package_to_id.values().cloned().collect();
 

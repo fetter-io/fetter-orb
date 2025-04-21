@@ -383,3 +383,23 @@ async fn test_dep_manifest_load_a() {
 
     ctx.tables_drop().await.unwrap();
 }
+
+//------------------------------------------------------------------------------
+
+#[tokio::test]
+async fn test_latest_packages_to_sites_a() {
+    let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path1.push("tests/fixtures/monitor-scan-04.json");
+    let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
+
+    let pool = get_db_pool().await;
+    let ctx = DBContext::new(pool, Some("lptsa".into()));
+    ctx.tables_drop().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
+    ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
+
+    let p_to_s = ctx.get_latest_packages_to_sites(None, Some(1)).await.unwrap();
+    assert_eq!(p_to_s.len(), 19);
+
+    ctx.tables_drop().await.unwrap();
+}
