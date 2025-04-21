@@ -398,7 +398,10 @@ async fn test_latest_packages_to_sites_a() {
     ctx.tables_create(false).await.unwrap();
     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
 
-    let p_to_s = ctx.get_latest_packages_to_sites(None, Some(1)).await.unwrap();
+    let p_to_s = ctx
+        .get_latest_packages_to_sites(None, Some(1))
+        .await
+        .unwrap();
     assert_eq!(p_to_s.len(), 19);
 
     ctx.tables_drop().await.unwrap();
