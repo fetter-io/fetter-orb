@@ -206,7 +206,7 @@ export default function Home() {
 
   const handleSystemTagClick = (id: number) => {
     setHighlightedSystemTagId(id);
-    setActiveTab("tags");
+    setActiveTab("systems");
 
     setTimeout(() => {
       document
@@ -305,29 +305,17 @@ export default function Home() {
             </>
           )}
 
-          {activeTab === "tags" && (
-            <>
-              <DashboardStatus label="system tags" state={systemTagsState} />
-
-              <div className="flex flex-col gap-2">
-                {systemTagsState.data?.map((tag) => (
-                  <SystemTagCard
-                    key={tag.id}
-                    tag={tag}
-                    highlight={tag.id === highlightedSystemTagId}
-                    onPackagesClick={(id) => {
-                      setSelectedSystemId(id);
-                      setActiveTab("packages");
-                    }}
-                  />
-                ))}
-              </div>
-            </>
-          )}
-
           {activeTab === "allow" && selectedTenantId !== null && (
             <>
               <DashboardStatus label="validation" state={validationState} />
+
+              <SystemTagSelector
+                selectedId={selectedSystemId}
+                onChange={setSelectedSystemId}
+                systemTags={systemTagsState.data ?? undefined}
+                packageCount={packagesState.data?.length ?? 0}
+                vulnCount={auditState.data?.length ?? 0}
+              />
 
               <AllowListEditor
                 key={selectedTenantId} // not sure if this does what we want
@@ -376,6 +364,26 @@ export default function Home() {
                       `vuln-pkg-${entry.package_id}` === highlightedVulnId
                     }
                     onPackageClick={handlePackageClick}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+
+          {activeTab === "systems" && (
+            <>
+              <DashboardStatus label="systems" state={systemTagsState} />
+
+              <div className="flex flex-col gap-2">
+                {systemTagsState.data?.map((tag) => (
+                  <SystemTagCard
+                    key={tag.id}
+                    tag={tag}
+                    highlight={tag.id === highlightedSystemTagId}
+                    onPackagesClick={(id) => {
+                      setSelectedSystemId(id);
+                      setActiveTab("packages");
+                    }}
                   />
                 ))}
               </div>

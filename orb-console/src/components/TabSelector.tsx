@@ -8,9 +8,9 @@ type TabSelectorProps = {
 export function TabSelector({ activeTab, onTabChange }: TabSelectorProps) {
   const tabs: { id: Tab; label: string; tooltip: string }[] = [
     { id: "packages", label: "📦", tooltip: "Packages" },
-    { id: "tags", label: "🖥️", tooltip: "Systems" },
     { id: "allow", label: "🔓", tooltip: "Allow List" },
     { id: "vulns", label: "⚠️", tooltip: "Vulnerabilities" },
+    { id: "systems", label: "🖥️", tooltip: "Systems" },
   ];
 
   return (

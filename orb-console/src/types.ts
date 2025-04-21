@@ -1,4 +1,4 @@
-export type Tab = "packages" | "tags" | "allow" | "vulns";
+export type Tab = "packages" | "systems" | "allow" | "vulns";
 
 export type Package = {
   id: number;
