@@ -904,7 +904,7 @@ impl DBContext {
         &self,
         system_tag_id: Option<i32>,
         tenant_id: Option<i32>,
-    ) -> ResultDynError<HashMap<Package, Vec<PathShared>>> {
+    ) -> ResultDynError<(HashMap<Package, Vec<PathShared>>, HashMap<Package, i32>)> {
         let system_tag_table = self.get_table("system_tag");
         let package_table = self.get_table("package");
         let site_packages_table = self.get_table("site_packages");
@@ -940,18 +940,20 @@ impl DBContext {
 
         let rows = sqlx::query(&query).fetch_all(&self.pool).await?;
 
-        let mut result: HashMap<Package, Vec<PathShared>> = HashMap::new();
+        let mut package_to_sites: HashMap<Package, Vec<PathShared>> = HashMap::new();
+        let mut package_to_id: HashMap<Package, i32> = HashMap::new();
 
         for row in rows {
-            let (_, package) = package_from_row(&row);
+            let (id, package) = package_from_row(&row);
+            package_to_id.insert(package.clone(), id);
             let path: String = row.get("path");
-            result
+            package_to_sites
                 .entry(package)
                 .or_default()
                 .push(PathShared::from_path_buf(PathBuf::from(path)));
         }
 
-        Ok(result)
+        Ok((package_to_sites, package_to_id))
     }
 
     pub async fn audit(
@@ -990,7 +992,7 @@ impl DBContext {
         system_tag_id: Option<i32>,
         tenant_id: Option<i32>,
     ) -> ResultDynError<Value> {
-        let (_packages, package_to_id) = self.get_latest_packages(system_tag_id, tenant_id).await?;
+        // let (_packages, package_to_id) = self.get_latest_packages(system_tag_id, tenant_id).await?;
 
         let dm_content = match tenant_id {
             Some(t_id) => match self.dep_manifest_from_tenant_id(t_id).await? {
@@ -1008,7 +1010,9 @@ impl DBContext {
             permit_superset: false,
             permit_subset: false,
         };
-        let package_to_sites = self.get_latest_packages_to_sites(None, Some(1)).await?;
+        let (package_to_sites, package_to_id) = self
+            .get_latest_packages_to_sites(system_tag_id, tenant_id)
+            .await?;
         let mut packages: Vec<_> = package_to_sites.keys().cloned().collect();
         packages.sort(); // relies on Package implementing Ord
         let site_to_exe: HashMap<PathShared, PathBuf> = HashMap::new();
