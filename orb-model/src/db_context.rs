@@ -1,7 +1,7 @@
 use chrono::Utc;
 use fetter::{
-    AuditReport, DirectURL, Package, PathShared, ScanFS, SystemTag, UreqClientLive, VcsInfo,
-    VersionSpec,
+    AuditReport, DepManifest, DirectURL, LockFile, Package, PathShared, ResultDynError, ScanFS,
+    SystemTag, UreqClientLive, ValidationFlags, ValidationReport, VcsInfo, VersionSpec,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
@@ -11,6 +11,7 @@ use sqlx::Executor;
 use sqlx::{Arguments, PgPool, Row};
 // use sqlx::{Postgres, Transaction};
 use std::collections::{HashMap, HashSet};
+use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Duration;
 use std::time::UNIX_EPOCH;
@@ -789,6 +790,116 @@ impl DBContext {
 
     //--------------------------------------------------------------------------
 
+    // async fn get_latest_packages(
+    //     &self,
+    //     system_tag_id: Option<i32>,
+    //     tenant_id: Option<i32>,
+    // ) -> Result<(Vec<Package>, HashMap<Package, i32>), sqlx::Error> {
+    //     let ping_table = self.get_table("ping");
+    //     let package_table = self.get_table("package");
+    //     let monitor_scan_table = self.get_table("monitor_scan");
+
+    //     let (query, args): (String, sqlx::postgres::PgArguments) =
+    //         if let Some(system_id) = system_tag_id {
+    //             let query = format!(
+    //                 r#"
+    //                 WITH latest_scan AS (
+    //                     SELECT MAX(timestamp) as latest_ts
+    //                     FROM {ping_table}
+    //                     WHERE scanned = true AND system_tag_id = $1
+    //                 )
+    //                 SELECT
+    //                     p.id,
+    //                     p.name,
+    //                     p.key,
+    //                     p.version,
+    //                     p.url,
+    //                     p.commit_id,
+    //                     p.vcs,
+    //                     p.revision
+    //                 FROM {monitor_scan_table} ms
+    //                 JOIN {ping_table} pi ON ms.ping_id = pi.id
+    //                 JOIN latest_scan ls ON pi.timestamp = ls.latest_ts
+    //                 JOIN {package_table} p ON ms.package_id = p.id
+    //                 WHERE pi.system_tag_id = $1
+    //                 "#
+    //             );
+    //             let mut args = sqlx::postgres::PgArguments::default();
+    //             let _ = args.add(system_id);
+    //             (query, args)
+    //         } else if let Some(tenant_id) = tenant_id {
+    //             let query = format!(
+    //                 r#"
+    //                 WITH latest_scans AS (
+    //                     SELECT pi.system_tag_id, MAX(pi.timestamp) as latest_ts
+    //                     FROM {ping_table} pi
+    //                     JOIN system_tag st ON pi.system_tag_id = st.id
+    //                     WHERE pi.scanned = true AND st.tenant_id = $1
+    //                     GROUP BY pi.system_tag_id
+    //                 )
+    //                 SELECT
+    //                     p.id,
+    //                     p.name,
+    //                     p.key,
+    //                     p.version,
+    //                     p.url,
+    //                     p.commit_id,
+    //                     p.vcs,
+    //                     p.revision
+    //                 FROM {monitor_scan_table} ms
+    //                 JOIN {ping_table} pi ON ms.ping_id = pi.id
+    //                 JOIN latest_scans ls
+    //                     ON pi.system_tag_id = ls.system_tag_id
+    //                    AND pi.timestamp = ls.latest_ts
+    //                 JOIN {package_table} p ON ms.package_id = p.id
+    //                 "#
+    //             );
+    //             let mut args = sqlx::postgres::PgArguments::default();
+    //             let _ = args.add(tenant_id);
+    //             (query, args)
+    //         } else {
+    //             // latest of all tenants and systems
+    //             let query = format!(
+    //                 r#"
+    //                 WITH latest_scans AS (
+    //                     SELECT system_tag_id, MAX(timestamp) as latest_ts
+    //                     FROM {ping_table}
+    //                     WHERE scanned = true
+    //                     GROUP BY system_tag_id
+    //                 )
+    //                 SELECT
+    //                     p.id,
+    //                     p.name,
+    //                     p.key,
+    //                     p.version,
+    //                     p.url,
+    //                     p.commit_id,
+    //                     p.vcs,
+    //                     p.revision
+    //                 FROM {monitor_scan_table} ms
+    //                 JOIN {ping_table} pi ON ms.ping_id = pi.id
+    //                 JOIN latest_scans ls
+    //                     ON pi.system_tag_id = ls.system_tag_id
+    //                    AND pi.timestamp = ls.latest_ts
+    //                 JOIN {package_table} p ON ms.package_id = p.id
+    //                 "#
+    //             );
+    //             let args = sqlx::postgres::PgArguments::default();
+    //             (query, args)
+    //         };
+
+    //     let rows = sqlx::query_with(&query, args).fetch_all(&self.pool).await?;
+    //     let mut package_to_id: HashMap<Package, i32> = HashMap::new();
+
+    //     for row in rows {
+    //         let (id, pkg) = package_from_row(&row);
+    //         package_to_id.insert(pkg, id);
+    //     }
+
+    //     let packages: Vec<Package> = package_to_id.keys().cloned().collect();
+    //     Ok((packages, package_to_id))
+    // }
+
     async fn get_latest_packages(
         &self,
         system_tag_id: Option<i32>,
@@ -798,94 +909,82 @@ impl DBContext {
         let package_table = self.get_table("package");
         let monitor_scan_table = self.get_table("monitor_scan");
 
-        let (query, args): (String, sqlx::postgres::PgArguments) =
-            if let Some(system_id) = system_tag_id {
-                let query = format!(
+        let (with_clause, where_clause, args) = if let Some(system_id) = system_tag_id {
+            (
+                format!(
                     r#"
-                    WITH latest_scan AS (
-                        SELECT MAX(timestamp) as latest_ts
+                    WITH latest_scans AS (
+                        SELECT MAX(timestamp) AS latest_ts
                         FROM {ping_table}
                         WHERE scanned = true AND system_tag_id = $1
                     )
-                    SELECT
-                        p.id,
-                        p.name,
-                        p.key,
-                        p.version,
-                        p.url,
-                        p.commit_id,
-                        p.vcs,
-                        p.revision
-                    FROM {monitor_scan_table} ms
-                    JOIN {ping_table} pi ON ms.ping_id = pi.id
-                    JOIN latest_scan ls ON pi.timestamp = ls.latest_ts
-                    JOIN {package_table} p ON ms.package_id = p.id
-                    WHERE pi.system_tag_id = $1
                     "#
-                );
-                let mut args = sqlx::postgres::PgArguments::default();
-                let _ = args.add(system_id);
-                (query, args)
-            } else if let Some(tenant_id) = tenant_id {
-                let query = format!(
+                ),
+                "WHERE pi.system_tag_id = $1".to_string(),
+                {
+                    let mut a = sqlx::postgres::PgArguments::default();
+                    let _ = a.add(system_id);
+                    a
+                },
+            )
+        } else if let Some(tid) = tenant_id {
+            (
+                format!(
                     r#"
                     WITH latest_scans AS (
-                        SELECT pi.system_tag_id, MAX(pi.timestamp) as latest_ts
+                        SELECT pi.system_tag_id, MAX(pi.timestamp) AS latest_ts
                         FROM {ping_table} pi
                         JOIN system_tag st ON pi.system_tag_id = st.id
                         WHERE pi.scanned = true AND st.tenant_id = $1
                         GROUP BY pi.system_tag_id
                     )
-                    SELECT
-                        p.id,
-                        p.name,
-                        p.key,
-                        p.version,
-                        p.url,
-                        p.commit_id,
-                        p.vcs,
-                        p.revision
-                    FROM {monitor_scan_table} ms
-                    JOIN {ping_table} pi ON ms.ping_id = pi.id
-                    JOIN latest_scans ls
-                        ON pi.system_tag_id = ls.system_tag_id
-                       AND pi.timestamp = ls.latest_ts
-                    JOIN {package_table} p ON ms.package_id = p.id
                     "#
-                );
-                let mut args = sqlx::postgres::PgArguments::default();
-                let _ = args.add(tenant_id);
-                (query, args)
-            } else {
-                // latest of all tenants and systems
-                let query = format!(
+                ),
+                "".to_string(), // already filtered by tenant in the WITH clause
+                {
+                    let mut a = sqlx::postgres::PgArguments::default();
+                    let _ = a.add(tid);
+                    a
+                },
+            )
+        } else {
+            (
+                format!(
                     r#"
                     WITH latest_scans AS (
-                        SELECT system_tag_id, MAX(timestamp) as latest_ts
+                        SELECT system_tag_id, MAX(timestamp) AS latest_ts
                         FROM {ping_table}
                         WHERE scanned = true
                         GROUP BY system_tag_id
                     )
-                    SELECT
-                        p.id,
-                        p.name,
-                        p.key,
-                        p.version,
-                        p.url,
-                        p.commit_id,
-                        p.vcs,
-                        p.revision
-                    FROM {monitor_scan_table} ms
-                    JOIN {ping_table} pi ON ms.ping_id = pi.id
-                    JOIN latest_scans ls
-                        ON pi.system_tag_id = ls.system_tag_id
-                       AND pi.timestamp = ls.latest_ts
-                    JOIN {package_table} p ON ms.package_id = p.id
                     "#
-                );
-                let args = sqlx::postgres::PgArguments::default();
-                (query, args)
-            };
+                ),
+                "".to_string(),
+                sqlx::postgres::PgArguments::default(),
+            )
+        };
+
+        let query = format!(
+            r#"
+            {with_clause}
+            SELECT
+                p.id,
+                p.name,
+                p.key,
+                p.version,
+                p.url,
+                p.commit_id,
+                p.vcs,
+                p.revision
+            FROM {monitor_scan_table} ms
+            JOIN {ping_table} pi ON ms.ping_id = pi.id
+            JOIN latest_scans ls
+                ON pi.system_tag_id = ls.system_tag_id
+               AND pi.timestamp = ls.latest_ts
+            JOIN {package_table} p ON ms.package_id = p.id
+            {where_clause}
+            "#
+        );
 
         let rows = sqlx::query_with(&query, args).fetch_all(&self.pool).await?;
         let mut package_to_id: HashMap<Package, i32> = HashMap::new();
@@ -897,6 +996,60 @@ impl DBContext {
 
         let packages: Vec<Package> = package_to_id.keys().cloned().collect();
         Ok((packages, package_to_id))
+    }
+
+    pub async fn get_latest_packages_to_sites(
+        &self,
+        system_tag_id: Option<i32>,
+        tenant_id: Option<i32>,
+    ) -> ResultDynError<HashMap<Package, Vec<PathShared>>> {
+        let system_tag_table = self.get_table("system_tag");
+        let package_table = self.get_table("package");
+        let site_packages_table = self.get_table("site_packages");
+        let monitor_scan_table = self.get_table("monitor_scan");
+        let ping_table = self.get_table("ping");
+
+        let query = format!(
+            r#"
+            SELECT DISTINCT ON (p.id, sp.id)
+                p.id AS package_id,
+                p.name, p.key, p.version, p.url, p.commit_id, p.vcs, p.revision,
+                sp.path
+            FROM {monitor_scan_table} ms
+            JOIN (
+                SELECT DISTINCT ON (system_tag_id) id, system_tag_id
+                FROM {ping_table}
+                WHERE scanned = true
+                ORDER BY system_tag_id, timestamp DESC
+            ) pi ON ms.ping_id = pi.id
+            JOIN {system_tag_table} st ON pi.system_tag_id = st.id
+            JOIN {package_table} p ON ms.package_id = p.id
+            JOIN {site_packages_table} sp ON ms.site_packages_id = sp.id
+            {where_clause}
+            "#,
+            where_clause = if let Some(id) = system_tag_id {
+                format!("WHERE pi.system_tag_id = {id}")
+            } else if let Some(tid) = tenant_id {
+                format!("WHERE st.tenant_id = {tid}")
+            } else {
+                "".to_string()
+            }
+        );
+
+        let rows = sqlx::query(&query).fetch_all(&self.pool).await?;
+
+        let mut result: HashMap<Package, Vec<PathShared>> = HashMap::new();
+
+        for row in rows {
+            let (_, package) = package_from_row(&row);
+            let path: String = row.get("path");
+            result
+                .entry(package)
+                .or_default()
+                .push(PathShared::from_path_buf(PathBuf::from(path)));
+        }
+
+        Ok(result)
     }
 
     pub async fn audit(
@@ -934,10 +1087,10 @@ impl DBContext {
         &self,
         system_tag_id: Option<i32>,
         tenant_id: Option<i32>,
-    ) -> Result<Value, sqlx::Error> {
+    ) -> ResultDynError<Value> {
         let (_packages, package_to_id) = self.get_latest_packages(system_tag_id, tenant_id).await?;
 
-        let dep_manifest = match tenant_id {
+        let dm_content = match tenant_id {
             Some(t_id) => match self.dep_manifest_from_tenant_id(t_id).await? {
                 Some(text) => text,
                 None => "".to_string(),
@@ -945,6 +1098,24 @@ impl DBContext {
             None => "".to_string(),
         };
 
+        let lf = LockFile::new(dm_content.clone());
+        let deps = lf.get_dependencies(None)?; // can provide Vec<String> of options
+        let dm = DepManifest::try_from_iter(deps.iter())?;
+        // these need to come from the ui
+        let vf = ValidationFlags {
+            permit_superset: false,
+            permit_subset: false,
+        };
+
+        // let vr = ValidationReport::from_components(
+        //     packages: &Vec<Package>,
+        //     package_to_sites: &HashMap<Package, Vec<PathShared>>,
+        //     site_to_exe: &HashMap<PathShared, PathBuf>,
+        //     exe_to_ems: &Option<HashMap<PathBuf, EnvMarkerState>>,
+        //     dm: &dm,
+        //     vf: &ValidationFlags,
+        //     ignore: None,
+        // )
         // For now, we'll simulate classifications by picking from the package_to_id keys
         let ids: Vec<i32> = package_to_id.values().cloned().collect();
 
@@ -954,7 +1125,7 @@ impl DBContext {
         let undefined = ids.iter().cloned().skip(3).take(1).collect::<Vec<_>>();
 
         Ok(json!({
-            "dep_manifest": dep_manifest,
+            "dep_manifest": dm_content,
             "missing": missing,
             "unrequired": unrequired,
             "misdefined": misdefined,
