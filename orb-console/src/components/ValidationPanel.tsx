@@ -41,7 +41,7 @@ export function ValidationPanel({
             key={label}
             className="border border-slate-700 rounded bg-gray-900 overflow-hidden"
           >
-            <div className="px-2 py-1 text-sm font-semibold text-gray-300 border-b border-slate-700 bg-gray-950">
+            <div className="px-2 py-2 text-sm font-semibold text-gray-400 ">
               {label} ({set.size})
             </div>
             <div className="max-h-32 overflow-y-auto">
