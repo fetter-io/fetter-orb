@@ -22,6 +22,7 @@ export type SystemTag = {
   architecture: string;
   logical_cores: number;
   pings: Ping[];
+  site_packages: string[];
 };
 
 export type PackageVersionEntry = {

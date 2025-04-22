@@ -350,6 +350,8 @@ impl DBContext {
     ) -> Result<Value, sqlx::Error> {
         let system_tag_table = self.get_table("system_tag");
         let ping_table = self.get_table("ping");
+        let site_packages_table = self.get_table("site_packages");
+        let monitor_scan_table = self.get_table("monitor_scan");
 
         // Step 1: fetch all system tags for the given tenant
         let tag_rows = sqlx::query(&format!(
@@ -408,6 +410,37 @@ impl DBContext {
         .fetch_all(&self.pool)
         .await?;
 
+        // Step 3.5: fetch site_packages paths from most recent scan per system_tag
+        let site_package_rows = sqlx::query(&format!(
+            r#"
+            SELECT DISTINCT ON (pi.system_tag_id, sp.path)
+                pi.system_tag_id, sp.path
+            FROM {ping_table} pi
+            JOIN {monitor_scan_table} ms ON ms.ping_id = pi.id
+            JOIN {site_packages_table} sp ON sp.id = ms.site_packages_id
+            JOIN (
+                SELECT DISTINCT ON (system_tag_id)
+                    id, system_tag_id
+                FROM {ping_table}
+                WHERE scanned = true AND system_tag_id IN (
+                    SELECT id FROM {system_tag_table} WHERE tenant_id = $1
+                )
+                ORDER BY system_tag_id, timestamp DESC
+            ) latest ON pi.id = latest.id
+            "#
+        ))
+        .bind(tenant_id)
+        .fetch_all(&self.pool)
+        .await?;
+
+        let mut st_to_site_packages: HashMap<i32, Vec<String>> = HashMap::new();
+
+        for row in site_package_rows {
+            let id: i32 = row.get("system_tag_id");
+            let path: String = row.get("path");
+            st_to_site_packages.entry(id).or_default().push(path);
+        }
+
         // Step 4: group all pings by system_tag_id, deduplicated by timestamp
         let mut st_to_pings: HashMap<i32, Vec<Value>> = HashMap::new();
         let mut st_to_pings_seen: HashMap<i32, HashSet<DateTime<Utc>>> = HashMap::new();
@@ -443,7 +476,8 @@ impl DBContext {
                 "os_version": tag.get::<String, _>("os_version"),
                 "architecture": tag.get::<String, _>("architecture"),
                 "logical_cores": tag.get::<i16, _>("logical_cores") as usize,
-                "pings": st_to_pings.remove(&id).unwrap_or_default()
+                "pings": st_to_pings.remove(&id).unwrap_or_default(),
+                "site_packages": st_to_site_packages.remove(&id).unwrap_or_default()
             }));
         }
 
