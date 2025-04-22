@@ -57,7 +57,7 @@ export function ValidationPanel({
                     const pkg = idToPackage.get(id);
                     return (
                       <tr
-                        key={id}
+                        key={`${label}-${id}`}
                         className="border-b border-slate-800 bg-gray-900"
                       >
                         <td className="px-2 py-1 truncate">

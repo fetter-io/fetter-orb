@@ -1036,20 +1036,21 @@ impl DBContext {
         for record in vr.records {
             if let Some(ref pkg) = record.package {
                 match record.explain() {
-                    ValidationExplain::Missing => missing.push(package_to_id.get(&pkg).ok_or(-1)),
+                    ValidationExplain::Missing => missing.push(package_to_id.get(&pkg). unwrap_or(&-1)),
                     ValidationExplain::Unrequired => {
-                        unrequired.push(package_to_id.get(&pkg).ok_or(-1))
+                        unrequired.push(package_to_id.get(&pkg).unwrap_or(&-1))
                     }
                     ValidationExplain::Misdefined => {
-                        misdefined.push(package_to_id.get(&pkg).ok_or(-1))
+                        misdefined.push(package_to_id.get(&pkg).unwrap_or(&-1))
                     }
                     ValidationExplain::Undefined => {
-                        undefined.push(package_to_id.get(&pkg).ok_or(-1))
+                        undefined.push(package_to_id.get(&pkg).unwrap_or(&-1))
                     }
                 }
             }
+            // else, package is missing... will need to insert to new packages?
         }
-
+        println!("misdefined: {:?}", misdefined);
         // For now, we'll simulate classifications by picking from the package_to_id keys
         // let ids: Vec<i32> = package_to_id.values().cloned().collect();
 
