@@ -993,8 +993,6 @@ impl DBContext {
         system_tag_id: Option<i32>,
         tenant_id: Option<i32>,
     ) -> ResultDynError<Value> {
-        // let (_packages, package_to_id) = self.get_latest_packages(system_tag_id, tenant_id).await?;
-
         let dm_content = match tenant_id {
             Some(t_id) => match self.dep_manifest_from_tenant_id(t_id).await? {
                 Some(text) => text,
@@ -1035,29 +1033,18 @@ impl DBContext {
 
         for record in vr.records {
             if let Some(ref pkg) = record.package {
-                match record.explain() {
-                    ValidationExplain::Missing => missing.push(package_to_id.get(&pkg). unwrap_or(&-1)),
-                    ValidationExplain::Unrequired => {
-                        unrequired.push(package_to_id.get(&pkg).unwrap_or(&-1))
-                    }
-                    ValidationExplain::Misdefined => {
-                        misdefined.push(package_to_id.get(&pkg).unwrap_or(&-1))
-                    }
-                    ValidationExplain::Undefined => {
-                        undefined.push(package_to_id.get(&pkg).unwrap_or(&-1))
-                    }
-                }
+                let pkg_id = package_to_id.get(pkg).unwrap_or(&-1);
+                let target = match record.explain() {
+                    ValidationExplain::Missing => &mut missing,
+                    ValidationExplain::Unrequired => &mut unrequired,
+                    ValidationExplain::Misdefined => &mut misdefined,
+                    ValidationExplain::Undefined => &mut undefined,
+                };
+                target.push(pkg_id); // get record.sites
             }
             // else, package is missing... will need to insert to new packages?
         }
         println!("misdefined: {:?}", misdefined);
-        // For now, we'll simulate classifications by picking from the package_to_id keys
-        // let ids: Vec<i32> = package_to_id.values().cloned().collect();
-
-        // let missing = ids.iter().cloned().take(1).collect::<Vec<_>>();
-        // let unrequired = ids.iter().cloned().skip(1).take(1).collect::<Vec<_>>();
-        // let misdefined = ids.iter().cloned().skip(2).take(1).collect::<Vec<_>>();
-        // let undefined = ids.iter().cloned().skip(3).take(1).collect::<Vec<_>>();
 
         Ok(json!({
             "dep_manifest": dm_content,
