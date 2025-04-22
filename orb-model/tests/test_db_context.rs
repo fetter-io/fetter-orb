@@ -165,32 +165,6 @@ async fn test_load_system_tag_a() {
     // ctx.tables_drop().await.unwrap();
 }
 
-// #[tokio::test]
-// async fn test_system_tag_all_a() {
-//     let pool = get_db_pool().await;
-//     let ctx = DBContext::new(pool, Some("staa".into()));
-//     ctx.tables_drop().await.unwrap();
-//     ctx.tables_create(false).await.unwrap();
-
-//     let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-//     path1.push("tests/fixtures/monitor-scan-01.json");
-//     let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
-//     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
-
-//     // this may have already been inserted
-//     let t = Tenant {
-//         key: "test".to_string(),
-//         name: "test".to_string(),
-//     };
-//     let t_id = ctx.tenant_insert_or_get(&t).await.unwrap();
-
-//     let post = ctx.system_tag_all(t_id).await.unwrap();
-//     assert_eq!(post.len(), 1);
-//     assert_eq!(post[0].1.architecture, "x86_64");
-
-//     ctx.tables_drop().await.unwrap();
-// }
-
 #[tokio::test]
 async fn test_system_tag_pings_a() {
     let pool = get_db_pool().await;
