@@ -214,7 +214,7 @@ async fn test_system_tag_pings_a() {
     println!("{}", post);
     assert_eq!(
         post,
-        r#"[{"architecture":"x86_64","hostname":"is-ariza-p1g7","id":1,"logical_cores":22,"os_name":"linux","os_version":"24.04","pings":[{"scanned":true,"timestamp":"2025-04-02T21:58:08.072262Z"}],"username":"ariza"}]"#
+        r#"[{"architecture":"x86_64","hostname":"is-ariza-p1g7","id":1,"logical_cores":22,"os_name":"linux","os_version":"24.04","pings":[{"scanned":true,"timestamp":"2025-04-02T21:58:08.072262Z"}],"site_packages":["~/.env312-bs/lib/python3.12/site-packages"],"username":"ariza"}]"#
     );
 
     ctx.tables_drop().await.unwrap();
