@@ -16,6 +16,7 @@ use orb_model::db_context::DBContext;
 use orb_model::db_context::Tenant;
 use orb_model::db_via_container::get_db_pool;
 
+
 //------------------------------------------------------------------------------
 // endpoint implementations
 
@@ -204,15 +205,12 @@ async fn main() {
         .allow_headers(Any);
 
     let app = Router::new()
-        // .route("/system_tag", get(get_system_tag_all))
         .route("/tenant", get(get_tenant_all))
         .route("/system_tag_pings", get(get_system_tag_pings))
-        // .route("/package", get(get_package_all))
         .route("/package_versions", get(get_package_versions))
         .route("/package_counts", get(get_package_counts))
         .route("/audit", get(get_audit))
         .route("/validate", get(get_validate))
-        // .route("/validate", get(get_dep_manifest))
         // post requests
         .route("/monitor_scan", post(post_monitor_scan))
         .route("/dep_manifest", post(post_dep_manifest))
