@@ -2,10 +2,10 @@ import { PackageVersions } from "@/types";
 
 type ValidationPanelProps = {
   validationSets: {
-    missing: Set<number>;
-    unrequired: Set<number>;
-    misdefined: Set<number>;
-    undefined: Set<number>;
+    missing: Map<number, string | null>;
+    unrequired: Map<number, string | null>;
+    misdefined: Map<number, string | null>;
+    undefined: Map<number, string | null>;
   };
   packages: PackageVersions[];
 };
@@ -25,10 +25,10 @@ export function ValidationPanel({
   }
 
   const sections = [
-    { label: "Missing", set: validationSets.missing },
-    { label: "Unrequired", set: validationSets.unrequired },
-    { label: "Misdefined", set: validationSets.misdefined },
-    { label: "Undefined", set: validationSets.undefined },
+    { label: "Missing", map: validationSets.missing },
+    { label: "Unrequired", map: validationSets.unrequired },
+    { label: "Misdefined", map: validationSets.misdefined },
+    { label: "Undefined", map: validationSets.undefined },
   ];
 
   return (
@@ -36,24 +36,25 @@ export function ValidationPanel({
       <h3 className="text-white font-semibold text-base mb-2">Validation</h3>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {sections.map(({ label, set }) => (
+        {sections.map(({ label, map }) => (
           <div
             key={label}
             className="border border-slate-700 rounded bg-gray-900 overflow-hidden"
           >
-            <div className="px-2 py-2 text-sm font-semibold text-gray-400 ">
-              {label} ({set.size})
+            <div className="px-2 py-2 text-sm font-semibold text-gray-400">
+              {label} ({map.size})
             </div>
             <div className="max-h-32 overflow-y-auto">
               <table className="table-fixed w-full text-xs text-left text-gray-400">
                 <thead className="sticky top-0 bg-gray-950 text-gray-500 border-b border-slate-700">
                   <tr>
-                    <th className="px-2 py-1 w-1/2">Package</th>
-                    <th className="px-2 py-1 w-1/2">Version</th>
+                    <th className="px-2 py-1 w-1/4">Package</th>
+                    <th className="px-2 py-1 w-1/4">Version</th>
+                    <th className="px-2 py-1 w-1/2">Site Packages</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {[...set].map((id) => {
+                  {[...map.entries()].map(([id, sitePackages]) => {
                     const pkg = idToPackage.get(id);
                     return (
                       <tr
@@ -64,6 +65,7 @@ export function ValidationPanel({
                           {pkg?.name ?? "Unknown"}
                         </td>
                         <td className="px-2 py-1">{pkg?.version ?? "—"}</td>
+                        <td className="px-2 py-1">{sitePackages ?? "—"}</td>
                       </tr>
                     );
                   })}

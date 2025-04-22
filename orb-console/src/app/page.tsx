@@ -16,6 +16,7 @@ import {
   AuditEntry,
   Tenant,
   ValidationResult,
+  ValidationEntry,
 } from "@/types";
 import { PackageVersionsCard } from "@/components/PackageVersionsCard";
 import { SystemTagSelector } from "@/components/SystemTagSelector";
@@ -167,21 +168,50 @@ export default function Home() {
     pollInterval: 0,
   });
 
+  // const validationSets = useMemo(() => {
+  //   if (!validationState.data) {
+  //     return {
+  //       missing: new Set<number>(),
+  //       unrequired: new Set<number>(),
+  //       misdefined: new Set<number>(),
+  //       undefined: new Set<number>(),
+  //     };
+  //   }
+
+  //   return {
+  //     missing: new Set(validationState.data.missing),
+  //     unrequired: new Set(validationState.data.unrequired),
+  //     misdefined: new Set(validationState.data.misdefined),
+  //     undefined: new Set(validationState.data.undefined),
+  //   };
+  // }, [validationState.data]);
+
   const validationSets = useMemo(() => {
     if (!validationState.data) {
+      const empty = new Map<number, string | null>();
       return {
-        missing: new Set<number>(),
-        unrequired: new Set<number>(),
-        misdefined: new Set<number>(),
-        undefined: new Set<number>(),
+        missing: empty,
+        unrequired: empty,
+        misdefined: empty,
+        undefined: empty,
       };
     }
 
+    const toMap = (entries: ValidationEntry[]) =>
+      new Map<number, string | null>(entries);
+
+    const {
+      missing,
+      unrequired,
+      misdefined,
+      undefined: undef,
+    } = validationState.data;
+
     return {
-      missing: new Set(validationState.data.missing),
-      unrequired: new Set(validationState.data.unrequired),
-      misdefined: new Set(validationState.data.misdefined),
-      undefined: new Set(validationState.data.undefined),
+      missing: toMap(missing),
+      unrequired: toMap(unrequired),
+      misdefined: toMap(misdefined),
+      undefined: toMap(undef),
     };
   }, [validationState.data]);
 

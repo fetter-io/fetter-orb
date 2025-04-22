@@ -1060,10 +1060,10 @@ impl DBContext {
             None,
         );
 
-        let mut missing = Vec::new();
-        let mut unrequired = Vec::new();
-        let mut misdefined = Vec::new();
-        let mut undefined = Vec::new();
+        let mut missing: Vec<(i32, Option<String>)> = Vec::new();
+        let mut unrequired: Vec<(i32, Option<String>)> = Vec::new();
+        let mut misdefined: Vec<(i32, Option<String>)> = Vec::new();
+        let mut undefined: Vec<(i32, Option<String>)> = Vec::new();
 
         for record in vr.records {
             if let Some(ref pkg) = record.package {
@@ -1074,9 +1074,15 @@ impl DBContext {
                     ValidationExplain::Misdefined => &mut misdefined,
                     ValidationExplain::Undefined => &mut undefined,
                 };
-                target.push(pkg_id); // get record.sites
+                if let Some(sites) = record.sites {
+                    for site in sites {
+                        target.push((*pkg_id, Some(site.to_string())));
+                    }
+                } else {
+                    target.push((*pkg_id, None));
+                }
             }
-            // else, package is missing... will need to insert to new packages?
+            // else, package is missing... will need to insert new packages?
         }
         println!("misdefined: {:?}", misdefined);
 
