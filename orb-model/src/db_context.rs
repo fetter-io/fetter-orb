@@ -1,7 +1,8 @@
 use chrono::Utc;
 use fetter::{
     AuditReport, DepManifest, DirectURL, LockFile, Package, PathShared, ResultDynError, ScanFS,
-    SystemTag, UreqClientLive, ValidationFlags, ValidationReport, VcsInfo, VersionSpec,
+    SystemTag, UreqClientLive, ValidationExplain, ValidationFlags, ValidationReport, VcsInfo,
+    VersionSpec,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
@@ -1013,8 +1014,8 @@ impl DBContext {
         let (package_to_sites, package_to_id) = self
             .get_latest_packages_to_sites(system_tag_id, tenant_id)
             .await?;
-        let mut packages: Vec<_> = package_to_sites.keys().cloned().collect();
-        packages.sort(); // relies on Package implementing Ord
+        let packages: Vec<_> = package_to_sites.keys().cloned().collect();
+        // packages.sort();
         let site_to_exe: HashMap<PathShared, PathBuf> = HashMap::new();
 
         let vr = ValidationReport::from_components(
@@ -1026,13 +1027,36 @@ impl DBContext {
             &vf,
             None,
         );
-        // For now, we'll simulate classifications by picking from the package_to_id keys
-        let ids: Vec<i32> = package_to_id.values().cloned().collect();
 
-        let missing = ids.iter().cloned().take(1).collect::<Vec<_>>();
-        let unrequired = ids.iter().cloned().skip(1).take(1).collect::<Vec<_>>();
-        let misdefined = ids.iter().cloned().skip(2).take(1).collect::<Vec<_>>();
-        let undefined = ids.iter().cloned().skip(3).take(1).collect::<Vec<_>>();
+        let mut missing = Vec::new();
+        let mut unrequired = Vec::new();
+        let mut misdefined = Vec::new();
+        let mut undefined = Vec::new();
+
+        for record in vr.records {
+            if let Some(ref pkg) = record.package {
+                match record.explain() {
+                    ValidationExplain::Missing => missing.push(package_to_id.get(&pkg).ok_or(-1)),
+                    ValidationExplain::Unrequired => {
+                        unrequired.push(package_to_id.get(&pkg).ok_or(-1))
+                    }
+                    ValidationExplain::Misdefined => {
+                        misdefined.push(package_to_id.get(&pkg).ok_or(-1))
+                    }
+                    ValidationExplain::Undefined => {
+                        undefined.push(package_to_id.get(&pkg).ok_or(-1))
+                    }
+                }
+            }
+        }
+
+        // For now, we'll simulate classifications by picking from the package_to_id keys
+        // let ids: Vec<i32> = package_to_id.values().cloned().collect();
+
+        // let missing = ids.iter().cloned().take(1).collect::<Vec<_>>();
+        // let unrequired = ids.iter().cloned().skip(1).take(1).collect::<Vec<_>>();
+        // let misdefined = ids.iter().cloned().skip(2).take(1).collect::<Vec<_>>();
+        // let undefined = ids.iter().cloned().skip(3).take(1).collect::<Vec<_>>();
 
         Ok(json!({
             "dep_manifest": dm_content,
