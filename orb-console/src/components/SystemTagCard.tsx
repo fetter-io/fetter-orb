@@ -93,6 +93,24 @@ export function SystemTagCard({
           </tbody>
         </table>
       </div>
+
+      {/* Scrollable site_packages table */}
+      <div className="h-32 overflow-y-auto border-t border-slate-700 pt-2 mt-2">
+        <table className="w-full text-xs text-left text-gray-400">
+          <thead className="sticky top-0 bg-gray-950 text-gray-500 border-b border-slate-700">
+            <tr>
+              <th className="px-2 py-1">Site Package Paths</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[...tag.site_packages].sort().map((path) => (
+              <tr key={path} className="border-b border-slate-800 bg-gray-900">
+                <td className="px-2 py-1 break-all">{path}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
