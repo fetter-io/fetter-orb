@@ -1084,7 +1084,7 @@ impl DBContext {
             }
             // else, package is missing... will need to insert new packages?
         }
-        println!("misdefined: {:?}", misdefined);
+        // println!("misdefined: {:?}", misdefined);
 
         Ok(json!({
             "dep_manifest": dm_content,
