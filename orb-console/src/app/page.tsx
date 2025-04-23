@@ -264,7 +264,7 @@ export default function Home() {
       <header className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur border-b border-slate-700 px-6 py-4">
         <div className="max-w-4xl mx-auto flex flex-col gap-2">
           <div className="flex gap-4 items-center mb-0 items-center justify-center">
-            <div className="flex w-20 h-20 ">
+            <div className="flex w-16 h-16 ">
               <Weave fill={colors.slate[600]} className="w-full h-full" />
             </div>
             {/* <p className="font-semibold text-white">fetter</p> */}

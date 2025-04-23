@@ -44,7 +44,7 @@ export function ValidationPanel({
             <div className="px-2 py-2 text-sm font-semibold text-gray-400">
               {label} ({map.size})
             </div>
-            <div className="max-h-32 overflow-y-auto">
+            <div className="max-h-64 overflow-y-auto">
               <table className="table-fixed w-full text-xs text-left text-gray-400">
                 <thead className="sticky top-0 bg-gray-950 text-gray-500 border-b border-slate-700">
                   <tr>
