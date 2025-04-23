@@ -1,0 +1,99 @@
+digraph db_schema {
+    rankdir=LR;
+    node [shape=plaintext, fontname="Helvetica", fontsize=10];
+
+    tenant [
+        label=<
+            <table border="1" cellborder="0" cellspacing="0">
+                <tr><td bgcolor="lightgrey"><b>tenant</b></td></tr>
+                <tr><td port="id">id (PK)</td></tr>
+                <tr><td>key (UNIQUE)</td></tr>
+                <tr><td>name</td></tr>
+            </table>
+        >
+    ];
+
+    dep_manifest [
+        label=<
+            <table border="1" cellborder="0" cellspacing="0">
+                <tr><td bgcolor="lightgrey"><b>dep_manifest</b></td></tr>
+                <tr><td port="tenant_id">tenant_id (PK, FK)</td></tr>
+                <tr><td>content</td></tr>
+            </table>
+        >
+    ];
+
+    system_tag [
+        label=<
+            <table border="1" cellborder="0" cellspacing="0">
+                <tr><td bgcolor="lightgrey"><b>system_tag</b></td></tr>
+                <tr><td port="id">id (PK)</td></tr>
+                <tr><td port="tenant_id">tenant_id (FK)</td></tr>
+                <tr><td>username</td></tr>
+                <tr><td>hostname</td></tr>
+                <tr><td>os_name</td></tr>
+                <tr><td>os_version</td></tr>
+                <tr><td>architecture</td></tr>
+                <tr><td>logical_cores</td></tr>
+            </table>
+        >
+    ];
+
+    ping [
+        label=<
+            <table border="1" cellborder="0" cellspacing="0">
+                <tr><td bgcolor="lightgrey"><b>ping</b></td></tr>
+                <tr><td port="id">id (PK)</td></tr>
+                <tr><td port="system_tag_id">system_tag_id (FK)</td></tr>
+                <tr><td>timestamp</td></tr>
+                <tr><td>scanned</td></tr>
+            </table>
+        >
+    ];
+
+    package [
+        label=<
+            <table border="1" cellborder="0" cellspacing="0">
+                <tr><td bgcolor="lightgrey"><b>package</b></td></tr>
+                <tr><td port="id">id (PK)</td></tr>
+                <tr><td>name</td></tr>
+                <tr><td>key</td></tr>
+                <tr><td>version</td></tr>
+                <tr><td>url</td></tr>
+                <tr><td>commit_id</td></tr>
+                <tr><td>vcs</td></tr>
+                <tr><td>revision</td></tr>
+            </table>
+        >
+    ];
+
+    site_packages [
+        label=<
+            <table border="1" cellborder="0" cellspacing="0">
+                <tr><td bgcolor="lightgrey"><b>site_packages</b></td></tr>
+                <tr><td port="id">id (PK)</td></tr>
+                <tr><td>path (UNIQUE)</td></tr>
+            </table>
+        >
+    ];
+
+    monitor_scan [
+        label=<
+            <table border="1" cellborder="0" cellspacing="0">
+                <tr><td bgcolor="lightgrey"><b>monitor_scan</b></td></tr>
+                <tr><td port="ping_id">ping_id (FK)</td></tr>
+                <tr><td port="package_id">package_id (FK)</td></tr>
+                <tr><td port="site_packages_id">site_packages_id (FK)</td></tr>
+                <tr><td><i>PK: (ping_id, package_id, site_packages_id)</i></td></tr>
+            </table>
+        >
+    ];
+
+    // Foreign key arrows to align with ports
+    dep_manifest:tenant_id:e -> tenant:id:w;
+    system_tag:tenant_id:e -> tenant:id:w;
+    ping:system_tag_id:e -> system_tag:id:w;
+    monitor_scan:ping_id:e -> ping:id:w;
+    monitor_scan:package_id:e -> package:id:w;
+    monitor_scan:site_packages_id:e -> site_packages:id:w;
+}
