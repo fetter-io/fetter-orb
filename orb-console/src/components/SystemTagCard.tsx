@@ -95,7 +95,7 @@ export function SystemTagCard({
       </div>
 
       {/* Scrollable site_packages table */}
-      <div className="h-32 overflow-y-auto border-t border-slate-700 pt-2 mt-2">
+      <div className="my-2 h-32 overflow-y-auto border-t border-slate-700">
         <table className="w-full text-xs text-left text-gray-400">
           <thead className="sticky top-0 bg-gray-950 text-gray-500 border-b border-slate-700">
             <tr>

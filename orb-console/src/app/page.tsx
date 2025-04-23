@@ -168,24 +168,6 @@ export default function Home() {
     pollInterval: 0,
   });
 
-  // const validationSets = useMemo(() => {
-  //   if (!validationState.data) {
-  //     return {
-  //       missing: new Set<number>(),
-  //       unrequired: new Set<number>(),
-  //       misdefined: new Set<number>(),
-  //       undefined: new Set<number>(),
-  //     };
-  //   }
-
-  //   return {
-  //     missing: new Set(validationState.data.missing),
-  //     unrequired: new Set(validationState.data.unrequired),
-  //     misdefined: new Set(validationState.data.misdefined),
-  //     undefined: new Set(validationState.data.undefined),
-  //   };
-  // }, [validationState.data]);
-
   const validationSets = useMemo(() => {
     if (!validationState.data) {
       const empty = new Map<number, string | null>();
@@ -320,7 +302,7 @@ export default function Home() {
                 packageCountsState.data.length > 0 && (
                   <PackageCountsChart data={packageCountsState.data} />
                 )}
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-4">
                 {packagesState.data?.map((pkg) => (
                   <PackageVersionsCard
                     key={pkg.key}
@@ -384,7 +366,7 @@ export default function Home() {
                 vulnCount={auditState.data?.length ?? 0}
               />
 
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-4">
                 {auditState.data?.map((entry) => (
                   <VulnCard
                     key={`vuln-pkg-${entry.package_id}`}
@@ -404,7 +386,7 @@ export default function Home() {
             <>
               <DashboardStatus label="systems" state={systemTagsState} />
 
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-4">
                 {systemTagsState.data?.map((tag) => (
                   <SystemTagCard
                     key={tag.id}
