@@ -380,3 +380,47 @@ async fn test_latest_packages_to_sites_a() {
 
     ctx.tables_drop().await.unwrap();
 }
+
+//------------------------------------------------------------------------------
+
+#[tokio::test]
+async fn test_tables_create_and_index_check() -> Result<(), sqlx::Error> {
+    let pool = get_db_pool().await;
+    let ctx = DBContext::new(pool, Some("tci".into()));
+
+    // Drop and create tables
+    ctx.tables_drop().await.ok();
+    ctx.tables_create(true).await?;
+
+    // Check that expected indexes exist
+    let expected_indexes = [
+        "monitor_scan_package_id_idx",
+        "monitor_scan_ping_id_idx",
+        "ping_system_tag_id_idx",
+        "system_tag_tenant_id_idx",
+        "package_key_idx",
+    ];
+
+    for index_name in expected_indexes {
+        let exists: (bool,) = sqlx::query_as(
+            r#"
+            SELECT EXISTS (
+                SELECT 1 FROM pg_indexes WHERE indexname = $1
+            )
+            "#,
+        )
+        .bind(index_name)
+        .fetch_one(&ctx.pool)
+        .await?;
+
+        if exists.0 {
+            println!("`{}` exists", index_name);
+        } else {
+            println!("`{}` is missing", index_name);
+        }
+
+        assert!(exists.0, "Index `{}` was not created", index_name);
+    }
+
+    Ok(())
+}
