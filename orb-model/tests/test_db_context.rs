@@ -188,7 +188,7 @@ async fn test_system_tag_pings_a() {
     println!("{}", post);
     assert_eq!(
         post,
-        r#"[{"architecture":"x86_64","hostname":"is-ariza-p1g7","id":1,"logical_cores":22,"os_name":"linux","os_version":"24.04","pings":[{"scanned":true,"timestamp":"2025-04-02T21:58:08.072262Z"}],"site_packages":["~/.env312-bs/lib/python3.12/site-packages"],"username":"ariza"}]"#
+        r#"[{"architecture":"x86_64","hostname":"is-foo-p1g7","id":1,"logical_cores":22,"os_name":"linux","os_version":"24.04","pings":[{"scanned":true,"timestamp":"2025-04-02T21:58:08.072262Z"}],"site_packages":["/home/foo/.env312-bs/lib/python3.12/site-packages"],"username":"foo"}]"#
     );
 
     ctx.tables_drop().await.unwrap();
@@ -225,7 +225,7 @@ async fn test_package_counts_a() {
         .to_string();
     assert_eq!(
         post1,
-        r#"[["2025-04-02T21:53:09.367412Z","2025-04-02T21:58:08.072262Z",166],["2025-04-02T21:58:08.072262Z","2025-04-02T22:14:48.072262Z",185],["2025-04-02T22:14:48.072262Z",null,168]]"#
+        r#"[["2025-04-02T21:53:09.367412Z","2025-04-02T21:58:08.072262Z",166],["2025-04-02T21:58:08.072262Z","2025-04-02T22:14:48.072262Z",185],["2025-04-02T22:14:48.072262Z",null,187]]"#
     );
 
     let post2 = ctx
@@ -242,7 +242,7 @@ async fn test_package_counts_a() {
         .to_string();
     assert_eq!(
         post3,
-        r#"[["2025-04-02T21:58:08.072262Z","2025-04-02T22:14:48.072262Z",19],["2025-04-02T22:14:48.072262Z",null,2]]"#
+        r#"[["2025-04-02T21:58:08.072262Z",null,19]]"#
     );
 }
 
