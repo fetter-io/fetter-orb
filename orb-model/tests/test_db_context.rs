@@ -23,6 +23,9 @@ async fn test_tenant_a() {
     };
     let id = ctx.tenant_insert_or_get(&t).await.unwrap();
     assert_eq!(id, 1);
+
+    ctx.tables_drop().await.unwrap();
+
 }
 
 #[tokio::test]
@@ -48,6 +51,9 @@ async fn test_tenant_all_a() {
         serde_json::to_string(&json).unwrap(),
         r#"[[1,{"key":"aaa","name":"AAA"}],[2,{"key":"bbb","name":"BBB"}]]"#
     );
+
+    ctx.tables_drop().await.unwrap();
+
 }
 
 #[tokio::test]
@@ -87,7 +93,7 @@ async fn test_load_package_a() {
 
     let pool = get_db_pool().await;
     let ctx = DBContext::new(pool, Some("lpa".into()));
-
+    ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
     let p1_id = ctx.package_insert_or_get(&p1).await.unwrap();
@@ -162,7 +168,7 @@ async fn test_load_system_tag_a() {
 
     // let st2 = ctx.system_tag_from_id(1).await.unwrap().unwrap();
     // assert_eq!(st2.os_name, "linux");
-    // ctx.tables_drop().await.unwrap();
+    ctx.tables_drop().await.unwrap();
 }
 
 #[tokio::test]
@@ -241,6 +247,8 @@ async fn test_package_counts_a() {
         .unwrap()
         .to_string();
     assert_eq!(post3, r#"[["2025-04-02T21:58:08.072262Z",null,19]]"#);
+    ctx.tables_drop().await.unwrap();
+
 }
 
 //------------------------------------------------------------------------------
@@ -329,6 +337,8 @@ async fn test_monitor_scan_load_b() {
     //     .await
     //     .unwrap();
     // assert_eq!(post3.len(), 779);
+    ctx.tables_drop().await.unwrap();
+
 }
 
 //------------------------------------------------------------------------------
