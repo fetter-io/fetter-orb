@@ -33,7 +33,7 @@ jobs:
         run: rustup install --no-self-update ${{ matrix.rust }} && rustup default ${{ matrix.rust }}
 
       - name: Run tests
-        run: cargo test --verbose
+        run: cargo test --verbose -- --test-threads=1
 
   #-----------------------------------------------------------------------------
   quality:
