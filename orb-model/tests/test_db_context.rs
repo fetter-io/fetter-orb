@@ -25,7 +25,6 @@ async fn test_tenant_a() {
     assert_eq!(id, 1);
 
     ctx.tables_drop().await.unwrap();
-
 }
 
 #[tokio::test]
@@ -53,7 +52,6 @@ async fn test_tenant_all_a() {
     );
 
     ctx.tables_drop().await.unwrap();
-
 }
 
 #[tokio::test]
@@ -248,7 +246,6 @@ async fn test_package_counts_a() {
         .to_string();
     assert_eq!(post3, r#"[["2025-04-02T21:58:08.072262Z",null,19]]"#);
     ctx.tables_drop().await.unwrap();
-
 }
 
 //------------------------------------------------------------------------------
@@ -338,7 +335,6 @@ async fn test_monitor_scan_load_b() {
     //     .unwrap();
     // assert_eq!(post3.len(), 779);
     ctx.tables_drop().await.unwrap();
-
 }
 
 //------------------------------------------------------------------------------
