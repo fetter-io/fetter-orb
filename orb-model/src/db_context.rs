@@ -229,7 +229,6 @@ impl DBContext {
     //--------------------------------------------------------------------------
     pub async fn tenant_insert_or_get(&self, tenant: &Tenant) -> Result<i32, sqlx::Error> {
         let table_name = self.get_table("tenant");
-
         let select_query = format!(
             r#"
             SELECT id FROM {table_name}
@@ -244,7 +243,6 @@ impl DBContext {
         {
             return Ok(row.get("id"));
         }
-
         let insert_query = format!(
             r#"
             INSERT INTO {table_name}
@@ -253,7 +251,6 @@ impl DBContext {
             RETURNING id
             "#
         );
-
         let row = sqlx::query(&insert_query)
             .bind(&tenant.key)
             .bind(&tenant.name)
