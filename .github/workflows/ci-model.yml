@@ -3,9 +3,11 @@ name: CI Orb Model
 on:
   pull_request_target:
     paths:
+      - '.github/**'
       - 'orb-model/**'
   push:
     paths:
+      - '.github/**'
       - 'orb-model/**'
 
 defaults:
@@ -18,7 +20,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        rust: ["1.81.0", stable]
+        rust: ["1.82.0", stable]
 
     name: Model Test / ${{ matrix.os }} / Rust ${{ matrix.rust }}
     runs-on: ${{ matrix.os }}
@@ -33,7 +35,7 @@ jobs:
         run: rustup install --no-self-update ${{ matrix.rust }} && rustup default ${{ matrix.rust }}
 
       - name: Run tests
-        run: cargo test --verbose
+        run: cargo test --verbose -- --test-threads=1
 
   #-----------------------------------------------------------------------------
   quality:

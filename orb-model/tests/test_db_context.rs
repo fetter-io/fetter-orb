@@ -14,7 +14,7 @@ use orb_model::db_via_container::get_db_pool;
 #[tokio::test]
 async fn test_tenant_a() {
     let pool = get_db_pool().await;
-    let ctx = DBContext::new(pool, Some("ta".into()));
+    let ctx = DBContext::new(pool, Some("test_tenant_a".into()));
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
     let t = Tenant {
@@ -23,12 +23,14 @@ async fn test_tenant_a() {
     };
     let id = ctx.tenant_insert_or_get(&t).await.unwrap();
     assert_eq!(id, 1);
+
+    ctx.tables_drop().await.unwrap();
 }
 
 #[tokio::test]
 async fn test_tenant_all_a() {
     let pool = get_db_pool().await;
-    let ctx = DBContext::new(pool, Some("taa".into()));
+    let ctx = DBContext::new(pool, Some("test_tenant_all_a".into()));
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
     let t1 = Tenant {
@@ -48,6 +50,8 @@ async fn test_tenant_all_a() {
         serde_json::to_string(&json).unwrap(),
         r#"[[1,{"key":"aaa","name":"AAA"}],[2,{"key":"bbb","name":"BBB"}]]"#
     );
+
+    ctx.tables_drop().await.unwrap();
 }
 
 #[tokio::test]
@@ -86,8 +90,8 @@ async fn test_load_package_a() {
     assert_eq!(p2.key, "numpy");
 
     let pool = get_db_pool().await;
-    let ctx = DBContext::new(pool, Some("lpa".into()));
-
+    let ctx = DBContext::new(pool, Some("test_load_package_a".into()));
+    ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
     let p1_id = ctx.package_insert_or_get(&p1).await.unwrap();
@@ -147,7 +151,7 @@ async fn test_load_system_tag_a() {
     );
 
     let pool = get_db_pool().await;
-    let ctx = DBContext::new(pool, Some("lsta".into()));
+    let ctx = DBContext::new(pool, Some("test_load_system_tag_a".into()));
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
@@ -162,13 +166,14 @@ async fn test_load_system_tag_a() {
 
     // let st2 = ctx.system_tag_from_id(1).await.unwrap().unwrap();
     // assert_eq!(st2.os_name, "linux");
-    // ctx.tables_drop().await.unwrap();
+    ctx.tables_drop().await.unwrap();
 }
+
 
 // #[tokio::test]
 // async fn test_system_tag_pings_a() {
 //     let pool = get_db_pool().await;
-//     let ctx = DBContext::new(pool, Some("stpa".into()));
+//     let ctx = DBContext::new(pool, Some("test_system_tag_pings_a".into()));
 //     ctx.tables_drop().await.unwrap();
 //     ctx.tables_create(false).await.unwrap();
 
@@ -184,12 +189,12 @@ async fn test_load_system_tag_a() {
 //     };
 //     let t_id = ctx.tenant_insert_or_get(&t).await.unwrap();
 
-//     let post = ctx.system_tag_pings(t_id, None).await.unwrap().to_string();
-//     println!("{}", post);
-//     assert_eq!(
-//         post,
-//         r#"[{"architecture":"x86_64","hostname":"is-ariza-p1g7","id":1,"logical_cores":22,"os_name":"linux","os_version":"24.04","pings":[{"scanned":true,"timestamp":"2025-04-02T21:58:08.072262Z"}],"site_packages":["~/.env312-bs/lib/python3.12/site-packages"],"username":"ariza"}]"#
-//     );
+    // let post = ctx.system_tag_pings(t_id, None).await.unwrap().to_string();
+    // println!("{}", post);
+    // assert_eq!(
+    //     post,
+    //     r#"[{"architecture":"x86_64","hostname":"is-foo-p1g7","id":1,"logical_cores":22,"os_name":"linux","os_version":"24.04","pings":[{"scanned":true,"timestamp":"2025-04-02T21:58:08.072262Z"}],"site_packages":["/home/foo/.env312-bs/lib/python3.12/site-packages"],"username":"foo"}]"#
+    // );
 
 
 //     ctx.tables_drop().await.unwrap();
@@ -210,10 +215,11 @@ async fn test_load_system_tag_a() {
 //     path3.push("tests/fixtures/monitor-scan-05.json");
 //     let msg3 = fs::read_to_string(path3).expect("Failed to read JSON file");
 
-//     let pool = get_db_pool().await;
-//     let ctx = DBContext::new(pool, Some("pca".into()));
-//     ctx.tables_drop().await.unwrap();
-//     ctx.tables_create(false).await.unwrap();
+
+    // let pool = get_db_pool().await;
+    // let ctx = DBContext::new(pool, Some("test_package_counts_a".into()));
+    // ctx.tables_drop().await.unwrap();
+    // ctx.tables_create(false).await.unwrap();
 
 //     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
 //     ctx.monitor_scan_load_from_json(&msg2).await.unwrap();
@@ -228,7 +234,6 @@ async fn test_load_system_tag_a() {
 //         post1,
 //         r#"[["2025-04-02T21:53:09.367412Z","2025-04-02T21:58:08.072262Z",166],["2025-04-02T21:58:08.072262Z","2025-04-02T22:14:48.072262Z",185],["2025-04-02T22:14:48.072262Z",null,168]]"#
 //     );
-
 //     let post2 = ctx
 //         .package_counts(Some(1), Some(1), None)
 //         .await
@@ -236,22 +241,12 @@ async fn test_load_system_tag_a() {
 //         .to_string();
 //     assert_eq!(post2, r#"[["2025-04-02T21:53:09.367412Z",null,166]]"#);
 
-//     let post3 = ctx
-//         .package_counts(Some(2), Some(1), None)
-//         .await
-//         .unwrap()
-//         .to_string();
-//     assert_eq!(
-//         post3,
-//         r#"[["2025-04-02T21:58:08.072262Z","2025-04-02T22:14:48.072262Z",19],["2025-04-02T22:14:48.072262Z",null,2]]"#
-//     );
-// }
 
 //------------------------------------------------------------------------------
 #[tokio::test]
 async fn test_load_site_packages_a() {
     let pool = get_db_pool().await;
-    let ctx = DBContext::new(pool, Some("lspa1".into()));
+    let ctx = DBContext::new(pool, Some("test_load_site_packages_a".into()));
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
@@ -282,11 +277,6 @@ async fn test_load_site_packages_a() {
 //     path.push("tests/fixtures/monitor-scan-03.json");
 //     let msg = fs::read_to_string(path).expect("Failed to read JSON file");
 
-//     let pool = get_db_pool().await;
-//     let ctx = DBContext::new(pool, Some("msla".into()));
-//     ctx.tables_drop().await.unwrap();
-//     ctx.tables_create(false).await.unwrap();
-
 //     ctx.monitor_scan_load_from_json(&msg).await.unwrap();
 
 //     let post = ctx.package_versions(Some(1), None).await.unwrap();
@@ -308,10 +298,11 @@ async fn test_load_site_packages_a() {
 //     path2.push("tests/fixtures/monitor-scan-02.json");
 //     let msg2 = fs::read_to_string(path2).expect("Failed to read JSON file");
 
-//     let pool = get_db_pool().await;
-//     let ctx = DBContext::new(pool, Some("mslb".into()));
-//     ctx.tables_drop().await.unwrap();
-//     ctx.tables_create(false).await.unwrap();
+
+    // let pool = get_db_pool().await;
+    // let ctx = DBContext::new(pool, Some("test_monitor_scan_load_b".into()));
+    // ctx.tables_drop().await.unwrap();
+    // ctx.tables_create(false).await.unwrap();
 
 //     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
 //     ctx.monitor_scan_load_from_json(&msg2).await.unwrap();
@@ -327,12 +318,12 @@ async fn test_load_site_packages_a() {
 //     //     .await
 //     //     .unwrap();
 //     // assert_eq!(post2.len(), 375);
-
-//     // let post3 = ctx
-//     //     .monitor_scan_get_packages(&HashSet::from([1, 2]), None)
-//     //     .await
-//     //     .unwrap();
-//     // assert_eq!(post3.len(), 779);
+    // let post3 = ctx
+    //     .monitor_scan_get_packages(&HashSet::from([1, 2]), None)
+    //     .await
+    //     .unwrap();
+    // assert_eq!(post3.len(), 779);
+//     ctx.tables_drop().await.unwrap();
 // }
 
 //------------------------------------------------------------------------------
@@ -343,12 +334,12 @@ async fn test_load_site_packages_a() {
 //     path1.push("tests/fixtures/monitor-scan-04.json");
 //     let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
 
-//     let pool = get_db_pool().await;
-//     let ctx = DBContext::new(pool, Some("dmla".into()));
-//     ctx.tables_drop().await.unwrap();
-//     ctx.tables_create(false).await.unwrap();
-//     // do first to force tenant creation
-//     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
+    // let pool = get_db_pool().await;
+    // let ctx = DBContext::new(pool, Some("test_dep_manifest_load_a".into()));
+    // ctx.tables_drop().await.unwrap();
+    // ctx.tables_create(false).await.unwrap();
+    // // do first to force tenant creation
+    // ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
 
 //     let msg = r#"[1, "numpy==2.0.0\nstatic-frame==2.0.0\n"]"#;
 //     ctx.dep_manifest_load_from_json(msg).await.unwrap();
@@ -367,11 +358,11 @@ async fn test_load_site_packages_a() {
 //     path1.push("tests/fixtures/monitor-scan-04.json");
 //     let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
 
-//     let pool = get_db_pool().await;
-//     let ctx = DBContext::new(pool, Some("lptsa".into()));
-//     ctx.tables_drop().await.unwrap();
-//     ctx.tables_create(false).await.unwrap();
-//     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
+    // let pool = get_db_pool().await;
+    // let ctx = DBContext::new(pool, Some("test_latest_packages_to_sites_a".into()));
+    // ctx.tables_drop().await.unwrap();
+    // ctx.tables_create(false).await.unwrap();
+    // ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
 
 //     let (p_to_s, _p_to_id) = ctx
 //         .get_latest_packages_to_sites(None, Some(1))
@@ -381,3 +372,47 @@ async fn test_load_site_packages_a() {
 
 //     ctx.tables_drop().await.unwrap();
 // }
+
+//------------------------------------------------------------------------------
+
+#[tokio::test]
+async fn test_tables_create_and_index_check() -> Result<(), sqlx::Error> {
+    let pool = get_db_pool().await;
+    let ctx = DBContext::new(pool, Some("test_tables_create_and_index_check".into()));
+
+    // Drop and create tables
+    ctx.tables_drop().await.ok();
+    ctx.tables_create(true).await?;
+
+    // Check that expected indexes exist
+    let expected_indexes = [
+        "monitor_scan_package_id_idx",
+        "monitor_scan_ping_id_idx",
+        "ping_system_tag_id_idx",
+        "system_tag_tenant_id_idx",
+        "package_key_idx",
+    ];
+
+    for index_name in expected_indexes {
+        let exists: (bool,) = sqlx::query_as(
+            r#"
+            SELECT EXISTS (
+                SELECT 1 FROM pg_indexes WHERE indexname = $1
+            )
+            "#,
+        )
+        .bind(index_name)
+        .fetch_one(&ctx.pool)
+        .await?;
+
+        if exists.0 {
+            println!("`{}` exists", index_name);
+        } else {
+            println!("`{}` is missing", index_name);
+        }
+
+        assert!(exists.0, "Index `{}` was not created", index_name);
+    }
+
+    Ok(())
+}
