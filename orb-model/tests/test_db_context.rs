@@ -11,21 +11,21 @@ use orb_model::db_context::DBContext;
 use orb_model::db_context::Tenant;
 use orb_model::db_via_container::get_db_pool;
 
-// #[tokio::test]
-// async fn test_tenant_a() {
-//     let pool = get_db_pool().await;
-//     let ctx = DBContext::new(pool, Some("test_tenant_a".into()));
-//     ctx.tables_drop().await.unwrap();
-//     ctx.tables_create(false).await.unwrap();
-//     let t = Tenant {
-//         key: "test".to_string(),
-//         name: "test".to_string(),
-//     };
-//     let id = ctx.tenant_insert_or_get(&t).await.unwrap();
-//     assert_eq!(id, 1);
+#[tokio::test]
+async fn test_tenant_a() {
+    let pool = get_db_pool().await;
+    let ctx = DBContext::new(pool, Some("test_tenant_a".into()));
+    ctx.tables_drop().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
+    let t = Tenant {
+        key: "test".to_string(),
+        name: "test".to_string(),
+    };
+    let id = ctx.tenant_insert_or_get(&t).await.unwrap();
+    assert_eq!(id, 1);
 
-//     ctx.tables_drop().await.unwrap();
-// }
+    ctx.tables_drop().await.unwrap();
+}
 
 #[tokio::test]
 async fn test_tenant_all_a() {
