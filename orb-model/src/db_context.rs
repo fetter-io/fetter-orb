@@ -1,8 +1,8 @@
 use chrono::Utc;
 use fetter::{
-    AuditReport, DepManifest, DirectURL, LockFile, Package, PathShared, ResultDynError, ScanFS,
-    SystemTag, UreqClientLive, ValidationExplain, ValidationFlags, ValidationReport, VcsInfo,
-    VersionSpec, FlagCacheRefresh, FlagLog
+    AuditReport, DepManifest, DirectURL, FlagCacheRefresh, FlagLog, LockFile, Package, PathShared,
+    ResultDynError, ScanFS, SystemTag, UreqClientLive, ValidationExplain, ValidationFlags,
+    ValidationReport, VcsInfo, VersionSpec,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
@@ -998,7 +998,8 @@ impl DBContext {
     ) -> Result<Value, sqlx::Error> {
         let (packages, package_to_id) = self.get_latest_packages(system_tag_id, tenant_id).await?;
         let client = Arc::new(UreqClientLive);
-        let audit = AuditReport::from_packages(client, &packages, FlagCacheRefresh(false), FlagLog(false));
+        let audit =
+            AuditReport::from_packages(client, &packages, FlagCacheRefresh(false), FlagLog(false));
         let mut records = audit.records;
 
         // Sort by key, then version
