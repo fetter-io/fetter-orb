@@ -56,7 +56,7 @@ async fn test_tenant_all_a() {
 
 #[tokio::test]
 async fn test_load_scan_fs_a() {
-    let msg = "[[\"/usr/bin/python3\", \"/usr/lib/python3/site-packages\"], [[0,[1]]],[[{\"name\":\"flask\",\"key\":\"flask\",\"version\":\"1.1.3\",\"direct_url\":null},[1]],[{\"name\":\"numpy\",\"key\":\"numpy\",\"version\":\"1.19.3\",\"direct_url\":null},[1]],[{\"name\":\"static-frame\",\"key\":\"static_frame\",\"version\":\"2.13.0\",\"direct_url\":null},[1]]],[[1,0]],false,\"35cc8bbf5f965f99f2ed716a23e0cfbb70b8977ba65e837708e960fc13e51da2\"]";
+    let msg = "[[[\"/usr/bin/python3\",[\"/usr/lib/python3/site-packages\"]]],[[{\"name\":\"flask\",\"key\":\"flask\",\"version\":\"1.1.3\",\"direct_url\":null},[\"/usr/lib/python3/site-packages\"]],[{\"name\":\"numpy\",\"key\":\"numpy\",\"version\":\"1.19.3\",\"direct_url\":null},[\"/usr/lib/python3/site-packages\"]],[{\"name\":\"static-frame\",\"key\":\"static_frame\",\"version\":\"2.13.0\",\"direct_url\":null},[\"/usr/lib/python3/site-packages\"]]],[[\"/usr/lib/python3/site-packages\",\"/usr/bin/python3\"]],false,\"35cc8bbf5f965f99f2ed716a23e0cfbb70b8977ba65e837708e960fc13e51da2\"]";
 
     let sfs: ScanFS = serde_json::from_str(&msg).unwrap();
     assert_eq!(sfs.package_to_sites.len(), 3);
@@ -169,78 +169,84 @@ async fn test_load_system_tag_a() {
     ctx.tables_drop().await.unwrap();
 }
 
+#[tokio::test]
+async fn test_system_tag_pings_a() {
+    let pool = get_db_pool().await;
+    let ctx = DBContext::new(pool, Some("test_system_tag_pings_a".into()));
+    ctx.tables_drop().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
 
-// #[tokio::test]
-// async fn test_system_tag_pings_a() {
-//     let pool = get_db_pool().await;
-//     let ctx = DBContext::new(pool, Some("test_system_tag_pings_a".into()));
-//     ctx.tables_drop().await.unwrap();
-//     ctx.tables_create(false).await.unwrap();
+    let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path1.push("tests/fixtures/monitor-scan-04.json");
+    let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
+    ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
 
-//     let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-//     path1.push("tests/fixtures/monitor-scan-04.json");
-//     let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
-//     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
+    // this may have already been inserted
+    let t = Tenant {
+        key: "test".to_string(),
+        name: "test".to_string(),
+    };
+    let t_id = ctx.tenant_insert_or_get(&t).await.unwrap();
 
-//     // this may have already been inserted
-//     let t = Tenant {
-//         key: "test".to_string(),
-//         name: "test".to_string(),
-//     };
-//     let t_id = ctx.tenant_insert_or_get(&t).await.unwrap();
+    let post = ctx.system_tag_pings(t_id, None).await.unwrap().to_string();
+    println!("{}", post);
+    assert_eq!(
+        post,
+        r#"[{"architecture":"x86_64","hostname":"is-foo-p1g7","id":1,"logical_cores":22,"os_name":"linux","os_version":"24.04","pings":[{"scanned":true,"timestamp":"2025-04-02T21:58:08.072262Z"}],"site_packages":["/home/foo/.env312-bs/lib/python3.12/site-packages"],"username":"foo"}]"#
+    );
 
-    // let post = ctx.system_tag_pings(t_id, None).await.unwrap().to_string();
-    // println!("{}", post);
-    // assert_eq!(
-    //     post,
-    //     r#"[{"architecture":"x86_64","hostname":"is-foo-p1g7","id":1,"logical_cores":22,"os_name":"linux","os_version":"24.04","pings":[{"scanned":true,"timestamp":"2025-04-02T21:58:08.072262Z"}],"site_packages":["/home/foo/.env312-bs/lib/python3.12/site-packages"],"username":"foo"}]"#
-    // );
-
-
-//     ctx.tables_drop().await.unwrap();
-// }
+    ctx.tables_drop().await.unwrap();
+}
 
 //------------------------------------------------------------------------------
-// #[tokio::test]
-// async fn test_package_counts_a() {
-//     let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-//     path1.push("tests/fixtures/monitor-scan-03.json");
-//     let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
+#[tokio::test]
+async fn test_package_counts_a() {
+    let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path1.push("tests/fixtures/monitor-scan-03.json");
+    let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
 
-//     let mut path2 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-//     path2.push("tests/fixtures/monitor-scan-04.json");
-//     let msg2 = fs::read_to_string(path2).expect("Failed to read JSON file");
+    let mut path2 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path2.push("tests/fixtures/monitor-scan-04.json");
+    let msg2 = fs::read_to_string(path2).expect("Failed to read JSON file");
 
-//     let mut path3 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-//     path3.push("tests/fixtures/monitor-scan-05.json");
-//     let msg3 = fs::read_to_string(path3).expect("Failed to read JSON file");
+    let mut path3 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path3.push("tests/fixtures/monitor-scan-05.json");
+    let msg3 = fs::read_to_string(path3).expect("Failed to read JSON file");
 
+    let pool = get_db_pool().await;
+    let ctx = DBContext::new(pool, Some("test_package_counts_a".into()));
+    ctx.tables_drop().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
 
-    // let pool = get_db_pool().await;
-    // let ctx = DBContext::new(pool, Some("test_package_counts_a".into()));
-    // ctx.tables_drop().await.unwrap();
-    // ctx.tables_create(false).await.unwrap();
+    ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
+    ctx.monitor_scan_load_from_json(&msg2).await.unwrap();
+    ctx.monitor_scan_load_from_json(&msg3).await.unwrap();
 
-//     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
-//     ctx.monitor_scan_load_from_json(&msg2).await.unwrap();
-//     ctx.monitor_scan_load_from_json(&msg3).await.unwrap();
+    let post1 = ctx
+        .package_counts(None, Some(1), None)
+        .await
+        .unwrap()
+        .to_string();
+    assert_eq!(
+        post1,
+        r#"[["2025-04-02T21:53:09.367412Z","2025-04-02T21:58:08.072262Z",166],["2025-04-02T21:58:08.072262Z","2025-04-02T22:14:48.072262Z",185],["2025-04-02T22:14:48.072262Z",null,187]]"#
+    );
 
-//     let post1 = ctx
-//         .package_counts(None, Some(1), None)
-//         .await
-//         .unwrap()
-//         .to_string();
-//     assert_eq!(
-//         post1,
-//         r#"[["2025-04-02T21:53:09.367412Z","2025-04-02T21:58:08.072262Z",166],["2025-04-02T21:58:08.072262Z","2025-04-02T22:14:48.072262Z",185],["2025-04-02T22:14:48.072262Z",null,168]]"#
-//     );
-//     let post2 = ctx
-//         .package_counts(Some(1), Some(1), None)
-//         .await
-//         .unwrap()
-//         .to_string();
-//     assert_eq!(post2, r#"[["2025-04-02T21:53:09.367412Z",null,166]]"#);
+    let post2 = ctx
+        .package_counts(Some(1), Some(1), None)
+        .await
+        .unwrap()
+        .to_string();
+    assert_eq!(post2, r#"[["2025-04-02T21:53:09.367412Z",null,166]]"#);
 
+    let post3 = ctx
+        .package_counts(Some(2), Some(1), None)
+        .await
+        .unwrap()
+        .to_string();
+    assert_eq!(post3, r#"[["2025-04-02T21:58:08.072262Z",null,19]]"#);
+    ctx.tables_drop().await.unwrap();
+}
 
 //------------------------------------------------------------------------------
 #[tokio::test]
@@ -271,107 +277,112 @@ async fn test_load_site_packages_a() {
     ctx.tables_drop().await.unwrap();
 }
 
-// #[tokio::test]
-// async fn test_monitor_scan_load_a() {
-//     let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-//     path.push("tests/fixtures/monitor-scan-03.json");
-//     let msg = fs::read_to_string(path).expect("Failed to read JSON file");
+#[tokio::test]
+async fn test_monitor_scan_load_a() {
+    let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path.push("tests/fixtures/monitor-scan-03.json");
+    let msg = fs::read_to_string(path).expect("Failed to read JSON file");
 
-//     ctx.monitor_scan_load_from_json(&msg).await.unwrap();
+    let pool = get_db_pool().await;
+    let ctx = DBContext::new(pool, Some("test_monitor_scan_load_a".into()));
+    ctx.tables_drop().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
 
-//     let post = ctx.package_versions(Some(1), None).await.unwrap();
-//     // variability due to home path substitution
-//     assert!(post.to_string().len() >= 37949);
-//     ctx.tables_drop().await.unwrap();
+    ctx.monitor_scan_load_from_json(&msg).await.unwrap();
 
-//     // let post = ctx.monitor_scan_site_to_packages(None).await.unwrap();
-//     // assert_eq!(post.get(&1).unwrap().len(), 11);
-// }
+    let post = ctx.package_versions(Some(1), None).await.unwrap();
+    // variability due to home path substitution
+    assert!(post.to_string().len() >= 37949);
+    ctx.tables_drop().await.unwrap();
 
-// #[tokio::test]
-// async fn test_monitor_scan_load_b() {
-//     let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-//     path1.push("tests/fixtures/monitor-scan-01.json");
-//     let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
+    // let post = ctx.monitor_scan_site_to_packages(None).await.unwrap();
+    // assert_eq!(post.get(&1).unwrap().len(), 11);
+}
 
-//     let mut path2 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-//     path2.push("tests/fixtures/monitor-scan-02.json");
-//     let msg2 = fs::read_to_string(path2).expect("Failed to read JSON file");
+#[tokio::test]
+async fn test_monitor_scan_load_b() {
+    let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path1.push("tests/fixtures/monitor-scan-01.json");
+    let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
 
+    let mut path2 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path2.push("tests/fixtures/monitor-scan-02.json");
+    let msg2 = fs::read_to_string(path2).expect("Failed to read JSON file");
 
-    // let pool = get_db_pool().await;
-    // let ctx = DBContext::new(pool, Some("test_monitor_scan_load_b".into()));
-    // ctx.tables_drop().await.unwrap();
-    // ctx.tables_create(false).await.unwrap();
+    let pool = get_db_pool().await;
+    let ctx = DBContext::new(pool, Some("test_monitor_scan_load_b".into()));
+    ctx.tables_drop().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
 
-//     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
-//     ctx.monitor_scan_load_from_json(&msg2).await.unwrap();
+    ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
+    ctx.monitor_scan_load_from_json(&msg2).await.unwrap();
 
-//     // let post1 = ctx
-//     //     .monitor_scan_get_packages(&HashSet::from([1]), None)
-//     //     .await
-//     //     .unwrap();
-//     // assert_eq!(post1.len(), 536);
+    // let post1 = ctx
+    //     .monitor_scan_get_packages(&HashSet::from([1]), None)
+    //     .await
+    //     .unwrap();
+    // assert_eq!(post1.len(), 536);
 
-//     // let post2 = ctx
-//     //     .monitor_scan_get_packages(&HashSet::from([2]), None)
-//     //     .await
-//     //     .unwrap();
-//     // assert_eq!(post2.len(), 375);
+    // let post2 = ctx
+    //     .monitor_scan_get_packages(&HashSet::from([2]), None)
+    //     .await
+    //     .unwrap();
+    // assert_eq!(post2.len(), 375);
+
     // let post3 = ctx
     //     .monitor_scan_get_packages(&HashSet::from([1, 2]), None)
     //     .await
     //     .unwrap();
     // assert_eq!(post3.len(), 779);
-//     ctx.tables_drop().await.unwrap();
-// }
+    ctx.tables_drop().await.unwrap();
+}
 
 //------------------------------------------------------------------------------
 
-// #[tokio::test]
-// async fn test_dep_manifest_load_a() {
-//     let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-//     path1.push("tests/fixtures/monitor-scan-04.json");
-//     let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
+#[tokio::test]
+async fn test_dep_manifest_load_a() {
+    let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path1.push("tests/fixtures/monitor-scan-04.json");
+    let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
 
-    // let pool = get_db_pool().await;
-    // let ctx = DBContext::new(pool, Some("test_dep_manifest_load_a".into()));
-    // ctx.tables_drop().await.unwrap();
-    // ctx.tables_create(false).await.unwrap();
-    // // do first to force tenant creation
-    // ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
+    let pool = get_db_pool().await;
+    let ctx = DBContext::new(pool, Some("test_dep_manifest_load_a".into()));
+    ctx.tables_drop().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
+    // do first to force tenant creation
+    ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
 
-//     let msg = r#"[1, "numpy==2.0.0\nstatic-frame==2.0.0\n"]"#;
-//     ctx.dep_manifest_load_from_json(msg).await.unwrap();
+    let msg = r#"[1, "numpy==2.0.0\nstatic-frame==2.0.0\n"]"#;
+    ctx.dep_manifest_load_from_json(msg).await.unwrap();
 
-//     let dm = ctx.dep_manifest_from_tenant_id(1).await.unwrap().unwrap();
-//     assert_eq!(dm, "numpy==2.0.0\nstatic-frame==2.0.0\n");
+    let dm = ctx.dep_manifest_from_tenant_id(1).await.unwrap().unwrap();
+    assert_eq!(dm, "numpy==2.0.0\nstatic-frame==2.0.0\n");
 
-//     ctx.tables_drop().await.unwrap();
-// }
+    ctx.tables_drop().await.unwrap();
+}
 
 //------------------------------------------------------------------------------
 
-// #[tokio::test]
-// async fn test_latest_packages_to_sites_a() {
-//     let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-//     path1.push("tests/fixtures/monitor-scan-04.json");
-//     let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
+#[tokio::test]
+async fn test_latest_packages_to_sites_a() {
+    let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path1.push("tests/fixtures/monitor-scan-04.json");
+    let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
 
-    // let pool = get_db_pool().await;
-    // let ctx = DBContext::new(pool, Some("test_latest_packages_to_sites_a".into()));
-    // ctx.tables_drop().await.unwrap();
-    // ctx.tables_create(false).await.unwrap();
-    // ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
+    let pool = get_db_pool().await;
+    let ctx = DBContext::new(pool, Some("test_latest_packages_to_sites_a".into()));
+    ctx.tables_drop().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
+    ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
 
-//     let (p_to_s, _p_to_id) = ctx
-//         .get_latest_packages_to_sites(None, Some(1))
-//         .await
-//         .unwrap();
-//     assert_eq!(p_to_s.len(), 19);
+    let (p_to_s, _p_to_id) = ctx
+        .get_latest_packages_to_sites(None, Some(1))
+        .await
+        .unwrap();
+    assert_eq!(p_to_s.len(), 19);
 
-//     ctx.tables_drop().await.unwrap();
-// }
+    ctx.tables_drop().await.unwrap();
+}
 
 //------------------------------------------------------------------------------
 
