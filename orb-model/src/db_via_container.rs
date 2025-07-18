@@ -50,9 +50,7 @@ pub async fn start_postgres_container() {
         .status()
         .expect("Failed to start docker container");
 
-    let db_url = format!(
-        "postgres://{DB_USER}:{DB_PASSWORD}@localhost:{DB_PORT}/{DB_NAME}"
-    );
+    let db_url = format!("postgres://{DB_USER}:{DB_PASSWORD}@localhost:{DB_PORT}/{DB_NAME}");
 
     wait_for_db(&db_url).await;
 }
@@ -69,8 +67,7 @@ pub async fn get_db_pool() -> PgPool {
     })
     .await;
 
-    let db_url = format!(
-        "postgres://{DB_USER}:{DB_PASSWORD}@localhost:{DB_PORT}/{DB_NAME}"    );
+    let db_url = format!("postgres://{DB_USER}:{DB_PASSWORD}@localhost:{DB_PORT}/{DB_NAME}");
 
     PgPool::connect(&db_url)
         .await

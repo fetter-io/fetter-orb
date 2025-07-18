@@ -1,9 +1,9 @@
-use std::fs;
-use std::path::PathBuf;
 use fetter::Package;
 use fetter::PathShared;
 use fetter::ScanFS;
 use fetter::SystemTag;
+use std::fs;
+use std::path::PathBuf;
 
 use orb_model::db_context::DBContext;
 use orb_model::db_context::Tenant;
@@ -113,7 +113,6 @@ async fn test_load_package_a() {
     ctx.tables_drop().await.unwrap();
 }
 
-
 #[tokio::test]
 async fn test_load_system_tag_a() {
     let msg = r#"{
@@ -198,31 +197,21 @@ async fn test_package_counts_a() {
         .await
         .unwrap()
         .to_string();
-    assert_eq!(
-        post1,
-        r#"[["2025-07-18T23:23:45.131879Z",null,130]]"#
-    );
+    assert_eq!(post1, r#"[["2025-07-18T23:23:45.131879Z",null,130]]"#);
 
     let post2 = ctx
         .package_counts(Some(1), Some(1), None)
         .await
         .unwrap()
         .to_string();
-    assert_eq!(
-        post2,
-        r#"[["2025-07-18T23:23:45.131879Z",null,130]]"#
-    );
+    assert_eq!(post2, r#"[["2025-07-18T23:23:45.131879Z",null,130]]"#);
 
     let post3 = ctx
         .package_counts(Some(0), Some(0), None)
         .await
         .unwrap()
         .to_string();
-    assert_eq!(
-        post3,
-        r#"[]"#
-    );
-
+    assert_eq!(post3, r#"[]"#);
 }
 
 //------------------------------------------------------------------------------

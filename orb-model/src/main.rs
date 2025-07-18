@@ -18,13 +18,11 @@ use orb_model::db_via_container::get_db_pool;
 
 //------------------------------------------------------------------------------
 pub async fn db_bootstrap(db: &DBContext) {
-
     let _ = db.monitor_scan_load_from_json(r#"["team-x",
         {"username":"alpha","hostname":"alpha-p1g7","os_name":"linux","os_version":"24.04","architecture":"x86_64","logical_cores":22},
         null,
         {"secs":1743632088,"nanos":72262432}
     ]"#).await;
-
 }
 
 //------------------------------------------------------------------------------
