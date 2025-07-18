@@ -54,66 +54,66 @@ async fn test_tenant_all_a() {
     ctx.tables_drop().await.unwrap();
 }
 
-// #[tokio::test]
-// async fn test_load_scan_fs_a() {
-//     let msg = "[[[\"/usr/bin/python3\",[\"/usr/lib/python3/site-packages\"]]],[[{\"name\":\"flask\",\"key\":\"flask\",\"version\":\"1.1.3\",\"direct_url\":null},[\"/usr/lib/python3/site-packages\"]],[{\"name\":\"numpy\",\"key\":\"numpy\",\"version\":\"1.19.3\",\"direct_url\":null},[\"/usr/lib/python3/site-packages\"]],[{\"name\":\"static-frame\",\"key\":\"static_frame\",\"version\":\"2.13.0\",\"direct_url\":null},[\"/usr/lib/python3/site-packages\"]]],[[\"/usr/lib/python3/site-packages\",\"/usr/bin/python3\"]],false,\"35cc8bbf5f965f99f2ed716a23e0cfbb70b8977ba65e837708e960fc13e51da2\"]";
+#[tokio::test]
+async fn test_load_scan_fs_a() {
+    let msg = "[[\"/usr/bin/python3\",\"/usr/lib/python3/site-packages\"],[[0,[1]]],[[{\"name\":\"flask\",\"key\":\"flask\",\"version\":\"1.1.3\",\"direct_url\":null},[1]],[{\"name\":\"numpy\",\"key\":\"numpy\",\"version\":\"1.19.3\",\"direct_url\":null},[1]],[{\"name\":\"static-frame\",\"key\":\"static_frame\",\"version\":\"2.13.0\",\"direct_url\":null},[1]]],[[1,0]],false,\"35cc8bbf5f965f99f2ed716a23e0cfbb70b8977ba65e837708e960fc13e51da2\"]";
 
-//     let sfs: ScanFS = serde_json::from_str(&msg).unwrap();
-//     assert_eq!(sfs.package_to_sites.len(), 3);
-// }
+    let sfs: ScanFS = serde_json::from_str(&msg).unwrap();
+    assert_eq!(sfs.package_to_sites.len(), 3);
+}
 
-// #[tokio::test]
-// async fn test_load_package_a() {
-//     let msg1 = r#"{
-//         "name":"dill",
-//         "key":"dill",
-//         "version":"0.3.8",
-//         "direct_url":{
-//             "url":"ssh://git@github.com/uqfoundation/dill.git",
-//             "vcs_info":{
-//                 "commit_id":"a0a8e86976708d0436eec5c8f7d25329da727cb5",
-//                 "vcs":"git",
-//                 "revision":"0.3.8"
-//             }
-//         }
-//     }"#;
-//     let p1: Package = serde_json::from_str(&msg1).unwrap();
-//     assert_eq!(p1.key, "dill");
+#[tokio::test]
+async fn test_load_package_a() {
+    let msg1 = r#"{
+        "name":"dill",
+        "key":"dill",
+        "version":"0.3.8",
+        "direct_url":{
+            "url":"ssh://git@github.com/uqfoundation/dill.git",
+            "vcs_info":{
+                "commit_id":"a0a8e86976708d0436eec5c8f7d25329da727cb5",
+                "vcs":"git",
+                "revision":"0.3.8"
+            }
+        }
+    }"#;
+    let p1: Package = serde_json::from_str(&msg1).unwrap();
+    assert_eq!(p1.key, "dill");
 
-//     let msg2 = r#"{
-//         "name":"numpy",
-//         "key":"numpy",
-//         "version":"2.1.2",
-//         "direct_url":null
-//     }"#;
-//     let p2: Package = serde_json::from_str(&msg2).unwrap();
-//     assert_eq!(p2.key, "numpy");
+    let msg2 = r#"{
+        "name":"numpy",
+        "key":"numpy",
+        "version":"2.1.2",
+        "direct_url":null
+    }"#;
+    let p2: Package = serde_json::from_str(&msg2).unwrap();
+    assert_eq!(p2.key, "numpy");
 
-//     let pool = get_db_pool().await;
-//     let ctx = DBContext::new(pool, Some("test_load_package_a".into()));
-//     ctx.tables_drop().await.unwrap();
-//     ctx.tables_create(false).await.unwrap();
+    let pool = get_db_pool().await;
+    let ctx = DBContext::new(pool, Some("test_load_package_a".into()));
+    ctx.tables_drop().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
 
-//     let p1_id = ctx.package_insert_or_get(&p1).await.unwrap();
-//     assert_eq!(p1_id, 1);
+    let p1_id = ctx.package_insert_or_get(&p1).await.unwrap();
+    assert_eq!(p1_id, 1);
 
-//     let p2_id = ctx.package_insert_or_get(&p2).await.unwrap();
-//     assert_eq!(p2_id, 2);
+    let p2_id = ctx.package_insert_or_get(&p2).await.unwrap();
+    assert_eq!(p2_id, 2);
 
-//     let p3_id = ctx.package_insert_or_get(&p1).await.unwrap();
-//     assert_eq!(p3_id, 1); // Should match p1_id
+    let p3_id = ctx.package_insert_or_get(&p1).await.unwrap();
+    assert_eq!(p3_id, 1); // Should match p1_id
 
-//     let p1x = ctx.package_from_id(1).await.unwrap().unwrap();
-//     assert_eq!(p1x.name, "dill");
+    let p1x = ctx.package_from_id(1).await.unwrap().unwrap();
+    assert_eq!(p1x.name, "dill");
 
-//     let p2x = ctx.package_from_id(2).await.unwrap().unwrap();
-//     assert_eq!(p2x.name, "numpy");
+    let p2x = ctx.package_from_id(2).await.unwrap().unwrap();
+    assert_eq!(p2x.name, "numpy");
 
-//     let p3x = ctx.package_from_id(3).await.unwrap();
-//     assert_eq!(p3x, None);
+    let p3x = ctx.package_from_id(3).await.unwrap();
+    assert_eq!(p3x, None);
 
-//     ctx.tables_drop().await.unwrap();
-// }
+    ctx.tables_drop().await.unwrap();
+}
 
 // #[tokio::test]
 // async fn test_package_all_a() {
