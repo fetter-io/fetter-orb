@@ -21,7 +21,7 @@ async fn wait_for_db(db_url: &str) {
                 return;
             }
         }
-        println!("⏳ Waiting for DB... attempt {}/{}", attempt, max_attempts);
+        println!("⏳ Waiting for DB... attempt {attempt}/{max_attempts}");
         sleep(Duration::from_millis(500));
     }
     panic!("Timed out waiting for Postgres to become ready");
@@ -35,13 +35,13 @@ pub async fn start_postgres_container() {
             "--name",
             CONTAINER_NAME,
             "-e",
-            &format!("POSTGRES_USER={}", DB_USER),
+            &format!("POSTGRES_USER={DB_USER}"),
             "-e",
-            &format!("POSTGRES_PASSWORD={}", DB_PASSWORD),
+            &format!("POSTGRES_PASSWORD={DB_PASSWORD}"),
             "-e",
-            &format!("POSTGRES_DB={}", DB_NAME),
+            &format!("POSTGRES_DB={DB_NAME}"),
             "-p",
-            &format!("{}:5432", DB_PORT),
+            &format!("{DB_PORT}:5432"),
             "-d",
             IMAGE,
         ])
@@ -51,8 +51,7 @@ pub async fn start_postgres_container() {
         .expect("Failed to start docker container");
 
     let db_url = format!(
-        "postgres://{}:{}@localhost:{}/{}",
-        DB_USER, DB_PASSWORD, DB_PORT, DB_NAME
+        "postgres://{DB_USER}:{DB_PASSWORD}@localhost:{DB_PORT}/{DB_NAME}"
     );
 
     wait_for_db(&db_url).await;
@@ -71,9 +70,7 @@ pub async fn get_db_pool() -> PgPool {
     .await;
 
     let db_url = format!(
-        "postgres://{}:{}@localhost:{}/{}",
-        DB_USER, DB_PASSWORD, DB_PORT, DB_NAME
-    );
+        "postgres://{DB_USER}:{DB_PASSWORD}@localhost:{DB_PORT}/{DB_NAME}"    );
 
     PgPool::connect(&db_url)
         .await

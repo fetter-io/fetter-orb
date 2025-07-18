@@ -1,7 +1,3 @@
-// use std::collections::HashSet;
-use std::fs;
-use std::path::PathBuf;
-
 use fetter::Package;
 use fetter::PathShared;
 use fetter::ScanFS;

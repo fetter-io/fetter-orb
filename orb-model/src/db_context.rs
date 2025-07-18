@@ -78,7 +78,7 @@ impl DBContext {
     // Get a table name with the defined suffix.
     fn get_table(&self, root: &str) -> String {
         match &self.suffix {
-            Some(sfx) => format!("{}_{}", root, sfx),
+            Some(sfx) => format!("{root}_{sfx}"),
             None => root.to_string(),
         }
     }
@@ -590,12 +590,12 @@ impl DBContext {
         let mut param_index = 1;
 
         if let Some(id) = system_tag_id {
-            where_clauses.push(format!("pi.system_tag_id = ${}", param_index));
+            where_clauses.push(format!("pi.system_tag_id = ${param_index}"));
             let _ = args.add(id);
             param_index += 1;
         }
         if let Some(tid) = tenant_id {
-            where_clauses.push(format!("st.tenant_id = ${}", param_index));
+            where_clauses.push(format!("st.tenant_id = ${param_index}"));
             let _ = args.add(tid);
         }
 
