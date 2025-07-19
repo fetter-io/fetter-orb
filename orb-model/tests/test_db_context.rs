@@ -214,6 +214,40 @@ async fn test_package_counts_a() {
     assert_eq!(post3, r#"[]"#);
 }
 
+#[tokio::test]
+async fn test_package_counts_b() {
+    let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path1.push("tests/fixtures/monitor-scan-01.json");
+    let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
+
+    let mut path2 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path2.push("tests/fixtures/monitor-scan-02.json");
+    let msg2 = fs::read_to_string(path2).expect("Failed to read JSON file");
+
+    let mut path3 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path3.push("tests/fixtures/monitor-scan-03.json");
+    let msg3 = fs::read_to_string(path3).expect("Failed to read JSON file");
+
+    let pool = get_db_pool().await;
+    let ctx = DBContext::new(pool, Some("test_package_counts_a".into()));
+    ctx.tables_drop().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
+
+    ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
+    ctx.monitor_scan_load_from_json(&msg2).await.unwrap();
+    ctx.monitor_scan_load_from_json(&msg3).await.unwrap();
+
+    let post1 = ctx
+        .package_counts(None, None, None)
+        .await
+        .unwrap()
+        .to_string();
+    assert_eq!(
+        post1,
+        r#"[["2025-07-18T23:23:45.131879Z","2025-07-19T01:47:43.072574Z",130],["2025-07-19T01:47:43.072574Z","2025-07-19T01:50:56.387136Z",27],["2025-07-19T01:50:56.387136Z",null,165]]"#
+    );
+}
+
 //------------------------------------------------------------------------------
 #[tokio::test]
 async fn test_load_site_packages_a() {
