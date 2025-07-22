@@ -165,7 +165,7 @@ async fn test_system_tag_pings_a() {
     let post = ctx.system_tag_pings(1, None).await.unwrap().to_string();
     assert_eq!(
         post,
-        "[{\"architecture\":\"aarch64\",\"hostname\":\"machine-x\",\"id\":1,\"logical_cores\":16,\"os_name\":\"macos\",\"os_version\":\"14.1.1\",\"pings\":[{\"scanned\":true,\"timestamp\":\"2025-07-18T23:23:45.131879Z\"}],\"site_packages\":[\"~/.env311-fetter/lib/python3.11/site-packages\",\"~/.env313-sf/lib/python3.13/site-packages\"],\"username\":\"ariza\"}]"
+        "[{\"architecture\":\"aarch64\",\"hostname\":\"machine-x\",\"id\":1,\"logical_cores\":16,\"os_name\":\"macos\",\"os_version\":\"14.1.1\",\"pings\":[{\"scanned\":true,\"timestamp\":\"2025-07-18T23:23:45.131879Z\"}],\"site_packages\":[\"/Users/user1/.env311-fetter/lib/python3.11/site-packages\",\"/Users/user1/.env313-sf/lib/python3.13/site-packages\"],\"username\":\"user1\"}]"
     );
 
     ctx.tables_drop().await.unwrap();
