@@ -150,34 +150,26 @@ async fn test_load_system_tag_a() {
     ctx.tables_drop().await.unwrap();
 }
 
-// #[tokio::test]
-// async fn test_system_tag_pings_a() {
-//     let pool = get_db_pool().await;
-//     let ctx = DBContext::new(pool, Some("test_system_tag_pings_a".into()));
-//     ctx.tables_drop().await.unwrap();
-//     ctx.tables_create(false).await.unwrap();
+#[tokio::test]
+async fn test_system_tag_pings_a() {
+    let pool = get_db_pool().await;
+    let ctx = DBContext::new(pool, Some("test_system_tag_pings_a".into()));
+    ctx.tables_drop().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
 
-//     let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-//     path1.push("tests/fixtures/monitor-scan-04.json");
-//     let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
-//     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
+    let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path1.push("tests/fixtures/monitor-scan-01.json");
+    let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
+    ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
 
-//     // this may have already been inserted
-//     let t = Tenant {
-//         key: "test".to_string(),
-//         name: "test".to_string(),
-//     };
-//     let t_id = ctx.tenant_insert_or_get(&t).await.unwrap();
+    let post = ctx.system_tag_pings(1, None).await.unwrap().to_string();
+    assert_eq!(
+        post,
+        "[{\"architecture\":\"aarch64\",\"hostname\":\"machine-x\",\"id\":1,\"logical_cores\":16,\"os_name\":\"macos\",\"os_version\":\"14.1.1\",\"pings\":[{\"scanned\":true,\"timestamp\":\"2025-07-18T23:23:45.131879Z\"}],\"site_packages\":[\"~/.env311-fetter/lib/python3.11/site-packages\",\"~/.env313-sf/lib/python3.13/site-packages\"],\"username\":\"ariza\"}]"
+    );
 
-//     let post = ctx.system_tag_pings(t_id, None).await.unwrap().to_string();
-//     println!("{}", post);
-//     assert_eq!(
-//         post,
-//         r#"[{"architecture":"x86_64","hostname":"is-foo-p1g7","id":1,"logical_cores":22,"os_name":"linux","os_version":"24.04","pings":[{"scanned":true,"timestamp":"2025-04-02T21:58:08.072262Z"}],"site_packages":["/home/foo/.env312-bs/lib/python3.12/site-packages"],"username":"foo"}]"#
-//     );
-
-//     ctx.tables_drop().await.unwrap();
-// }
+    ctx.tables_drop().await.unwrap();
+}
 
 //------------------------------------------------------------------------------
 #[tokio::test]
@@ -312,26 +304,26 @@ async fn test_dep_manifest_load_a() {
 
 //------------------------------------------------------------------------------
 
-// #[tokio::test]
-// async fn test_latest_packages_to_sites_a() {
-//     let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-//     path1.push("tests/fixtures/monitor-scan-04.json");
-//     let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
+#[tokio::test]
+async fn test_latest_packages_to_sites_a() {
+    let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path1.push("tests/fixtures/monitor-scan-01.json");
+    let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
 
-//     let pool = get_db_pool().await;
-//     let ctx = DBContext::new(pool, Some("test_latest_packages_to_sites_a".into()));
-//     ctx.tables_drop().await.unwrap();
-//     ctx.tables_create(false).await.unwrap();
-//     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
+    let pool = get_db_pool().await;
+    let ctx = DBContext::new(pool, Some("test_latest_packages_to_sites_a".into()));
+    ctx.tables_drop().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
+    ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
 
-//     let (p_to_s, _p_to_id) = ctx
-//         .get_latest_packages_to_sites(None, Some(1))
-//         .await
-//         .unwrap();
-//     assert_eq!(p_to_s.len(), 19);
+    let (p_to_s, _p_to_id) = ctx
+        .get_latest_packages_to_sites(None, Some(1))
+        .await
+        .unwrap();
+    assert_eq!(p_to_s.len(), 130);
 
-//     ctx.tables_drop().await.unwrap();
-// }
+    ctx.tables_drop().await.unwrap();
+}
 
 //------------------------------------------------------------------------------
 
