@@ -2,6 +2,7 @@ use fetter::Package;
 use fetter::PathShared;
 use fetter::ScanFS;
 use fetter::SystemTag;
+use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
 
@@ -269,97 +270,45 @@ async fn test_load_site_packages_a() {
     let st_id3 = ctx.site_packages_insert_or_get(p3.clone()).await.unwrap();
     assert_eq!(st_id3, 1);
 
-    // let p4 = ctx.site_packages_from_id(2).await.unwrap().unwrap();
-    // assert!(p4
-    //     .to_string()
-    //     .ends_with("src/py_src/lib/python3.13/site-packages"));
-
     ctx.tables_drop().await.unwrap();
 }
 
-// #[tokio::test]
-// async fn test_monitor_scan_load_a() {
-//     let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-//     path.push("tests/fixtures/monitor-scan-03.json");
-//     let msg = fs::read_to_string(path).expect("Failed to read JSON file");
-
-//     let pool = get_db_pool().await;
-//     let ctx = DBContext::new(pool, Some("test_monitor_scan_load_a".into()));
-//     ctx.tables_drop().await.unwrap();
-//     ctx.tables_create(false).await.unwrap();
-
-//     ctx.monitor_scan_load_from_json(&msg).await.unwrap();
-
-//     let post = ctx.package_versions(Some(1), None).await.unwrap();
-//     // variability due to home path substitution
-//     assert!(post.to_string().len() >= 37949);
-//     ctx.tables_drop().await.unwrap();
-
-//     // let post = ctx.monitor_scan_site_to_packages(None).await.unwrap();
-//     // assert_eq!(post.get(&1).unwrap().len(), 11);
-// }
-
-// #[tokio::test]
-// async fn test_monitor_scan_load_b() {
-//     let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-//     path1.push("tests/fixtures/monitor-scan-01.json");
-//     let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
-
-//     let mut path2 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-//     path2.push("tests/fixtures/monitor-scan-02.json");
-//     let msg2 = fs::read_to_string(path2).expect("Failed to read JSON file");
-
-//     let pool = get_db_pool().await;
-//     let ctx = DBContext::new(pool, Some("test_monitor_scan_load_b".into()));
-//     ctx.tables_drop().await.unwrap();
-//     ctx.tables_create(false).await.unwrap();
-
-//     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
-//     ctx.monitor_scan_load_from_json(&msg2).await.unwrap();
-
-//     // let post1 = ctx
-//     //     .monitor_scan_get_packages(&HashSet::from([1]), None)
-//     //     .await
-//     //     .unwrap();
-//     // assert_eq!(post1.len(), 536);
-
-//     // let post2 = ctx
-//     //     .monitor_scan_get_packages(&HashSet::from([2]), None)
-//     //     .await
-//     //     .unwrap();
-//     // assert_eq!(post2.len(), 375);
-
-//     // let post3 = ctx
-//     //     .monitor_scan_get_packages(&HashSet::from([1, 2]), None)
-//     //     .await
-//     //     .unwrap();
-//     // assert_eq!(post3.len(), 779);
-//     ctx.tables_drop().await.unwrap();
-// }
-
 //------------------------------------------------------------------------------
 
-// #[tokio::test]
-// async fn test_dep_manifest_load_a() {
-//     let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-//     path1.push("tests/fixtures/monitor-scan-04.json");
-//     let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
+#[tokio::test]
+async fn test_dep_manifest_load_a() {
+    let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path1.push("tests/fixtures/monitor-scan-02.json");
+    let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
 
-//     let pool = get_db_pool().await;
-//     let ctx = DBContext::new(pool, Some("test_dep_manifest_load_a".into()));
-//     ctx.tables_drop().await.unwrap();
-//     ctx.tables_create(false).await.unwrap();
-//     // do first to force tenant creation
-//     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
+    let pool = get_db_pool().await;
+    let ctx = DBContext::new(pool, Some("test_dep_manifest_load_a".into()));
+    ctx.tables_drop().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
+    // do first to force tenant creation
+    ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
 
-//     let msg = r#"[1, "numpy==2.0.0\nstatic-frame==2.0.0\n"]"#;
-//     ctx.dep_manifest_load_from_json(msg).await.unwrap();
+    let msg = r#"[1, "numpy==2.0.0\nstatic-frame==2.0.0\n"]"#;
+    ctx.dep_manifest_load_from_json(msg).await.unwrap();
 
-//     let dm = ctx.dep_manifest_from_tenant_id(1).await.unwrap().unwrap();
-//     assert_eq!(dm, "numpy==2.0.0\nstatic-frame==2.0.0\n");
+    let dm = ctx.dep_manifest_from_tenant_id(1).await.unwrap().unwrap();
+    assert_eq!(dm, "numpy==2.0.0\nstatic-frame==2.0.0\n");
 
-//     ctx.tables_drop().await.unwrap();
-// }
+    let json_obj = ctx.validate(Some(1), Some(1)).await.unwrap();
+    let obj = json_obj.as_object().expect("Expected JSON object");
+    let map: HashMap<String, String> = obj
+        .iter()
+        .map(|(k, v)| (k.clone(), v.to_string()))
+        .collect();
+
+    assert!(map.contains_key("dep_manifest"));
+    assert!(map.contains_key("missing"));
+    assert!(map.contains_key("unrequired"));
+    assert!(map.contains_key("misdefined"));
+    assert!(map.contains_key("undefined"));
+
+    ctx.tables_drop().await.unwrap();
+}
 
 //------------------------------------------------------------------------------
 
