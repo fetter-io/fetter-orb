@@ -2,6 +2,7 @@
 
 import { useSession, signOut } from "next-auth/react";
 import { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 
 export function UserMenuDropdown() {
   const { data: session, status } = useSession();
@@ -30,18 +31,18 @@ export function UserMenuDropdown() {
       className="relative flex flex-col items-start sm:items-end gap-1 mb-2 text-xs text-gray-400"
       ref={dropdownRef}
     >
-      {/* <div className="relative text-sm text-slate-100" ref={dropdownRef}> */}
       <button
         onClick={() => setOpen(!open)}
         title="User menu"
         className="flex items-center gap-2 px-2 py-1 bg-slate-800 rounded-md hover:bg-slate-800 hover:text-white transition"
       >
-        <img
+        <Image
           src={image ?? "/default-avatar.png"}
           alt={name ?? "User"}
-          className="w-8 h-8 rounded-full border border-slate-600"
+          width={32}
+          height={32}
+          className="rounded-full border border-slate-600"
         />
-        {/* <span className="hidden sm:inline">{name ?? email}</span> */}
       </button>
 
       {open && (

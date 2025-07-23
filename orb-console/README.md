@@ -2,6 +2,7 @@
 
 ```bash
 npm run dev
+npm run lint
 ```
 
 http://localhost:3000
