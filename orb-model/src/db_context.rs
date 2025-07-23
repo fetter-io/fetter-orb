@@ -85,7 +85,7 @@ impl DBContext {
 
     pub async fn tables_create(&self, if_not_exists: bool) -> Result<(), sqlx::Error> {
 
-        let user_table = self.get_table("user");
+        let user_table = self.get_table("users");
         let user_to_tenant_table = self.get_table("user_to_tenant");
         let tenant_table = self.get_table("tenant");
         let system_tag_table = self.get_table("system_tag");
@@ -97,10 +97,9 @@ impl DBContext {
 
         let if_clause = if if_not_exists { "IF NOT EXISTS " } else { "" };
 
-
         let create_user = format!(
             r#"
-            CREATE TABLE {if_clause}{user_table} (
+            CREATE TABLE {if_clause} {user_table} (
                 id SERIAL PRIMARY KEY,
                 github_id BIGINT NOT NULL UNIQUE,
                 login TEXT NOT NULL,
@@ -234,7 +233,7 @@ impl DBContext {
         let dep_manifest_table = self.get_table("dep_manifest");
         let user_to_tenant_table = self.get_table("user_to_tenant");
         let tenant_table = self.get_table("tenant");
-        let user_table = self.get_table("user");
+        let user_table = self.get_table("users");
 
         let drop_monitor_scan = format!(r#"DROP TABLE IF EXISTS {monitor_scan_table} CASCADE;"#);
         let drop_ping = format!(r#"DROP TABLE IF EXISTS {ping_table} CASCADE;"#);
