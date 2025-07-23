@@ -270,16 +270,16 @@ export default function Home() {
             </div>
           </div>
 
-          <UserMenuDropdown />
-
-          {/* conditionally show if more than 1 tenant */}
-          {tenantsState.data && (
-            <TenantSelector
-              tenants={tenantsState.data}
-              selectedId={selectedTenantId}
-              onChange={setSelectedTenantId}
-            />
-          )}
+          <div className="flex justify-between items-center">
+            {tenantsState.data && (
+              <TenantSelector
+                tenants={tenantsState.data}
+                selectedId={selectedTenantId}
+                onChange={setSelectedTenantId}
+              />
+            )}
+            <UserMenuDropdown />
+          </div>
 
           <TabSelector activeTab={activeTab} onTabChange={setActiveTab} />
         </div>

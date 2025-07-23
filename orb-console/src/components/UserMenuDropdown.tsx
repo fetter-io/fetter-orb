@@ -28,7 +28,7 @@ export function UserMenuDropdown() {
 
   return (
     <div
-      className="relative flex flex-col items-start sm:items-end gap-1 mb-2 text-xs text-gray-400"
+      className="relative flex flex-col gap-1 mb-2 text-xs text-gray-400"
       ref={dropdownRef}
     >
       <button

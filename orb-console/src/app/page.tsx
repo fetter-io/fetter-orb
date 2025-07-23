@@ -11,7 +11,7 @@ import colors from "tailwindcss/colors";
 export default function LandingPage() {
   const { status } = useSession();
   const router = useRouter();
-``
+
   useEffect(() => {
     if (status === "authenticated") {
       router.push("/app");

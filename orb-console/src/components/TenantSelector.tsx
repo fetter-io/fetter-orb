@@ -11,7 +11,7 @@ export function TenantSelector({
   onChange,
 }: TenantSelectorProps) {
   return (
-    <div className="flex flex-col items-start sm:items-end gap-1 mb-2">
+    <div className="flex flex-col gap-1 mb-2">
       <span className="text-xs text-gray-400 font-semibold">Tenant</span>
       <select
         className="text-sm bg-slate-800 text-white border border-slate-600 rounded px-2 py-1"
