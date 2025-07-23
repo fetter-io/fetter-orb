@@ -84,7 +84,6 @@ impl DBContext {
     }
 
     pub async fn tables_create(&self, if_not_exists: bool) -> Result<(), sqlx::Error> {
-
         let user_table = self.get_table("users");
         let user_to_tenant_table = self.get_table("user_to_tenant");
         let tenant_table = self.get_table("tenant");
@@ -241,7 +240,8 @@ impl DBContext {
         let drop_package = format!(r#"DROP TABLE IF EXISTS {package_table} CASCADE;"#);
         let drop_system_tag = format!(r#"DROP TABLE IF EXISTS {system_tag_table} CASCADE;"#);
         let drop_dep_manifest = format!(r#"DROP TABLE IF EXISTS {dep_manifest_table} CASCADE;"#);
-        let drop_user_to_tenant = format!(r#"DROP TABLE IF EXISTS {user_to_tenant_table} CASCADE;"#);
+        let drop_user_to_tenant =
+            format!(r#"DROP TABLE IF EXISTS {user_to_tenant_table} CASCADE;"#);
         let drop_tenant = format!(r#"DROP TABLE IF EXISTS {tenant_table} CASCADE;"#);
         let drop_user = format!(r#"DROP TABLE IF EXISTS {user_table} CASCADE;"#);
 

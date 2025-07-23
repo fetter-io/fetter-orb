@@ -8,8 +8,8 @@ use axum::{
 use serde::Deserialize;
 use serde_json::json;
 use serde_json::Value;
-use std::net::SocketAddr;
 use std::fs;
+use std::net::SocketAddr;
 use std::path::PathBuf;
 use tokio::net::TcpListener;
 use tower_http::cors::{Any, CorsLayer};
@@ -36,7 +36,6 @@ pub async fn db_bootstrap(db: &DBContext) {
     path3.push("tests/fixtures/monitor-scan-01.json");
     let msg3 = fs::read_to_string(path3).expect("Failed to read JSON file");
     db.monitor_scan_load_from_json(&msg3).await.unwrap();
-
 }
 
 //------------------------------------------------------------------------------
@@ -221,7 +220,9 @@ async fn main() {
     dbx.tables_drop().await.expect("failed to drop tables");
 
     // let _ = dbx.tables_create(true).await;
-    dbx.tables_create(true).await.expect("failed to create tables");
+    dbx.tables_create(true)
+        .await
+        .expect("failed to create tables");
     // NOTE: could read-in tenant definitions from a flat file on init
 
     // NOTE: for testing
