@@ -10,7 +10,10 @@ export function UserMenuDropdown() {
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
         setOpen(false);
       }
     };
@@ -23,9 +26,11 @@ export function UserMenuDropdown() {
   const { name, email, image } = session.user;
 
   return (
-    <div className="relative flex flex-col items-start sm:items-end gap-1 mb-2 text-xs text-gray-400" ref={dropdownRef}>
-
-    {/* <div className="relative text-sm text-slate-100" ref={dropdownRef}> */}
+    <div
+      className="relative flex flex-col items-start sm:items-end gap-1 mb-2 text-xs text-gray-400"
+      ref={dropdownRef}
+    >
+      {/* <div className="relative text-sm text-slate-100" ref={dropdownRef}> */}
       <button
         onClick={() => setOpen(!open)}
         title="User menu"
@@ -37,14 +42,13 @@ export function UserMenuDropdown() {
           className="w-8 h-8 rounded-full border border-slate-600"
         />
         {/* <span className="hidden sm:inline">{name ?? email}</span> */}
-
-
       </button>
 
       {open && (
         <div className="absolute right-0 w-64 rounded-md bg-slate-800/70 backdrop-blur border border-slate-700 shadow-lg z-50">
           <div className="px-4 py-2 text-xs text-slate-400 border-b border-slate-700">
-            Signed in as<br />
+            Signed in as
+            <br />
             <span className="text-slate-200 font-medium">{name}</span>
             <br />
             <span className="text-slate-200 font-medium">{email}</span>
