@@ -27,6 +27,7 @@ import { AllowListEditor } from "@/components/AllowListEditor";
 import { Weave } from "@/components/Weave";
 import colors from "tailwindcss/colors";
 import { ValidationPanel } from "@/components/ValidationPanel";
+import { UserMenuDropdown } from "@/components/UserMenuDropdown";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<Tab>("packages");
@@ -263,12 +264,13 @@ export default function Home() {
       {/* Frosted header with sticky tab selector */}
       <header className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur border-b border-slate-700 px-6 py-4">
         <div className="max-w-4xl mx-auto flex flex-col gap-2">
-          <div className="flex gap-4 items-center mb-0 items-center justify-center">
+          <div className="flex gap-0 items-center mb-0 items-center justify-center">
             <div className="flex w-16 h-16 ">
               <Weave fill={colors.slate[600]} className="w-full h-full" />
             </div>
-            {/* <p className="font-semibold text-white">fetter</p> */}
           </div>
+
+          <UserMenuDropdown />
 
           {/* conditionally show if more than 1 tenant */}
           {tenantsState.data && (
