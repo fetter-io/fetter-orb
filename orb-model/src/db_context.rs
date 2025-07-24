@@ -64,7 +64,7 @@ pub fn strings_to_hash(values: Vec<&str>) -> String {
 
     hash.iter().fold(String::new(), |mut acc, byte| {
         use std::fmt::Write;
-        write!(&mut acc, "{:02x}", byte).unwrap();
+        write!(&mut acc, "{byte:02x}").unwrap();
         acc
     })
 }
@@ -1202,7 +1202,7 @@ impl DBContext {
         login: &str,
         email: &str,
         name: &str,
-        secret: &str,
+        salt: &str,
     ) -> Result<i32, sqlx::Error> {
         let user_table = self.get_table("users");
         let tenant_table = self.get_table("tenant");
@@ -1230,7 +1230,7 @@ impl DBContext {
             row.get("id")
         };
 
-        let tenant_key = strings_to_hash(vec![&secret, &email]);
+        let tenant_key = strings_to_hash(vec![&salt, &email]);
         let tenant_name = String::from("Self");
 
         // Step 3: Check if tenant exists

@@ -208,6 +208,42 @@ pub async fn get_audit(
 }
 
 //------------------------------------------------------------------------------
+
+#[derive(Deserialize, Debug)]
+pub struct OnLoginParams {
+    pub github_id: i64,
+    pub login: String,
+    pub email: String,
+    pub name: String,
+}
+
+pub async fn on_login(
+    State(db): State<DBContext>,
+    Json(payload): Json<OnLoginParams>,
+) -> Result<Json<serde_json::Value>, (StatusCode, String)> {
+    // let secret = std::env::var("NEXTAUTH_SECRET").map_err(|e| {
+    //     (
+    //         StatusCode::INTERNAL_SERVER_ERROR,
+    //         format!("Missing NEXTAUTH_SECRET: {}", e),
+    //     )
+    // })?;
+    let salt = "42";
+
+    let user_id = db
+        .user_tenant_init(
+            payload.github_id,
+            &payload.login,
+            &payload.email,
+            &payload.name,
+            salt,
+        )
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    Ok(Json(json!({ "user_id": user_id })))
+}
+
+//------------------------------------------------------------------------------
 #[tokio::main]
 async fn main() {
     // tracing_subscriber::fmt::init();
