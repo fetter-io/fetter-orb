@@ -1040,6 +1040,12 @@ impl DBContext {
         tenant_id: Option<i32>,
     ) -> Result<Value, sqlx::Error> {
         let (packages, package_to_id) = self.get_latest_packages(system_tag_id, tenant_id).await?;
+
+        if packages.len() == 0 {
+            let empty: Vec<Value> = vec![];
+            return Ok(json!(empty))
+        }
+
         let client = Arc::new(UreqClientLive);
         let audit =
             AuditReport::from_packages(client, &packages, FlagCacheRefresh(false), FlagLog(false));
@@ -1071,6 +1077,21 @@ impl DBContext {
         system_tag_id: Option<i32>,
         tenant_id: Option<i32>,
     ) -> ResultDynError<Value> {
+        let (package_to_sites, package_to_id) = self
+            .get_latest_packages_to_sites(system_tag_id, tenant_id)
+            .await?;
+
+        if package_to_sites.len() == 0 {
+            let empty: Vec<(i32, Option<String>)> = Vec::new();
+            return Ok(json!({
+                "dep_manifest": empty,
+                "missing": empty,
+                "unrequired": empty,
+                "misdefined": empty,
+                "undefined": empty,
+            }))
+        }
+
         let dm_content = match tenant_id {
             Some(t_id) => match self.dep_manifest_from_tenant_id(t_id).await? {
                 Some(text) => text,
@@ -1087,9 +1108,7 @@ impl DBContext {
             permit_superset: false,
             permit_subset: false,
         };
-        let (package_to_sites, package_to_id) = self
-            .get_latest_packages_to_sites(system_tag_id, tenant_id)
-            .await?;
+
         let packages: Vec<_> = package_to_sites.keys().cloned().collect();
         // packages.sort();
         let site_to_exe: HashMap<PathShared, PathBuf> = HashMap::new();
@@ -1228,6 +1247,7 @@ impl DBContext {
         };
 
         let tenant_key = strings_to_hash(vec![&salt, &email]);
+        println!("{}", tenant_key);
         let tenant_name = String::from("Self");
 
         // Step 3: Check if tenant exists
