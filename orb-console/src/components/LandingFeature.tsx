@@ -16,7 +16,7 @@ export function LandingFeature({
     <section
       className={clsx(
         "flex flex-col md:flex-row items-center justify-between gap-10 pt-12 pb-24 px-12",
-        reverse && "md:flex-row-reverse"
+        reverse && "md:flex-row-reverse",
       )}
     >
       <div className="md:w-1/3 text-zinc-300">
@@ -26,7 +26,7 @@ export function LandingFeature({
       <div className="md:w-1/2 flex justify-center">
         <Image
           src={imageSrc}
-        //   alt={title}
+          alt={title}
           width={600}
           height={400}
           className="rounded-lg shadow-lg"
