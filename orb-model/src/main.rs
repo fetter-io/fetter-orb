@@ -277,6 +277,7 @@ async fn main() {
         .route("/audit", get(get_audit))
         .route("/validate", get(get_validate))
         // post requests
+        .route("/on_login", post(on_login))
         .route("/monitor_scan", post(post_monitor_scan))
         .route("/dep_manifest", post(post_dep_manifest))
         .layer(cors)
