@@ -27,9 +27,9 @@ export function LandingFeature({
         <Image
           src={imageSrc}
           alt={title}
-          width={600}
+          width={400}
           height={400}
-          className="rounded-lg shadow-lg"
+          className="rounded-lg shadow-xl"
         />
       </div>
     </section>

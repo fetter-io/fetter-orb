@@ -73,7 +73,7 @@ export default function LandingPage() {
         height={80}
         controlPoints={[20, 0, 400, 15]}
         fillClass="text-slate-900"
-        flip={false}
+        flip={true}
       />
 
       <LandingFeature
@@ -81,6 +81,7 @@ export default function LandingPage() {
         description="Define approved package versions and ensure compliance everywhere."
         imageSrc="/screenshot.png"
       />
+
     </main>
   );
 }
