@@ -24,7 +24,7 @@ export function UserMenuDropdown() {
 
   if (status !== "authenticated" || !session?.user) return null;
 
-  const { name, email, image } = session.user;
+  const { login, name, email, image } = session.user;
 
   return (
     <div
@@ -48,11 +48,16 @@ export function UserMenuDropdown() {
       {open && (
         <div className="absolute right-0 w-64 rounded-md bg-slate-800/70 backdrop-blur border border-slate-700 shadow-lg z-50">
           <div className="px-4 py-2 text-xs text-slate-400 border-b border-slate-700">
-            Signed in as
-            <br />
-            <span className="text-slate-200 font-medium">{name}</span>
-            <br />
-            <span className="text-slate-200 font-medium">{email}</span>
+            <div>Signed in as</div>
+            {name && (
+              <div className="text-slate-200 font-medium truncate">{name}</div>
+            )}
+            {login && (
+              <div className="text-slate-300 font-medium truncate">{login}</div>
+            )}
+            {email && (
+              <div className="text-slate-200 font-medium truncate">{email}</div>
+            )}
           </div>
           <button
             onClick={() => signOut({ callbackUrl: "/" })}
@@ -62,6 +67,7 @@ export function UserMenuDropdown() {
           </button>
         </div>
       )}
+
     </div>
   );
 }

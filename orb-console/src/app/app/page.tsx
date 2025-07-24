@@ -28,7 +28,6 @@ export default function AppPage() {
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({
-                github_id: session.user.id,
                 login: session.user.login,
                 email: session.user.email,
                 name: session.user.name,

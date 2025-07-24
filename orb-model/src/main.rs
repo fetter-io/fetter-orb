@@ -211,7 +211,7 @@ pub async fn get_audit(
 
 #[derive(Deserialize, Debug)]
 pub struct OnLoginParams {
-    pub github_id: i64,
+    // pub github_id: i64,
     pub login: String,
     pub email: String,
     pub name: String,
