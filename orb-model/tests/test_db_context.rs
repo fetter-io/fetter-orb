@@ -377,13 +377,13 @@ async fn test_user_tenant_init_a() {
     ctx.tables_create(false).await.unwrap();
 
     let uid = ctx
-        .user_tenant_init(333, "foo", "foo@foo.com", "Foo", "42")
+        .user_tenant_init("foo", "foo@foo.com", "Foo", "42")
         .await
         .unwrap();
 
     assert!(uid == 1);
 
-    let uid_post = ctx.user_id_from_github_id(333).await.unwrap();
+    let uid_post = ctx.user_id_from_login("foo").await.unwrap();
     assert!(uid_post == Some(1));
     ctx.tables_drop().await.unwrap();
 }

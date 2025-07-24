@@ -231,7 +231,6 @@ pub async fn on_login(
 
     let user_id = db
         .user_tenant_init(
-            payload.github_id,
             &payload.login,
             &payload.email,
             &payload.name,

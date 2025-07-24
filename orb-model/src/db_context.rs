@@ -115,7 +115,6 @@ impl DBContext {
             r#"
             CREATE TABLE {if_clause} {user_table} (
                 id SERIAL PRIMARY KEY,
-                github_id BIGINT NOT NULL UNIQUE,
                 login TEXT NOT NULL,
                 email TEXT,
                 name TEXT,
@@ -1198,7 +1197,6 @@ impl DBContext {
     /// Check if a user exists; if not, add that user. Also check that user has a default "Self" tenant and that that tenant is mapped to this User
     pub async fn user_tenant_init(
         &self,
-        github_id: i64,
         login: &str,
         email: &str,
         name: &str,
@@ -1209,19 +1207,18 @@ impl DBContext {
         let user_to_tenant_table = self.get_table("user_to_tenant");
 
         // Step 1: Check if user exists
-        let select_user = format!("SELECT id FROM {user_table} WHERE github_id = $1");
+        let select_user = format!("SELECT id FROM {user_table} WHERE login = $1");
         let user_id: i32 = if let Some(row) = sqlx::query(&select_user)
-            .bind(github_id)
+            .bind(login)
             .fetch_optional(&self.pool)
             .await?
         {
             row.get("id")
         } else {
             let insert_user = format!(
-                "INSERT INTO {user_table} (github_id, login, email, name) VALUES ($1, $2, $3, $4) RETURNING id"
+                "INSERT INTO {user_table} (login, email, name) VALUES ($1, $2, $3) RETURNING id"
             );
             let row = sqlx::query(&insert_user)
-                .bind(github_id)
                 .bind(login)
                 .bind(email)
                 .bind(name)
@@ -1265,12 +1262,12 @@ impl DBContext {
         Ok(user_id)
     }
 
-    pub async fn user_id_from_github_id(&self, github_id: i64) -> Result<Option<i32>, sqlx::Error> {
+    pub async fn user_id_from_login(&self, login: &str) -> Result<Option<i32>, sqlx::Error> {
         let user_table = self.get_table("users");
-        let query = format!("SELECT id FROM {user_table} WHERE github_id = $1");
+        let query = format!("SELECT id FROM {user_table} WHERE login = $1");
 
         let row = sqlx::query(&query)
-            .bind(github_id)
+            .bind(login)
             .fetch_optional(&self.pool)
             .await?;
 
