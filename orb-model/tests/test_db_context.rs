@@ -368,3 +368,22 @@ async fn test_tables_create_and_index_check() -> Result<(), sqlx::Error> {
 
     Ok(())
 }
+
+#[tokio::test]
+async fn test_user_tenant_init_a() {
+    let pool = get_db_pool().await;
+    let ctx = DBContext::new(pool, Some("test_user_tenant_init_a".into()));
+    ctx.tables_drop().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
+
+    let uid = ctx
+        .user_tenant_init(333, "foo", "foo@foo.com", "Foo", "42")
+        .await
+        .unwrap();
+
+    assert!(uid == 1);
+
+    let uid_post = ctx.user_id_from_github_id(333).await.unwrap();
+    assert!(uid_post == Some(1));
+    ctx.tables_drop().await.unwrap();
+}

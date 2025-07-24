@@ -6,6 +6,7 @@ use fetter::{
 };
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
+use sha2::{Digest, Sha256};
 use sqlx::postgres::PgRow;
 use sqlx::types::chrono::DateTime;
 use sqlx::Executor;
@@ -52,6 +53,20 @@ fn package_from_row(row: &PgRow) -> (i32, Package) {
             direct_url,
         },
     )
+}
+
+pub fn strings_to_hash(values: Vec<&str>) -> String {
+    let mut hasher = Sha256::new();
+    for value in values {
+        hasher.update(value.as_bytes());
+    }
+    let hash = hasher.finalize();
+
+    hash.iter().fold(String::new(), |mut acc, byte| {
+        use std::fmt::Write;
+        write!(&mut acc, "{:02x}", byte).unwrap();
+        acc
+    })
 }
 
 //------------------------------------------------------------------------------
@@ -1176,6 +1191,90 @@ impl DBContext {
             .await?;
 
         Ok(row.get("id"))
+    }
+
+    //--------------------------------------------------------------------------
+
+    /// Check if a user exists; if not, add that user. Also check that user has a default "Self" tenant and that that tenant is mapped to this User
+    pub async fn user_tenant_init(
+        &self,
+        github_id: i64,
+        login: &str,
+        email: &str,
+        name: &str,
+        secret: &str,
+    ) -> Result<i32, sqlx::Error> {
+        let user_table = self.get_table("users");
+        let tenant_table = self.get_table("tenant");
+        let user_to_tenant_table = self.get_table("user_to_tenant");
+
+        // Step 1: Check if user exists
+        let select_user = format!("SELECT id FROM {user_table} WHERE github_id = $1");
+        let user_id: i32 = if let Some(row) = sqlx::query(&select_user)
+            .bind(github_id)
+            .fetch_optional(&self.pool)
+            .await?
+        {
+            row.get("id")
+        } else {
+            let insert_user = format!(
+                "INSERT INTO {user_table} (github_id, login, email, name) VALUES ($1, $2, $3, $4) RETURNING id"
+            );
+            let row = sqlx::query(&insert_user)
+                .bind(github_id)
+                .bind(login)
+                .bind(email)
+                .bind(name)
+                .fetch_one(&self.pool)
+                .await?;
+            row.get("id")
+        };
+
+        let tenant_key = strings_to_hash(vec![&secret, &email]);
+        let tenant_name = String::from("Self");
+
+        // Step 3: Check if tenant exists
+        let select_tenant = format!("SELECT id FROM {tenant_table} WHERE key = $1");
+        let tenant_id: i32 = if let Some(row) = sqlx::query(&select_tenant)
+            .bind(&tenant_key)
+            .fetch_optional(&self.pool)
+            .await?
+        {
+            row.get("id")
+        } else {
+            let insert_tenant =
+                format!("INSERT INTO {tenant_table} (key, name) VALUES ($1, $2) RETURNING id");
+            let row = sqlx::query(&insert_tenant)
+                .bind(&tenant_key)
+                .bind(&tenant_name)
+                .fetch_one(&self.pool)
+                .await?;
+            row.get("id")
+        };
+
+        // Step 4: Ensure mapping exists
+        let insert_mapping = format!(
+            "INSERT INTO {user_to_tenant_table} (user_id, tenant_id) VALUES ($1, $2) ON CONFLICT DO NOTHING"
+        );
+        sqlx::query(&insert_mapping)
+            .bind(user_id)
+            .bind(tenant_id)
+            .execute(&self.pool)
+            .await?;
+
+        Ok(user_id)
+    }
+
+    pub async fn user_id_from_github_id(&self, github_id: i64) -> Result<Option<i32>, sqlx::Error> {
+        let user_table = self.get_table("users");
+        let query = format!("SELECT id FROM {user_table} WHERE github_id = $1");
+
+        let row = sqlx::query(&query)
+            .bind(github_id)
+            .fetch_optional(&self.pool)
+            .await?;
+
+        Ok(row.map(|r| r.get("id")))
     }
 
     //--------------------------------------------------------------------------
