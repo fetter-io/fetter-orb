@@ -52,7 +52,7 @@ export default function LandingPage() {
       <LandingFeature
         title="Track All Python Packages"
         description="See every installed package across your entire system fleet, organized by environment."
-        imageSrc="/screenshots/packages.png"
+        imageSrc="/screenshot.png"
       />
 
       <WaveDivider
@@ -65,7 +65,7 @@ export default function LandingPage() {
       <LandingFeature
         title="Monitor for Vulnerabilities"
         description="Fetter Orb flags vulnerable packages in real time using OSV data."
-        imageSrc="/screenshots/vulnerabilities.png"
+        imageSrc="/screenshot.png"
         reverse
       />
 
@@ -79,7 +79,7 @@ export default function LandingPage() {
       <LandingFeature
         title="Validate Against an Allow List"
         description="Define approved package versions and ensure compliance everywhere."
-        imageSrc="/screenshots/allowlist.png"
+        imageSrc="/screenshot.png"
       />
     </main>
   );

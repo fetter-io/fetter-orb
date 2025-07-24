@@ -3,7 +3,7 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import AppContent from "@/components/AppContent";
+import Dashboard from "@/components/Dashboard";
 
 export default function AppPage() {
   const { data: session, status } = useSession();
@@ -20,7 +20,7 @@ export default function AppPage() {
   }
 
   if (status === "authenticated") {
-    return <AppContent />;
+    return <Dashboard />;
   }
 
   return null;

@@ -29,7 +29,9 @@ import colors from "tailwindcss/colors";
 import { ValidationPanel } from "@/components/ValidationPanel";
 import { UserMenuDropdown } from "@/components/UserMenuDropdown";
 
-export default function AppContent() {
+//------------------------------------------------------------------------------
+
+export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<Tab>("packages");
   const [selectedTenantId, setSelectedTenantId] = useState<number | null>(null);
   const [selectedSystemId, setSelectedSystemId] = useState<number | null>(null);
