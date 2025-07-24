@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import Dashboard from "@/components/Dashboard";
 
 export default function AppPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
 
   useEffect(() => {

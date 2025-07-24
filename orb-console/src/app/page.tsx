@@ -81,7 +81,6 @@ export default function LandingPage() {
         description="Define approved package versions and ensure compliance everywhere."
         imageSrc="/screenshot.png"
       />
-
     </main>
   );
 }
