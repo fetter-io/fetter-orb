@@ -164,6 +164,9 @@ async fn test_system_tag_pings_a() {
     let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     path1.push("tests/fixtures/monitor-scan-01.json");
     let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
+
+    let t = Tenant::from_key("team-a");
+    let _ = ctx.tenant_insert_or_get(&t).await.unwrap();
     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
 
     let post = ctx.system_tag_pings(1, None).await.unwrap().to_string();
@@ -187,6 +190,8 @@ async fn test_package_counts_a() {
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
+    let t = Tenant::from_key("team-a");
+    let _ = ctx.tenant_insert_or_get(&t).await.unwrap();
     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
 
     let post1 = ctx
@@ -229,6 +234,9 @@ async fn test_package_counts_b() {
     let ctx = DBContext::new(pool, Some("test_package_counts_a".into()), 1);
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
+
+    let t = Tenant::from_key("team-a");
+    let _ = ctx.tenant_insert_or_get(&t).await.unwrap();
 
     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
     ctx.monitor_scan_load_from_json(&msg2).await.unwrap();
@@ -276,11 +284,14 @@ async fn test_dep_manifest_load_a() {
     let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     path1.push("tests/fixtures/monitor-scan-02.json");
     let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
-
     let pool = get_db_pool().await;
     let ctx = DBContext::new(pool, Some("test_dep_manifest_load_a".into()), 1);
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
+
+    let t = Tenant::from_key("team-a");
+    let _ = ctx.tenant_insert_or_get(&t).await.unwrap();
+
     // do first to force tenant creation
     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
 
@@ -318,6 +329,10 @@ async fn test_latest_packages_to_sites_a() {
     let ctx = DBContext::new(pool, Some("test_latest_packages_to_sites_a".into()), 1);
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
+
+    let t = Tenant::from_key("team-a");
+    let _ = ctx.tenant_insert_or_get(&t).await.unwrap();
+
     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
 
     let (p_to_s, _p_to_id) = ctx

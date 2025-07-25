@@ -78,6 +78,16 @@ pub struct Tenant {
     pub ping_limit: i32,
 }
 
+impl Tenant {
+    pub fn from_key(key: &str) -> Self {
+        Tenant {
+            key: key.to_string(),
+            name: key.to_string(),
+            ping_limit: 1,
+        }
+    }
+}
+
 //------------------------------------------------------------------------------
 // NOTE: DBContext is cloneable as PgPoll is an Arc.
 #[derive(Clone)]
@@ -88,11 +98,12 @@ pub struct DBContext {
 }
 
 impl DBContext {
-    pub fn new(pool: PgPool,
-            suffix: Option<String>,
-            default_ping_limit: i32,
-        ) -> Self {
-        Self { pool, suffix, default_ping_limit}
+    pub fn new(pool: PgPool, suffix: Option<String>, default_ping_limit: i32) -> Self {
+        Self {
+            pool,
+            suffix,
+            default_ping_limit,
+        }
     }
 
     // Get a table name with the defined suffix.
@@ -306,7 +317,7 @@ impl DBContext {
         let row = sqlx::query(&insert_query)
             .bind(&tenant.key)
             .bind(&tenant.name)
-            .bind(&tenant.ping_limit)
+            .bind(tenant.ping_limit)
             .fetch_one(&self.pool)
             .await?;
 
@@ -360,6 +371,16 @@ impl DBContext {
             .collect();
 
         Ok(result)
+    }
+
+    pub async fn tenant_id_from_key(&self, key: &str) -> Result<Option<i32>, sqlx::Error> {
+        let table_name = self.get_table("tenant");
+        let query = format!("SELECT id FROM {table_name} WHERE key = $1");
+
+        sqlx::query_scalar(&query)
+            .bind(key)
+            .fetch_optional(&self.pool)
+            .await
     }
 
     //--------------------------------------------------------------------------
@@ -1292,7 +1313,7 @@ impl DBContext {
             let row = sqlx::query(&insert_tenant)
                 .bind(&tenant_key)
                 .bind(&tenant_name)
-                .bind(&tenant_ping_limit)
+                .bind(tenant_ping_limit)
                 .fetch_one(&self.pool)
                 .await?;
             row.get("id")
@@ -1378,16 +1399,17 @@ impl DBContext {
     }
 
     pub async fn monitor_scan_load_from_json(&self, payload: &str) -> Result<(), sqlx::Error> {
-        let (tenant, st, scan_fs, ts): (String, SystemTag, Option<ScanFS>, Duration) =
+        let (tenant_key, st, scan_fs, ts): (String, SystemTag, Option<ScanFS>, Duration) =
             serde_json::from_str(payload).expect("Invalid JSON payload");
 
-        // TODO: validate tenant against defined list
-        let t = Tenant {
-            key: tenant.clone(),
-            name: tenant.clone(),
-            ping_limit: 1000,
+        let tenant_id = match self.tenant_id_from_key(&tenant_key).await? {
+            Some(id) => id,
+            None => {
+                return Err(sqlx::Error::Protocol(format!(
+                    "Tenant key not found: {tenant_key}"
+                )));
+            }
         };
-        let tenant_id = self.tenant_insert_or_get(&t).await?;
 
         let st_id = self.system_tag_insert_or_get(tenant_id, &st).await?;
         self.monitor_scan_load(&scan_fs, st_id, &ts).await
