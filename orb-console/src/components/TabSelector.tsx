@@ -11,11 +11,12 @@ export function TabSelector({ activeTab, onTabChange }: TabSelectorProps) {
     { id: "allow", label: "🔓", tooltip: "Allow List" },
     { id: "vulns", label: "⚠️", tooltip: "Vulnerabilities" },
     { id: "systems", label: "🖥️", tooltip: "Systems" },
+    { id: "tenant", label: "🏢", tooltip: "Tenants" },
   ];
 
   return (
     <div className="bg-slate-800 rounded-md px-2 py-2">
-      <div className="grid grid-cols-4 gap-0 text-gray-600 font-semibold">
+      <div className="grid grid-cols-5 gap-0 text-gray-600 font-semibold">
         {tabs.map((tab) => (
           <button
             key={tab.id}

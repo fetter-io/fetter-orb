@@ -23,6 +23,7 @@ import { SystemTagSelector } from "@/components/SystemTagSelector";
 import { PackageCountsChart } from "@/components/PackageCountsChart";
 import { VulnCard } from "@/components/VulnCard";
 import { TenantSelector } from "@/components/TenantSelector";
+import { TabTenant } from "@/components/TabTenant";
 import { AllowListEditor } from "@/components/AllowListEditor";
 import { Weave } from "@/components/Weave";
 import colors from "tailwindcss/colors";
@@ -405,6 +406,10 @@ export default function Dashboard() {
               </div>
             </>
           )}
+
+
+          {activeTab === "tenant" && <TabTenant />}
+
         </div>
       </main>
 
