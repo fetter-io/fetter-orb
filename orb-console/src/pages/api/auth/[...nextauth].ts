@@ -1,16 +1,3 @@
-// import NextAuth from "next-auth";
-// import GitHubProvider from "next-auth/providers/github";
-
-// export default NextAuth({
-//   providers: [
-//     GitHubProvider({
-//       clientId: process.env.GITHUB_CLIENT_ID!,
-//       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-//     }),
-//   ],
-//   secret: process.env.NEXTAUTH_SECRET,
-// });
-
 import NextAuth from "next-auth";
 import GitHubProvider from "next-auth/providers/github";
 import type { NextAuthOptions } from "next-auth";
@@ -24,17 +11,28 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, profile, account }) {
-      // Store extra info during login
       if (account && profile) {
+        // Send to backend once at login to get user_id
+        const res = await fetch(`${process.env.NEXT_PUBLIC_ORB_MODEL}/on_login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            login: profile.login,
+            email: profile.email,
+            name: profile.name,
+          }),
+        });
+
+        const data = await res.json();
+        token.user_id = data.user_id;
         token.login = profile.login;
-        // token.github_id = profile.id;
       }
+
       return token;
     },
     async session({ session, token }) {
-      // Add it to session.user so the client can access it
+      (session.user as any).user_id = token.user_id;
       (session.user as any).login = token.login;
-      // (session.user as any).github_id = token.github_id;
       return session;
     },
   },
