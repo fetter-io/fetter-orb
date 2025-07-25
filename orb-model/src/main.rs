@@ -8,6 +8,7 @@ use axum::{
 use serde::Deserialize;
 use serde_json::json;
 use serde_json::Value;
+use std::env;
 use std::fs;
 use std::net::SocketAddr;
 use std::path::PathBuf;
@@ -17,6 +18,7 @@ use tower_http::cors::{Any, CorsLayer};
 use orb_model::db_context::DBContext;
 use orb_model::db_context::Tenant;
 use orb_model::db_via_container::get_db_pool;
+use orb_model::env_loader::load_env;
 
 //------------------------------------------------------------------------------
 pub async fn db_bootstrap(db: &DBContext) {
@@ -62,14 +64,6 @@ pub async fn post_dep_manifest(
 }
 
 //------------------------------------------------------------------------------
-// pub async fn get_tenant(
-//     State(db): State<DBContext>,
-// ) -> Result<Json<Vec<(i32, Tenant)>>, (StatusCode, String)> {
-//     match db.get_tenants().await {
-//         Ok(sts) => Ok(Json(sts)),
-//         Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
-//     }
-// }
 
 #[derive(Deserialize, Debug)]
 pub struct TenantQueryParams {
@@ -250,10 +244,9 @@ pub async fn on_login(
     //         format!("Missing NEXTAUTH_SECRET: {}", e),
     //     )
     // })?;
-    let salt = "42";
-
+    let salt = env::var("TENANT_SECRET").unwrap_or_else(|_| "".to_string());
     let user_id = db
-        .user_tenant_init(&payload.login, &payload.email, &payload.name, salt)
+        .user_tenant_init(&payload.login, &payload.email, &payload.name, &salt)
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
@@ -263,7 +256,8 @@ pub async fn on_login(
 //------------------------------------------------------------------------------
 #[tokio::main]
 async fn main() {
-    // tracing_subscriber::fmt::init();
+    load_env(); // Loads .env, .env.local
+                // tracing_subscriber::fmt::init();
 
     // can branch when given a URL for a live DB
     let pool = get_db_pool().await;
@@ -272,7 +266,6 @@ async fn main() {
     // NOTE: testing
     dbx.tables_drop().await.expect("failed to drop tables");
 
-    // let _ = dbx.tables_create(true).await;
     dbx.tables_create(true)
         .await
         .expect("failed to create tables");
