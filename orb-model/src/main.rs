@@ -76,18 +76,16 @@ pub struct TenantQueryParams {
     pub user_id: Option<i32>,
 }
 
-
 pub async fn get_tenant(
     State(db): State<DBContext>,
     Query(params): Query<TenantQueryParams>,
 ) -> Result<Json<Vec<(i32, Tenant)>>, (StatusCode, String)> {
     match params.user_id {
-        Some(user_id) => {
-            db.get_tenants(Some(user_id))
-                .await
-                .map(Json)
-                .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
-        }
+        Some(user_id) => db
+            .get_tenants(Some(user_id))
+            .await
+            .map(Json)
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
         None => db
             .get_tenants(None)
             .await
@@ -95,7 +93,6 @@ pub async fn get_tenant(
             .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
     }
 }
-
 
 //------------------------------------------------------------------------------
 #[derive(Deserialize, Debug)]
@@ -256,12 +253,7 @@ pub async fn on_login(
     let salt = "42";
 
     let user_id = db
-        .user_tenant_init(
-            &payload.login,
-            &payload.email,
-            &payload.name,
-            salt,
-        )
+        .user_tenant_init(&payload.login, &payload.email, &payload.name, salt)
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 

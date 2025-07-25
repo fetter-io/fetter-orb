@@ -306,7 +306,10 @@ impl DBContext {
         Ok(row.get("id"))
     }
 
-    pub async fn get_tenants(&self, user_id: Option<i32>) -> Result<Vec<(i32, Tenant)>, sqlx::Error> {
+    pub async fn get_tenants(
+        &self,
+        user_id: Option<i32>,
+    ) -> Result<Vec<(i32, Tenant)>, sqlx::Error> {
         let tenant_table = self.get_table("tenant");
 
         let query: String;
@@ -324,10 +327,7 @@ impl DBContext {
                 ORDER BY t.name
                 "#
             );
-            rows = sqlx::query(&query)
-                .bind(uid)
-                .fetch_all(&self.pool)
-                .await?;
+            rows = sqlx::query(&query).bind(uid).fetch_all(&self.pool).await?;
         } else {
             query = format!(
                 r#"
@@ -353,7 +353,6 @@ impl DBContext {
 
         Ok(result)
     }
-
 
     //--------------------------------------------------------------------------
     pub async fn system_tag_insert_or_get(
@@ -1062,9 +1061,9 @@ impl DBContext {
     ) -> Result<Value, sqlx::Error> {
         let (packages, package_to_id) = self.get_latest_packages(system_tag_id, tenant_id).await?;
 
-        if packages.len() == 0 {
+        if packages.is_empty() {
             let empty: Vec<Value> = vec![];
-            return Ok(json!(empty))
+            return Ok(json!(empty));
         }
 
         let client = Arc::new(UreqClientLive);
@@ -1102,7 +1101,7 @@ impl DBContext {
             .get_latest_packages_to_sites(system_tag_id, tenant_id)
             .await?;
 
-        if package_to_sites.len() == 0 {
+        if package_to_sites.is_empty() {
             let empty: Vec<(i32, Option<String>)> = Vec::new();
             return Ok(json!({
                 "dep_manifest": empty,
@@ -1110,7 +1109,7 @@ impl DBContext {
                 "unrequired": empty,
                 "misdefined": empty,
                 "undefined": empty,
-            }))
+            }));
         }
 
         let dm_content = match tenant_id {
@@ -1268,7 +1267,6 @@ impl DBContext {
         };
 
         let tenant_key = strings_to_hash(vec![&salt, &email]);
-        println!("{}", tenant_key);
         let tenant_name = String::from("Self");
 
         // Step 3: Check if tenant exists
