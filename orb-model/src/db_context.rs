@@ -306,18 +306,68 @@ impl DBContext {
         Ok(row.get("id"))
     }
 
-    pub async fn tenant_all(&self) -> Result<Vec<(i32, Tenant)>, sqlx::Error> {
-        let table_name = self.get_table("tenant");
+    // pub async fn tenant_all(&self) -> Result<Vec<(i32, Tenant)>, sqlx::Error> {
+    //     let table_name = self.get_table("tenant");
 
-        let query = format!(
-            r#"
-            SELECT id, key, name
-            FROM {table_name}
-            ORDER BY name
-            "#
-        );
+    //     let query = format!(
+    //         r#"
+    //         SELECT id, key, name
+    //         FROM {table_name}
+    //         ORDER BY name
+    //         "#
+    //     );
 
-        let rows = sqlx::query(&query).fetch_all(&self.pool).await?;
+    //     let rows = sqlx::query(&query).fetch_all(&self.pool).await?;
+
+    //     let result = rows
+    //         .into_iter()
+    //         .map(|row| {
+    //             let id: i32 = row.get("id");
+    //             let tenant = Tenant {
+    //                 key: row.get("key"),
+    //                 name: row.get("name"),
+    //             };
+    //             (id, tenant)
+    //         })
+    //         .collect();
+
+    //     Ok(result)
+    // }
+
+    pub async fn tenant_all(&self, user_id: Option<i32>) -> Result<Vec<(i32, Tenant)>, sqlx::Error> {
+        let tenant_table = self.get_table("tenant");
+
+        let query: String;
+        let rows;
+
+        if let Some(uid) = user_id {
+            let user_to_tenant_table = self.get_table("user_to_tenant");
+
+            query = format!(
+                r#"
+                SELECT t.id, t.key, t.name
+                FROM {tenant_table} t
+                JOIN {user_to_tenant_table} ut ON t.id = ut.tenant_id
+                WHERE ut.user_id = $1
+                ORDER BY t.name
+                "#
+            );
+
+            rows = sqlx::query(&query)
+                .bind(uid)
+                .fetch_all(&self.pool)
+                .await?;
+        } else {
+            query = format!(
+                r#"
+                SELECT id, key, name
+                FROM {tenant_table}
+                ORDER BY name
+                "#
+            );
+
+            rows = sqlx::query(&query).fetch_all(&self.pool).await?;
+        }
 
         let result = rows
             .into_iter()
@@ -333,6 +383,7 @@ impl DBContext {
 
         Ok(result)
     }
+
 
     //--------------------------------------------------------------------------
     pub async fn system_tag_insert_or_get(

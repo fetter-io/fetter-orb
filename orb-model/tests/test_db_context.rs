@@ -43,7 +43,7 @@ async fn test_tenant_all_a() {
         name: "BBB".to_string(),
     };
     let _ = ctx.tenant_insert_or_get(&t2).await.unwrap();
-    let tenants = ctx.tenant_all().await.unwrap();
+    let tenants = ctx.tenant_all(None).await.unwrap();
     let json = serde_json::to_value(&tenants).unwrap();
     assert_eq!(
         serde_json::to_string(&json).unwrap(),

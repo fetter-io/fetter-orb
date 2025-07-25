@@ -62,14 +62,40 @@ pub async fn post_dep_manifest(
 }
 
 //------------------------------------------------------------------------------
-pub async fn get_tenant_all(
+// pub async fn get_tenant(
+//     State(db): State<DBContext>,
+// ) -> Result<Json<Vec<(i32, Tenant)>>, (StatusCode, String)> {
+//     match db.tenant_all().await {
+//         Ok(sts) => Ok(Json(sts)),
+//         Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
+//     }
+// }
+
+#[derive(Deserialize, Debug)]
+pub struct TenantQueryParams {
+    pub user_id: Option<i32>,
+}
+
+
+pub async fn get_tenant(
     State(db): State<DBContext>,
+    Query(params): Query<TenantQueryParams>,
 ) -> Result<Json<Vec<(i32, Tenant)>>, (StatusCode, String)> {
-    match db.tenant_all().await {
-        Ok(sts) => Ok(Json(sts)),
-        Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
+    match params.user_id {
+        Some(user_id) => {
+            db.tenant_all(Some(user_id))
+                .await
+                .map(Json)
+                .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
+        }
+        None => db
+            .tenant_all(None)
+            .await
+            .map(Json)
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
     }
 }
+
 
 //------------------------------------------------------------------------------
 #[derive(Deserialize, Debug)]
@@ -269,7 +295,7 @@ async fn main() {
         .allow_headers(Any);
 
     let app = Router::new()
-        .route("/tenant", get(get_tenant_all))
+        .route("/tenant", get(get_tenant))
         .route("/system_tag_pings", get(get_system_tag_pings))
         .route("/package_versions", get(get_package_versions))
         .route("/package_counts", get(get_package_counts))

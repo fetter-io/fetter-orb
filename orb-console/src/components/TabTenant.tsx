@@ -3,23 +3,28 @@
 import { Tenant } from "@/types";
 
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 
 type TabTenantProps = {
   selectedTenantId: number | null;
 };
 
 export function TabTenant({ selectedTenantId }: TabTenantProps) {
+  const { data: session, status } = useSession();
   const [tenants, setTenants] = useState<[number, Tenant][]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchTenants() {
+      if (status !== "authenticated" || !session?.user?.user_id) return;
+
       try {
         const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
-        const res = await fetch(`${apiBase}/tenant`);
+        const res = await fetch(
+          `${apiBase}/tenant?user_id=${session.user.user_id}`,
+        );
         const data = await res.json();
 
-        // data is Record<string, [id, tenant]>
         const list = Object.values(data) as [number, Tenant][];
         setTenants(list);
       } catch (err) {
