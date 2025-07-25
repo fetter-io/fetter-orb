@@ -1,5 +1,7 @@
 // src/next-auth.d.ts
 import { DefaultSession, DefaultUser } from "next-auth";
+// import { JWT } from "next-auth/jwt";
+// import { Profile } from "next-auth";
 
 declare module "next-auth" {
   interface Session {
@@ -10,12 +12,21 @@ declare module "next-auth" {
   }
 
   interface User extends DefaultUser {
-    login: string;
-    user_id: number;
+    login?: string; // Optional to match GitHub response safely
+    user_id?: number;
   }
+}
 
+declare module "next-auth/jwt" {
   interface JWT {
-    login: string;
-    user_id: number;
+    login?: string;
+    user_id?: number;
+  }
+}
+
+declare module "next-auth/providers" {
+  interface Profile {
+    login?: string;
+    id?: number; // GitHub user ID
   }
 }

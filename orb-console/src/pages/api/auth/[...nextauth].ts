@@ -11,7 +11,13 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, profile, account }) {
-      if (account && profile) {
+      if (account && profile && account.provider === "github") {
+        const githubProfile = profile as {
+          login: string;
+          id: number;
+          email?: string;
+          name?: string;
+        };
         // Send to backend once at login to get user_id
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_ORB_MODEL}/on_login`,
@@ -19,23 +25,30 @@ export const authOptions: NextAuthOptions = {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              login: profile.login,
-              email: profile.email,
-              name: profile.name,
+              login: githubProfile.login,
+              email: githubProfile.email,
+              name: githubProfile.name,
             }),
           },
         );
 
         const data = await res.json();
         token.user_id = data.user_id;
-        token.login = profile.login;
+        token.login = githubProfile.login;
       }
 
       return token;
     },
     async session({ session, token }) {
-      session.user.user_id = token.user_id;
-      session.user.login = token.login;
+      if (typeof token.user_id === "number") {
+        session.user.user_id = token.user_id;
+      }
+      if (typeof token.login === "string") {
+        session.user.login = token.login;
+      }
+
+      // session.user.user_id = token.user_id;
+      // session.user.login = token.login;
       return session;
     },
   },
