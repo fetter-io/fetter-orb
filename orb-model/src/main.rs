@@ -9,9 +9,7 @@ use serde::Deserialize;
 use serde_json::json;
 use serde_json::Value;
 use std::env;
-use std::fs;
 use std::net::SocketAddr;
-use std::path::PathBuf;
 use tokio::net::TcpListener;
 use tower_http::cors::{Any, CorsLayer};
 
@@ -19,26 +17,6 @@ use orb_model::db_context::DBContext;
 use orb_model::db_context::Tenant;
 use orb_model::db_via_container::get_db_pool;
 use orb_model::env_loader::load_env;
-
-//------------------------------------------------------------------------------
-pub async fn db_bootstrap(db: &DBContext) {
-    let _ = db.monitor_scan_load_from_json(r#"["team-a",{"username":"alpha","hostname":"alpha-p1g7","os_name":"linux","os_version":"24.04","architecture":"x86_64","logical_cores":22},null,{"secs":1743632088,"nanos":72262432}]"#).await;
-
-    let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    path1.push("tests/fixtures/monitor-scan-01.json");
-    let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
-    db.monitor_scan_load_from_json(&msg1).await.unwrap();
-
-    let mut path2 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    path2.push("tests/fixtures/monitor-scan-01.json");
-    let msg2 = fs::read_to_string(path2).expect("Failed to read JSON file");
-    db.monitor_scan_load_from_json(&msg2).await.unwrap();
-
-    let mut path3 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    path3.push("tests/fixtures/monitor-scan-01.json");
-    let msg3 = fs::read_to_string(path3).expect("Failed to read JSON file");
-    db.monitor_scan_load_from_json(&msg3).await.unwrap();
-}
 
 //------------------------------------------------------------------------------
 // endpoint implementations
@@ -257,11 +235,14 @@ pub async fn on_login(
 #[tokio::main]
 async fn main() {
     load_env(); // Loads .env, .env.local
-                // tracing_subscriber::fmt::init();
 
-    // can branch when given a URL for a live DB
+    let default_ping_limit: i32 = env::var("DEFAULT_PING_LIMIT")
+        .ok()
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(1);
+
     let pool = get_db_pool().await;
-    let dbx = DBContext::new(pool, None, 1);
+    let dbx = DBContext::new(pool, None, default_ping_limit);
 
     // NOTE: testing
     dbx.tables_drop().await.expect("failed to drop tables");
@@ -269,12 +250,8 @@ async fn main() {
     dbx.tables_create(true)
         .await
         .expect("failed to create tables");
-    // NOTE: could read-in tenant definitions from a flat file on init
 
-    // NOTE: for testing
-    db_bootstrap(&dbx).await;
-
-    let cors = CorsLayer::new()
+        let cors = CorsLayer::new()
         .allow_origin(Any) // TODO: tighten later
         .allow_methods(Any)
         .allow_headers(Any);
