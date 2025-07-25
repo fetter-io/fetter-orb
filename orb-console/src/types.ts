@@ -1,4 +1,4 @@
-export type Tab = "packages" | "systems" | "allow" | "vulns";
+export type Tab = "packages" | "systems" | "allow" | "vulns" | "tenant";
 
 export type Package = {
   id: number;
@@ -82,6 +82,7 @@ export type AuditEntry = {
 export type Tenant = {
   key: string;
   name: string;
+  ping_limit: number;
 };
 
 export type ValidationEntry = [number, string | null];

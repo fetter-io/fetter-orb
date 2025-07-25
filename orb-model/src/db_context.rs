@@ -1,4 +1,6 @@
-use chrono::Utc;
+use chrono::Duration as ChronoDuration;
+use chrono::{DateTime, Utc};
+
 use fetter::{
     AuditReport, DepManifest, DirectURL, FlagCacheRefresh, FlagLog, LockFile, Package, PathShared,
     ResultDynError, ScanFS, SystemTag, UreqClientLive, ValidationExplain, ValidationFlags,
@@ -6,8 +8,8 @@ use fetter::{
 };
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
+use sha2::{Digest, Sha256};
 use sqlx::postgres::PgRow;
-use sqlx::types::chrono::DateTime;
 use sqlx::Executor;
 use sqlx::{Arguments, PgPool, Row};
 // use sqlx::{Postgres, Transaction};
@@ -54,12 +56,37 @@ fn package_from_row(row: &PgRow) -> (i32, Package) {
     )
 }
 
+pub fn strings_to_hash(values: Vec<&str>) -> String {
+    let mut hasher = Sha256::new();
+    for value in values {
+        hasher.update(value.as_bytes());
+    }
+    let hash = hasher.finalize();
+
+    hash.iter().fold(String::new(), |mut acc, byte| {
+        use std::fmt::Write;
+        write!(&mut acc, "{byte:02x}").unwrap();
+        acc
+    })
+}
+
 //------------------------------------------------------------------------------
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Tenant {
     pub key: String,
     pub name: String,
+    pub ping_limit: i32,
+}
+
+impl Tenant {
+    pub fn from_key(key: &str) -> Self {
+        Tenant {
+            key: key.to_string(),
+            name: key.to_string(),
+            ping_limit: 1,
+        }
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -68,11 +95,16 @@ pub struct Tenant {
 pub struct DBContext {
     pub pool: PgPool,
     suffix: Option<String>,
+    default_ping_limit: i32,
 }
 
 impl DBContext {
-    pub fn new(pool: PgPool, suffix: Option<String>) -> Self {
-        Self { pool, suffix }
+    pub fn new(pool: PgPool, suffix: Option<String>, default_ping_limit: i32) -> Self {
+        Self {
+            pool,
+            suffix,
+            default_ping_limit,
+        }
     }
 
     // Get a table name with the defined suffix.
@@ -84,8 +116,8 @@ impl DBContext {
     }
 
     pub async fn tables_create(&self, if_not_exists: bool) -> Result<(), sqlx::Error> {
-        // user_table
-        // user_to_tenant_tabl
+        let user_table = self.get_table("users");
+        let user_to_tenant_table = self.get_table("user_to_tenant");
         let tenant_table = self.get_table("tenant");
         let system_tag_table = self.get_table("system_tag");
         let package_table = self.get_table("package");
@@ -96,12 +128,35 @@ impl DBContext {
 
         let if_clause = if if_not_exists { "IF NOT EXISTS " } else { "" };
 
+        let create_user = format!(
+            r#"
+            CREATE TABLE {if_clause} {user_table} (
+                id SERIAL PRIMARY KEY,
+                login TEXT NOT NULL,
+                email TEXT,
+                name TEXT,
+                created_at TIMESTAMPTZ DEFAULT now()
+            );
+            "#
+        );
+
         let create_tenant = format!(
             r#"
             CREATE TABLE {if_clause}{tenant_table} (
                 id SERIAL PRIMARY KEY,
                 key TEXT NOT NULL UNIQUE,
-                name TEXT NOT NULL
+                name TEXT NOT NULL,
+                ping_limit INTEGER
+            );
+            "#
+        );
+
+        let create_user_to_tenant = format!(
+            r#"
+            CREATE TABLE {if_clause}{user_to_tenant_table} (
+                user_id INTEGER NOT NULL REFERENCES {user_table}(id) ON DELETE CASCADE,
+                tenant_id INTEGER NOT NULL REFERENCES {tenant_table}(id) ON DELETE CASCADE,
+                PRIMARY KEY (user_id, tenant_id)
             );
             "#
         );
@@ -177,6 +232,8 @@ impl DBContext {
         );
 
         self.pool.execute(&*create_tenant).await?;
+        self.pool.execute(&*create_user).await?;
+        self.pool.execute(&*create_user_to_tenant).await?;
         self.pool.execute(&*create_dep_manifest).await?;
         self.pool.execute(&*create_system_tag).await?;
         self.pool.execute(&*create_package).await?;
@@ -205,7 +262,9 @@ impl DBContext {
         let ping_table = self.get_table("ping");
         let monitor_scan_table = self.get_table("monitor_scan");
         let dep_manifest_table = self.get_table("dep_manifest");
+        let user_to_tenant_table = self.get_table("user_to_tenant");
         let tenant_table = self.get_table("tenant");
+        let user_table = self.get_table("users");
 
         let drop_monitor_scan = format!(r#"DROP TABLE IF EXISTS {monitor_scan_table} CASCADE;"#);
         let drop_ping = format!(r#"DROP TABLE IF EXISTS {ping_table} CASCADE;"#);
@@ -213,7 +272,10 @@ impl DBContext {
         let drop_package = format!(r#"DROP TABLE IF EXISTS {package_table} CASCADE;"#);
         let drop_system_tag = format!(r#"DROP TABLE IF EXISTS {system_tag_table} CASCADE;"#);
         let drop_dep_manifest = format!(r#"DROP TABLE IF EXISTS {dep_manifest_table} CASCADE;"#);
+        let drop_user_to_tenant =
+            format!(r#"DROP TABLE IF EXISTS {user_to_tenant_table} CASCADE;"#);
         let drop_tenant = format!(r#"DROP TABLE IF EXISTS {tenant_table} CASCADE;"#);
+        let drop_user = format!(r#"DROP TABLE IF EXISTS {user_table} CASCADE;"#);
 
         self.pool.execute(&*drop_monitor_scan).await?;
         self.pool.execute(&*drop_ping).await?;
@@ -221,7 +283,9 @@ impl DBContext {
         self.pool.execute(&*drop_package).await?;
         self.pool.execute(&*drop_system_tag).await?;
         self.pool.execute(&*drop_dep_manifest).await?;
+        self.pool.execute(&*drop_user_to_tenant).await?;
         self.pool.execute(&*drop_tenant).await?;
+        self.pool.execute(&*drop_user).await?;
 
         Ok(())
     }
@@ -246,32 +310,53 @@ impl DBContext {
         let insert_query = format!(
             r#"
             INSERT INTO {table_name}
-            (key, name)
-            VALUES ($1, $2)
+            (key, name, ping_limit)
+            VALUES ($1, $2, $3)
             RETURNING id
             "#
         );
         let row = sqlx::query(&insert_query)
             .bind(&tenant.key)
             .bind(&tenant.name)
+            .bind(tenant.ping_limit)
             .fetch_one(&self.pool)
             .await?;
 
         Ok(row.get("id"))
     }
 
-    pub async fn tenant_all(&self) -> Result<Vec<(i32, Tenant)>, sqlx::Error> {
-        let table_name = self.get_table("tenant");
+    pub async fn get_tenants(
+        &self,
+        user_id: Option<i32>,
+    ) -> Result<Vec<(i32, Tenant)>, sqlx::Error> {
+        let tenant_table = self.get_table("tenant");
 
-        let query = format!(
-            r#"
-            SELECT id, key, name
-            FROM {table_name}
-            ORDER BY name
-            "#
-        );
+        let query: String;
+        let rows;
 
-        let rows = sqlx::query(&query).fetch_all(&self.pool).await?;
+        if let Some(uid) = user_id {
+            let user_to_tenant_table = self.get_table("user_to_tenant");
+
+            query = format!(
+                r#"
+                SELECT t.id, t.key, t.name, t.ping_limit
+                FROM {tenant_table} t
+                JOIN {user_to_tenant_table} ut ON t.id = ut.tenant_id
+                WHERE ut.user_id = $1
+                ORDER BY t.name
+                "#
+            );
+            rows = sqlx::query(&query).bind(uid).fetch_all(&self.pool).await?;
+        } else {
+            query = format!(
+                r#"
+                SELECT id, key, name, ping_limit
+                FROM {tenant_table}
+                ORDER BY name
+                "#
+            );
+            rows = sqlx::query(&query).fetch_all(&self.pool).await?;
+        }
 
         let result = rows
             .into_iter()
@@ -280,12 +365,49 @@ impl DBContext {
                 let tenant = Tenant {
                     key: row.get("key"),
                     name: row.get("name"),
+                    ping_limit: row.get("ping_limit"),
                 };
                 (id, tenant)
             })
             .collect();
 
         Ok(result)
+    }
+
+    pub async fn tenant_id_and_ping_limit_from_key(
+        &self,
+        key: &str,
+    ) -> Result<Option<(i32, i32)>, sqlx::Error> {
+        let table_name = self.get_table("tenant");
+        let query = format!("SELECT id, ping_limit FROM {table_name} WHERE key = $1");
+
+        sqlx::query_as::<_, (i32, i32)>(&query)
+            .bind(key)
+            .fetch_optional(&self.pool)
+            .await
+    }
+
+    pub async fn count_recent_pings_for_tenant(
+        &self,
+        tenant_id: i32,
+        since: chrono::DateTime<chrono::Utc>,
+    ) -> Result<i64, sqlx::Error> {
+        let ping_table = self.get_table("ping");
+        let system_tag_table = self.get_table("system_tag");
+
+        let query = format!(
+            r#"
+            SELECT COUNT(*) FROM {ping_table} p
+            JOIN {system_tag_table} st ON p.system_tag_id = st.id
+            WHERE st.tenant_id = $1 AND p.timestamp >= $2
+            "#
+        );
+
+        sqlx::query_scalar(&query)
+            .bind(tenant_id)
+            .bind(since)
+            .fetch_one(&self.pool)
+            .await
     }
 
     //--------------------------------------------------------------------------
@@ -994,6 +1116,12 @@ impl DBContext {
         tenant_id: Option<i32>,
     ) -> Result<Value, sqlx::Error> {
         let (packages, package_to_id) = self.get_latest_packages(system_tag_id, tenant_id).await?;
+
+        if packages.is_empty() {
+            let empty: Vec<Value> = vec![];
+            return Ok(json!(empty));
+        }
+
         let client = Arc::new(UreqClientLive);
         let audit =
             AuditReport::from_packages(client, &packages, FlagCacheRefresh(false), FlagLog(false));
@@ -1025,6 +1153,21 @@ impl DBContext {
         system_tag_id: Option<i32>,
         tenant_id: Option<i32>,
     ) -> ResultDynError<Value> {
+        let (package_to_sites, package_to_id) = self
+            .get_latest_packages_to_sites(system_tag_id, tenant_id)
+            .await?;
+
+        if package_to_sites.is_empty() {
+            let empty: Vec<(i32, Option<String>)> = Vec::new();
+            return Ok(json!({
+                "dep_manifest": empty,
+                "missing": empty,
+                "unrequired": empty,
+                "misdefined": empty,
+                "undefined": empty,
+            }));
+        }
+
         let dm_content = match tenant_id {
             Some(t_id) => match self.dep_manifest_from_tenant_id(t_id).await? {
                 Some(text) => text,
@@ -1041,9 +1184,7 @@ impl DBContext {
             permit_superset: false,
             permit_subset: false,
         };
-        let (package_to_sites, package_to_id) = self
-            .get_latest_packages_to_sites(system_tag_id, tenant_id)
-            .await?;
+
         let packages: Vec<_> = package_to_sites.keys().cloned().collect();
         // packages.sort();
         let site_to_exe: HashMap<PathShared, PathBuf> = HashMap::new();
@@ -1147,6 +1288,90 @@ impl DBContext {
     }
 
     //--------------------------------------------------------------------------
+
+    /// Check if a user exists; if not, add that user. Also check that user has a default "Self" tenant and that that tenant is mapped to this User
+    pub async fn user_tenant_init(
+        &self,
+        login: &str,
+        email: &str,
+        name: &str,
+        salt: &str,
+    ) -> Result<i32, sqlx::Error> {
+        let user_table = self.get_table("users");
+        let tenant_table = self.get_table("tenant");
+        let user_to_tenant_table = self.get_table("user_to_tenant");
+
+        // Step 1: Check if user exists
+        let select_user = format!("SELECT id FROM {user_table} WHERE login = $1");
+        let user_id: i32 = if let Some(row) = sqlx::query(&select_user)
+            .bind(login)
+            .fetch_optional(&self.pool)
+            .await?
+        {
+            row.get("id")
+        } else {
+            let insert_user = format!(
+                "INSERT INTO {user_table} (login, email, name) VALUES ($1, $2, $3) RETURNING id"
+            );
+            let row = sqlx::query(&insert_user)
+                .bind(login)
+                .bind(email)
+                .bind(name)
+                .fetch_one(&self.pool)
+                .await?;
+            row.get("id")
+        };
+
+        let tenant_key = strings_to_hash(vec![&salt, &email]);
+        let tenant_name = String::from("Self");
+        let tenant_ping_limit = self.default_ping_limit;
+
+        // Step 3: Check if tenant exists
+        let select_tenant = format!("SELECT id FROM {tenant_table} WHERE key = $1");
+        let tenant_id: i32 = if let Some(row) = sqlx::query(&select_tenant)
+            .bind(&tenant_key)
+            .fetch_optional(&self.pool)
+            .await?
+        {
+            row.get("id")
+        } else {
+            let insert_tenant =
+                format!("INSERT INTO {tenant_table} (key, name, ping_limit) VALUES ($1, $2, $3) RETURNING id");
+            let row = sqlx::query(&insert_tenant)
+                .bind(&tenant_key)
+                .bind(&tenant_name)
+                .bind(tenant_ping_limit)
+                .fetch_one(&self.pool)
+                .await?;
+            row.get("id")
+        };
+
+        // Step 4: Ensure mapping exists
+        let insert_mapping = format!(
+            "INSERT INTO {user_to_tenant_table} (user_id, tenant_id) VALUES ($1, $2) ON CONFLICT DO NOTHING"
+        );
+        sqlx::query(&insert_mapping)
+            .bind(user_id)
+            .bind(tenant_id)
+            .execute(&self.pool)
+            .await?;
+
+        Ok(user_id)
+    }
+
+    pub async fn user_id_from_login(&self, login: &str) -> Result<Option<i32>, sqlx::Error> {
+        let user_table = self.get_table("users");
+        let query = format!("SELECT id FROM {user_table} WHERE login = $1");
+
+        let row = sqlx::query(&query)
+            .bind(login)
+            .fetch_optional(&self.pool)
+            .await?;
+
+        Ok(row.map(|r| r.get("id")))
+    }
+
+    //--------------------------------------------------------------------------
     pub async fn monitor_scan_load(
         &self,
         scan_fs: &Option<ScanFS>,
@@ -1201,16 +1426,30 @@ impl DBContext {
     }
 
     pub async fn monitor_scan_load_from_json(&self, payload: &str) -> Result<(), sqlx::Error> {
-        let (tenant, st, scan_fs, ts): (String, SystemTag, Option<ScanFS>, Duration) =
+        let (tenant_key, st, scan_fs, ts): (String, SystemTag, Option<ScanFS>, Duration) =
             serde_json::from_str(payload).expect("Invalid JSON payload");
 
-        // TODO: validate tenant against defined list
-        let t = Tenant {
-            key: tenant.clone(),
-            name: tenant.clone(),
-        };
+        let (tenant_id, ping_limit) =
+            match self.tenant_id_and_ping_limit_from_key(&tenant_key).await? {
+                Some(v) => v,
+                None => {
+                    return Err(sqlx::Error::Protocol(format!(
+                        "Tenant key not found: {tenant_key}"
+                    )));
+                }
+            };
 
-        let tenant_id = self.tenant_insert_or_get(&t).await?;
+        let recent_cutoff = Utc::now() - ChronoDuration::hours(24);
+        let ping_count = self
+            .count_recent_pings_for_tenant(tenant_id, recent_cutoff)
+            .await?;
+
+        if ping_count >= ping_limit as i64 {
+            return Err(sqlx::Error::Protocol(format!(
+                "Ping limit exceeded for tenant: {tenant_key} (limit: {ping_limit}, found: {ping_count})"
+            )));
+        }
+
         let st_id = self.system_tag_insert_or_get(tenant_id, &st).await?;
         self.monitor_scan_load(&scan_fs, st_id, &ts).await
     }

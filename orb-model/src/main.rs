@@ -8,6 +8,7 @@ use axum::{
 use serde::Deserialize;
 use serde_json::json;
 use serde_json::Value;
+use std::env;
 use std::net::SocketAddr;
 use tokio::net::TcpListener;
 use tower_http::cors::{Any, CorsLayer};
@@ -15,15 +16,7 @@ use tower_http::cors::{Any, CorsLayer};
 use orb_model::db_context::DBContext;
 use orb_model::db_context::Tenant;
 use orb_model::db_via_container::get_db_pool;
-
-//------------------------------------------------------------------------------
-pub async fn db_bootstrap(db: &DBContext) {
-    let _ = db.monitor_scan_load_from_json(r#"["team-x",
-        {"username":"alpha","hostname":"alpha-p1g7","os_name":"linux","os_version":"24.04","architecture":"x86_64","logical_cores":22},
-        null,
-        {"secs":1743632088,"nanos":72262432}
-    ]"#).await;
-}
+use orb_model::env_loader::load_env;
 
 //------------------------------------------------------------------------------
 // endpoint implementations
@@ -49,12 +42,27 @@ pub async fn post_dep_manifest(
 }
 
 //------------------------------------------------------------------------------
-pub async fn get_tenant_all(
+
+#[derive(Deserialize, Debug)]
+pub struct TenantQueryParams {
+    pub user_id: Option<i32>,
+}
+
+pub async fn get_tenant(
     State(db): State<DBContext>,
+    Query(params): Query<TenantQueryParams>,
 ) -> Result<Json<Vec<(i32, Tenant)>>, (StatusCode, String)> {
-    match db.tenant_all().await {
-        Ok(sts) => Ok(Json(sts)),
-        Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
+    match params.user_id {
+        Some(user_id) => db
+            .get_tenants(Some(user_id))
+            .await
+            .map(Json)
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
+        None => db
+            .get_tenants(None)
+            .await
+            .map(Json)
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
     }
 }
 
@@ -195,21 +203,47 @@ pub async fn get_audit(
 }
 
 //------------------------------------------------------------------------------
+
+#[derive(Deserialize, Debug)]
+pub struct OnLoginParams {
+    // pub github_id: i64,
+    pub login: String,
+    pub email: String,
+    pub name: String,
+}
+
+pub async fn on_login(
+    State(db): State<DBContext>,
+    Json(payload): Json<OnLoginParams>,
+) -> Result<Json<serde_json::Value>, (StatusCode, String)> {
+    let salt = env::var("TENANT_SECRET").unwrap_or_else(|_| "".to_string());
+    let user_id = db
+        .user_tenant_init(&payload.login, &payload.email, &payload.name, &salt)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    Ok(Json(json!({ "user_id": user_id })))
+}
+
+//------------------------------------------------------------------------------
 #[tokio::main]
 async fn main() {
-    // tracing_subscriber::fmt::init();
+    load_env(); // Loads .env, .env.local
 
-    // can branch when given a URL for a live DB
+    let default_ping_limit: i32 = env::var("DEFAULT_PING_LIMIT")
+        .ok()
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(1);
+
     let pool = get_db_pool().await;
-    let dbx = DBContext::new(pool, None);
+    let dbx = DBContext::new(pool, None, default_ping_limit);
 
-    let _ = dbx.tables_drop().await;
+    // TODO: only if testing
+    dbx.tables_drop().await.expect("failed to drop tables");
 
-    let _ = dbx.tables_create(true).await;
-    // NOTE: could read-in tenant definitions from a flat file on init
-
-    // NOTE: for testing
-    let _ = db_bootstrap(&dbx).await;
+    dbx.tables_create(true)
+        .await
+        .expect("failed to create tables");
 
     let cors = CorsLayer::new()
         .allow_origin(Any) // TODO: tighten later
@@ -217,13 +251,14 @@ async fn main() {
         .allow_headers(Any);
 
     let app = Router::new()
-        .route("/tenant", get(get_tenant_all))
+        .route("/tenant", get(get_tenant))
         .route("/system_tag_pings", get(get_system_tag_pings))
         .route("/package_versions", get(get_package_versions))
         .route("/package_counts", get(get_package_counts))
         .route("/audit", get(get_audit))
         .route("/validate", get(get_validate))
         // post requests
+        .route("/on_login", post(on_login))
         .route("/monitor_scan", post(post_monitor_scan))
         .route("/dep_manifest", post(post_dep_manifest))
         .layer(cors)
