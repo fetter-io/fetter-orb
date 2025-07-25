@@ -407,9 +407,9 @@ export default function Dashboard() {
             </>
           )}
 
-
-          {activeTab === "tenant" && <TabTenant />}
-
+          {activeTab === "tenant" && (
+            <TabTenant selectedTenantId={selectedTenantId} />
+          )}
         </div>
       </main>
 

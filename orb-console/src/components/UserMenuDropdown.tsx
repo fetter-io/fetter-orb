@@ -67,7 +67,6 @@ export function UserMenuDropdown() {
           </button>
         </div>
       )}
-
     </div>
   );
 }

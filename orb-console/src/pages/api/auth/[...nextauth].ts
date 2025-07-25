@@ -13,15 +13,18 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, profile, account }) {
       if (account && profile) {
         // Send to backend once at login to get user_id
-        const res = await fetch(`${process.env.NEXT_PUBLIC_ORB_MODEL}/on_login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            login: profile.login,
-            email: profile.email,
-            name: profile.name,
-          }),
-        });
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_ORB_MODEL}/on_login`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              login: profile.login,
+              email: profile.email,
+              name: profile.name,
+            }),
+          },
+        );
 
         const data = await res.json();
         token.user_id = data.user_id;

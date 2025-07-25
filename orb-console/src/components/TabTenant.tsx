@@ -1,13 +1,14 @@
 "use client";
 
+import { Tenant } from "@/types";
+
 import { useEffect, useState } from "react";
 
-type Tenant = {
-  name: string;
-  key: string;
+type TabTenantProps = {
+  selectedTenantId: number | null;
 };
 
-export function TabTenant() {
+export function TabTenant({ selectedTenantId }: TabTenantProps) {
   const [tenants, setTenants] = useState<[number, Tenant][]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -34,14 +35,24 @@ export function TabTenant() {
   if (loading) return <div className="text-gray-400 p-4">Loading tenants…</div>;
 
   return (
-    <div className="gap-4 text-sm text-gray-300">
-      <h2 className="text-lg font-semibold mb-2 text-gray-100">Tenants</h2>
-
+    <div className="gap-4 text-gray-300">
       <div className="grid gap-4">
         {tenants.map(([id, tenant]) => (
-          <div key={id} className="border border-slate-700 rounded-lg p-2 bg-slate-800">
-            <div><span className="text-gray-400">Name:</span> {tenant.name}</div>
-            <div><span className="text-gray-400">Key:</span> <code className="text-gray-200 break-all">{tenant.key}</code></div>
+          <div
+            key={id}
+            className={`border rounded p-4 bg-slate-800 ${
+              id === selectedTenantId ? "border-blue-500" : "border-slate-600"
+            }`}
+          >
+            <div className="text-xl font-semibold text-gray-400 mb-2">
+              Tenant: {tenant.name}
+            </div>
+            <div>
+              <span className="text-gray-400 text-sm">Key:</span>{" "}
+              <code className="text-gray-200 text-sm break-all">
+                {tenant.key}
+              </code>
+            </div>
           </div>
         ))}
       </div>
