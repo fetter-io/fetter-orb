@@ -1,4 +1,6 @@
-use chrono::Utc;
+use chrono::Duration as ChronoDuration;
+use chrono::{DateTime, Utc};
+
 use fetter::{
     AuditReport, DepManifest, DirectURL, FlagCacheRefresh, FlagLog, LockFile, Package, PathShared,
     ResultDynError, ScanFS, SystemTag, UreqClientLive, ValidationExplain, ValidationFlags,
@@ -8,7 +10,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 use sqlx::postgres::PgRow;
-use sqlx::types::chrono::DateTime;
 use sqlx::Executor;
 use sqlx::{Arguments, PgPool, Row};
 // use sqlx::{Postgres, Transaction};
@@ -373,13 +374,39 @@ impl DBContext {
         Ok(result)
     }
 
-    pub async fn tenant_id_from_key(&self, key: &str) -> Result<Option<i32>, sqlx::Error> {
+    pub async fn tenant_id_and_ping_limit_from_key(
+        &self,
+        key: &str,
+    ) -> Result<Option<(i32, i32)>, sqlx::Error> {
         let table_name = self.get_table("tenant");
-        let query = format!("SELECT id FROM {table_name} WHERE key = $1");
+        let query = format!("SELECT id, ping_limit FROM {table_name} WHERE key = $1");
 
-        sqlx::query_scalar(&query)
+        sqlx::query_as::<_, (i32, i32)>(&query)
             .bind(key)
             .fetch_optional(&self.pool)
+            .await
+    }
+
+    pub async fn count_recent_pings_for_tenant(
+        &self,
+        tenant_id: i32,
+        since: chrono::DateTime<chrono::Utc>,
+    ) -> Result<i64, sqlx::Error> {
+        let ping_table = self.get_table("ping");
+        let system_tag_table = self.get_table("system_tag");
+
+        let query = format!(
+            r#"
+            SELECT COUNT(*) FROM {ping_table} p
+            JOIN {system_tag_table} st ON p.system_tag_id = st.id
+            WHERE st.tenant_id = $1 AND p.timestamp >= $2
+            "#
+        );
+
+        sqlx::query_scalar(&query)
+            .bind(tenant_id)
+            .bind(since)
+            .fetch_one(&self.pool)
             .await
     }
 
@@ -1402,14 +1429,27 @@ impl DBContext {
         let (tenant_key, st, scan_fs, ts): (String, SystemTag, Option<ScanFS>, Duration) =
             serde_json::from_str(payload).expect("Invalid JSON payload");
 
-        let tenant_id = match self.tenant_id_from_key(&tenant_key).await? {
-            Some(id) => id,
-            None => {
-                return Err(sqlx::Error::Protocol(format!(
-                    "Tenant key not found: {tenant_key}"
-                )));
-            }
-        };
+        let (tenant_id, ping_limit) =
+            match self.tenant_id_and_ping_limit_from_key(&tenant_key).await? {
+                Some(v) => v,
+                None => {
+                    return Err(sqlx::Error::Protocol(format!(
+                        "Tenant key not found: {tenant_key}"
+                    )));
+                }
+            };
+
+        let recent_cutoff = Utc::now() - ChronoDuration::hours(24);
+        let ping_count = self
+            .count_recent_pings_for_tenant(tenant_id, recent_cutoff)
+            .await?;
+
+        if ping_count >= ping_limit as i64 {
+            return Err(sqlx::Error::Protocol(format!(
+                "Ping limit exceeded for tenant: {tenant_key} (limit: {}, found: {})",
+                ping_limit, ping_count
+            )));
+        }
 
         let st_id = self.system_tag_insert_or_get(tenant_id, &st).await?;
         self.monitor_scan_load(&scan_fs, st_id, &ts).await

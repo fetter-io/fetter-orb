@@ -21,7 +21,6 @@ fn load_env_from_file(path: &str) {
     }
 }
 
-
 pub fn load_env() {
     // let env_mode = env::var("APP_ENV").unwrap_or_else(|_| "development".to_string());
 

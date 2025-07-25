@@ -216,12 +216,6 @@ pub async fn on_login(
     State(db): State<DBContext>,
     Json(payload): Json<OnLoginParams>,
 ) -> Result<Json<serde_json::Value>, (StatusCode, String)> {
-    // let secret = std::env::var("NEXTAUTH_SECRET").map_err(|e| {
-    //     (
-    //         StatusCode::INTERNAL_SERVER_ERROR,
-    //         format!("Missing NEXTAUTH_SECRET: {}", e),
-    //     )
-    // })?;
     let salt = env::var("TENANT_SECRET").unwrap_or_else(|_| "".to_string());
     let user_id = db
         .user_tenant_init(&payload.login, &payload.email, &payload.name, &salt)
@@ -244,14 +238,14 @@ async fn main() {
     let pool = get_db_pool().await;
     let dbx = DBContext::new(pool, None, default_ping_limit);
 
-    // NOTE: testing
+    // TODO: only if testing
     dbx.tables_drop().await.expect("failed to drop tables");
 
     dbx.tables_create(true)
         .await
         .expect("failed to create tables");
 
-        let cors = CorsLayer::new()
+    let cors = CorsLayer::new()
         .allow_origin(Any) // TODO: tighten later
         .allow_methods(Any)
         .allow_headers(Any);
