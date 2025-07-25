@@ -54,6 +54,14 @@ export function TabTenant({ selectedTenantId }: TabTenantProps) {
             <div className="text-xl font-semibold text-zinc-400 mb-2">
               Tenant: {tenant.name}
             </div>
+
+            <div>
+              <h3 className="text-zinc-300 text-sm">Updates per day</h3>
+              <code className="text-zinc-400 text-sm break-all">
+                {tenant.ping_limit}
+              </code>
+            </div>
+
             <div>
               <h3 className="text-zinc-300 text-sm">Key</h3>
               <code className="text-zinc-400 text-sm break-all">

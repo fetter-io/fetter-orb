@@ -82,6 +82,7 @@ export type AuditEntry = {
 export type Tenant = {
   key: string;
   name: string;
+  ping_limit: number;
 };
 
 export type ValidationEntry = [number, string | null];

@@ -327,7 +327,7 @@ impl DBContext {
 
             query = format!(
                 r#"
-                SELECT t.id, t.key, t.name
+                SELECT t.id, t.key, t.name, t.ping_limit
                 FROM {tenant_table} t
                 JOIN {user_to_tenant_table} ut ON t.id = ut.tenant_id
                 WHERE ut.user_id = $1
