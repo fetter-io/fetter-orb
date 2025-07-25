@@ -75,6 +75,7 @@ pub fn strings_to_hash(values: Vec<&str>) -> String {
 pub struct Tenant {
     pub key: String,
     pub name: String,
+    pub ping_limit: i32,
 }
 
 //------------------------------------------------------------------------------
@@ -83,11 +84,15 @@ pub struct Tenant {
 pub struct DBContext {
     pub pool: PgPool,
     suffix: Option<String>,
+    default_ping_limit: i32,
 }
 
 impl DBContext {
-    pub fn new(pool: PgPool, suffix: Option<String>) -> Self {
-        Self { pool, suffix }
+    pub fn new(pool: PgPool,
+            suffix: Option<String>,
+            default_ping_limit: i32,
+        ) -> Self {
+        Self { pool, suffix, default_ping_limit}
     }
 
     // Get a table name with the defined suffix.
@@ -128,7 +133,8 @@ impl DBContext {
             CREATE TABLE {if_clause}{tenant_table} (
                 id SERIAL PRIMARY KEY,
                 key TEXT NOT NULL UNIQUE,
-                name TEXT NOT NULL
+                name TEXT NOT NULL,
+                ping_limit INTEGER
             );
             "#
         );
@@ -292,14 +298,15 @@ impl DBContext {
         let insert_query = format!(
             r#"
             INSERT INTO {table_name}
-            (key, name)
-            VALUES ($1, $2)
+            (key, name, ping_limit)
+            VALUES ($1, $2, $3)
             RETURNING id
             "#
         );
         let row = sqlx::query(&insert_query)
             .bind(&tenant.key)
             .bind(&tenant.name)
+            .bind(&tenant.ping_limit)
             .fetch_one(&self.pool)
             .await?;
 
@@ -331,7 +338,7 @@ impl DBContext {
         } else {
             query = format!(
                 r#"
-                SELECT id, key, name
+                SELECT id, key, name, ping_limit
                 FROM {tenant_table}
                 ORDER BY name
                 "#
@@ -346,6 +353,7 @@ impl DBContext {
                 let tenant = Tenant {
                     key: row.get("key"),
                     name: row.get("name"),
+                    ping_limit: row.get("ping_limit"),
                 };
                 (id, tenant)
             })
@@ -1268,6 +1276,7 @@ impl DBContext {
 
         let tenant_key = strings_to_hash(vec![&salt, &email]);
         let tenant_name = String::from("Self");
+        let tenant_ping_limit = self.default_ping_limit;
 
         // Step 3: Check if tenant exists
         let select_tenant = format!("SELECT id FROM {tenant_table} WHERE key = $1");
@@ -1279,10 +1288,11 @@ impl DBContext {
             row.get("id")
         } else {
             let insert_tenant =
-                format!("INSERT INTO {tenant_table} (key, name) VALUES ($1, $2) RETURNING id");
+                format!("INSERT INTO {tenant_table} (key, name, ping_limit) VALUES ($1, $2, $3) RETURNING id");
             let row = sqlx::query(&insert_tenant)
                 .bind(&tenant_key)
                 .bind(&tenant_name)
+                .bind(&tenant_ping_limit)
                 .fetch_one(&self.pool)
                 .await?;
             row.get("id")
@@ -1375,9 +1385,10 @@ impl DBContext {
         let t = Tenant {
             key: tenant.clone(),
             name: tenant.clone(),
+            ping_limit: 1000,
         };
-
         let tenant_id = self.tenant_insert_or_get(&t).await?;
+
         let st_id = self.system_tag_insert_or_get(tenant_id, &st).await?;
         self.monitor_scan_load(&scan_fs, st_id, &ts).await
     }

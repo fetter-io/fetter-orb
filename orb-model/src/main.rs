@@ -261,7 +261,7 @@ async fn main() {
 
     // can branch when given a URL for a live DB
     let pool = get_db_pool().await;
-    let dbx = DBContext::new(pool, None);
+    let dbx = DBContext::new(pool, None, 1);
 
     // NOTE: testing
     dbx.tables_drop().await.expect("failed to drop tables");
