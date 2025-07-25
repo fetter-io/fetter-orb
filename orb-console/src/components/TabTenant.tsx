@@ -7,7 +7,6 @@ import { useSession } from "next-auth/react";
 import { IconLinux } from "@/components/IconLinux";
 import { IconApple } from "@/components/IconApple";
 
-
 type TabTenantProps = {
   selectedTenantId: number | null;
 };
@@ -87,26 +86,23 @@ export function TabTenant({ selectedTenantId }: TabTenantProps) {
                 Upload with the Fetter Agent
               </h2>
 
-<div className="flex gap-4 mt-2">
-    <button
-      disabled
-      className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-700 rounded opacity-50 cursor-not-allowed"
-    >
-      <IconLinux />
-      Ubuntu Installer
-    </button>
+              <div className="flex gap-4 mt-2">
+                <button
+                  disabled
+                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-700 rounded opacity-50 cursor-not-allowed"
+                >
+                  <IconLinux />
+                  Ubuntu Installer
+                </button>
 
-
-    <button
-      disabled
-      className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-700 rounded opacity-50 cursor-not-allowed"
-    >
-      <IconApple />
-      Mac Installer
-    </button>
-
-</div>
-
+                <button
+                  disabled
+                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-700 rounded opacity-50 cursor-not-allowed"
+                >
+                  <IconApple />
+                  Mac Installer
+                </button>
+              </div>
             </div>
           </div>
         ))}
