@@ -1446,8 +1446,7 @@ impl DBContext {
 
         if ping_count >= ping_limit as i64 {
             return Err(sqlx::Error::Protocol(format!(
-                "Ping limit exceeded for tenant: {tenant_key} (limit: {}, found: {})",
-                ping_limit, ping_count
+                "Ping limit exceeded for tenant: {tenant_key} (limit: {ping_limit}, found: {ping_count})"
             )));
         }
 
