@@ -65,7 +65,7 @@ pub async fn post_dep_manifest(
 // pub async fn get_tenant(
 //     State(db): State<DBContext>,
 // ) -> Result<Json<Vec<(i32, Tenant)>>, (StatusCode, String)> {
-//     match db.tenant_all().await {
+//     match db.get_tenants().await {
 //         Ok(sts) => Ok(Json(sts)),
 //         Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
 //     }
@@ -83,13 +83,13 @@ pub async fn get_tenant(
 ) -> Result<Json<Vec<(i32, Tenant)>>, (StatusCode, String)> {
     match params.user_id {
         Some(user_id) => {
-            db.tenant_all(Some(user_id))
+            db.get_tenants(Some(user_id))
                 .await
                 .map(Json)
                 .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
         }
         None => db
-            .tenant_all(None)
+            .get_tenants(None)
             .await
             .map(Json)
             .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),

@@ -35,7 +35,7 @@ export function TabTenant({ selectedTenantId }: TabTenantProps) {
     }
 
     fetchTenants();
-  }, []);
+  }, [session?.user?.user_id, status]);
 
   if (loading) return <div className="text-gray-400 p-4">Loading tenants…</div>;
 

@@ -27,9 +27,9 @@ async fn test_tenant_a() {
 }
 
 #[tokio::test]
-async fn test_tenant_all_a() {
+async fn test_get_tenants_a() {
     let pool = get_db_pool().await;
-    let ctx = DBContext::new(pool, Some("test_tenant_all_a".into()));
+    let ctx = DBContext::new(pool, Some("test_get_tenants_a".into()));
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
     let t1 = Tenant {
@@ -43,7 +43,7 @@ async fn test_tenant_all_a() {
         name: "BBB".to_string(),
     };
     let _ = ctx.tenant_insert_or_get(&t2).await.unwrap();
-    let tenants = ctx.tenant_all(None).await.unwrap();
+    let tenants = ctx.get_tenants(None).await.unwrap();
     let json = serde_json::to_value(&tenants).unwrap();
     assert_eq!(
         serde_json::to_string(&json).unwrap(),
