@@ -8,7 +8,6 @@ use axum::{
 use serde::Deserialize;
 use serde_json::json;
 use serde_json::Value;
-use std::env;
 use std::net::SocketAddr;
 use tokio::net::TcpListener;
 use tower_http::cors::{Any, CorsLayer};
@@ -216,9 +215,9 @@ pub async fn on_login(
     State(db): State<DBContext>,
     Json(payload): Json<OnLoginParams>,
 ) -> Result<Json<serde_json::Value>, (StatusCode, String)> {
-    let salt = env::var("TENANT_SECRET").unwrap_or_else(|_| "".to_string());
+
     let user_id = db
-        .user_tenant_init(&payload.login, &payload.email, &payload.name, &salt)
+        .user_tenant_init(&payload.login, &payload.email, &payload.name)
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
@@ -230,13 +229,8 @@ pub async fn on_login(
 async fn main() {
     load_env(); // Loads .env, .env.local
 
-    let default_ping_limit: i32 = env::var("DEFAULT_PING_LIMIT")
-        .ok()
-        .and_then(|s| s.parse().ok())
-        .unwrap_or(1);
-
     let pool = get_db_pool().await;
-    let dbx = DBContext::new(pool, None, default_ping_limit);
+    let dbx = DBContext::new(pool, None);
 
     // TODO: only if testing
     dbx.tables_drop().await.expect("failed to drop tables");

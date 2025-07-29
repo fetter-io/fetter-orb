@@ -1,5 +1,6 @@
 use chrono::Duration as ChronoDuration;
 use chrono::{DateTime, Utc};
+use std::env;
 
 use fetter::{
     AuditReport, DepManifest, DirectURL, FlagCacheRefresh, FlagLog, LockFile, Package, PathShared,
@@ -96,14 +97,23 @@ pub struct DBContext {
     pub pool: PgPool,
     suffix: Option<String>,
     default_ping_limit: i32,
+    salt: String,
 }
 
 impl DBContext {
-    pub fn new(pool: PgPool, suffix: Option<String>, default_ping_limit: i32) -> Self {
+    pub fn new(pool: PgPool,
+                suffix: Option<String>,
+            ) -> Self {
+        let default_ping_limit: i32 = env::var("DEFAULT_PING_LIMIT")
+            .ok()
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(1);
+        let salt = env::var("TENANT_SECRET").unwrap_or_else(|_| "".to_string());
         Self {
             pool,
             suffix,
             default_ping_limit,
+            salt,
         }
     }
 
@@ -1289,13 +1299,40 @@ impl DBContext {
 
     //--------------------------------------------------------------------------
 
+    pub async fn get_next_tenant_key(
+        &self,
+        user_id: i32,
+        email: &str,
+    ) -> Result<String, sqlx::Error> {
+        let user_to_tenant_table = self.get_table("user_to_tenant");
+
+        let query = format!(
+            r#"
+            SELECT COUNT(*) FROM {user_to_tenant_table}
+            WHERE user_id = $1
+            "#
+        );
+
+        let tenant_count: i64 = sqlx::query_scalar(&query)
+            .bind(user_id)
+            .fetch_one(&self.pool)
+            .await?;
+
+        let tenant_key = strings_to_hash(vec![
+            &self.salt,
+            email,
+            &tenant_count.to_string(),
+        ]);
+
+        Ok(tenant_key)
+    }
+
     /// Check if a user exists; if not, add that user. Also check that user has a default "Self" tenant and that that tenant is mapped to this User
     pub async fn user_tenant_init(
         &self,
         login: &str,
         email: &str,
         name: &str,
-        salt: &str,
     ) -> Result<i32, sqlx::Error> {
         let user_table = self.get_table("users");
         let tenant_table = self.get_table("tenant");
@@ -1322,8 +1359,8 @@ impl DBContext {
             row.get("id")
         };
 
-        let tenant_key = strings_to_hash(vec![&salt, &email]);
-        let tenant_name = String::from("Self");
+        let tenant_key = self.get_next_tenant_key(user_id, &email).await?;
+        let tenant_name = String::from("Self"); // could be Personal
         let tenant_ping_limit = self.default_ping_limit;
 
         // Step 3: Check if tenant exists

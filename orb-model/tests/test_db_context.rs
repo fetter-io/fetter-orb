@@ -13,7 +13,7 @@ use orb_model::db_via_container::get_db_pool;
 #[tokio::test]
 async fn test_tenant_a() {
     let pool = get_db_pool().await;
-    let ctx = DBContext::new(pool, Some("test_tenant_a".into()), 1);
+    let ctx = DBContext::new(pool, Some("test_tenant_a".into()));
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
     let t = Tenant {
@@ -30,7 +30,7 @@ async fn test_tenant_a() {
 #[tokio::test]
 async fn test_get_tenants_a() {
     let pool = get_db_pool().await;
-    let ctx = DBContext::new(pool, Some("test_get_tenants_a".into()), 1);
+    let ctx = DBContext::new(pool, Some("test_get_tenants_a".into()));
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
     let t1 = Tenant {
@@ -92,7 +92,7 @@ async fn test_load_package_a() {
     assert_eq!(p2.key, "numpy");
 
     let pool = get_db_pool().await;
-    let ctx = DBContext::new(pool, Some("test_load_package_a".into()), 1);
+    let ctx = DBContext::new(pool, Some("test_load_package_a".into()));
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
@@ -135,7 +135,7 @@ async fn test_load_system_tag_a() {
     );
 
     let pool = get_db_pool().await;
-    let ctx = DBContext::new(pool, Some("test_load_system_tag_a".into()), 1);
+    let ctx = DBContext::new(pool, Some("test_load_system_tag_a".into()));
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
@@ -157,7 +157,7 @@ async fn test_load_system_tag_a() {
 #[tokio::test]
 async fn test_system_tag_pings_a() {
     let pool = get_db_pool().await;
-    let ctx = DBContext::new(pool, Some("test_system_tag_pings_a".into()), 1);
+    let ctx = DBContext::new(pool, Some("test_system_tag_pings_a".into()));
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
@@ -186,7 +186,7 @@ async fn test_package_counts_a() {
     let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
 
     let pool = get_db_pool().await;
-    let ctx = DBContext::new(pool, Some("test_package_counts_a".into()), 1);
+    let ctx = DBContext::new(pool, Some("test_package_counts_a".into()));
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
@@ -231,7 +231,7 @@ async fn test_package_counts_b() {
     let msg3 = fs::read_to_string(path3).expect("Failed to read JSON file");
 
     let pool = get_db_pool().await;
-    let ctx = DBContext::new(pool, Some("test_package_counts_a".into()), 1);
+    let ctx = DBContext::new(pool, Some("test_package_counts_a".into()));
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
@@ -257,7 +257,7 @@ async fn test_package_counts_b() {
 #[tokio::test]
 async fn test_load_site_packages_a() {
     let pool = get_db_pool().await;
-    let ctx = DBContext::new(pool, Some("test_load_site_packages_a".into()), 1);
+    let ctx = DBContext::new(pool, Some("test_load_site_packages_a".into()));
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
@@ -285,7 +285,7 @@ async fn test_dep_manifest_load_a() {
     path1.push("tests/fixtures/monitor-scan-02.json");
     let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
     let pool = get_db_pool().await;
-    let ctx = DBContext::new(pool, Some("test_dep_manifest_load_a".into()), 1);
+    let ctx = DBContext::new(pool, Some("test_dep_manifest_load_a".into()));
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
@@ -326,7 +326,7 @@ async fn test_latest_packages_to_sites_a() {
     let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
 
     let pool = get_db_pool().await;
-    let ctx = DBContext::new(pool, Some("test_latest_packages_to_sites_a".into()), 1);
+    let ctx = DBContext::new(pool, Some("test_latest_packages_to_sites_a".into()));
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
@@ -349,7 +349,7 @@ async fn test_latest_packages_to_sites_a() {
 #[tokio::test]
 async fn test_tables_create_and_index_check() -> Result<(), sqlx::Error> {
     let pool = get_db_pool().await;
-    let ctx = DBContext::new(pool, Some("test_tables_create_and_index_check".into()), 1);
+    let ctx = DBContext::new(pool, Some("test_tables_create_and_index_check".into()));
 
     // Drop and create tables
     ctx.tables_drop().await.ok();
@@ -391,12 +391,12 @@ async fn test_tables_create_and_index_check() -> Result<(), sqlx::Error> {
 #[tokio::test]
 async fn test_user_tenant_init_a() {
     let pool = get_db_pool().await;
-    let ctx = DBContext::new(pool, Some("test_user_tenant_init_a".into()), 1);
+    let ctx = DBContext::new(pool, Some("test_user_tenant_init_a".into()));
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
     let uid = ctx
-        .user_tenant_init("foo", "foo@foo.com", "Foo", "42")
+        .user_tenant_init("foo", "foo@foo.com", "Foo")
         .await
         .unwrap();
 
