@@ -83,6 +83,7 @@ export type Tenant = {
   key: string;
   name: string;
   ping_limit: number;
+  created_by: number;
 };
 
 export type ValidationEntry = [number, string | null];
