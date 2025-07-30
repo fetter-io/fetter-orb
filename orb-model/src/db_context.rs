@@ -82,7 +82,6 @@ pub struct Tenant {
 }
 
 impl Tenant {
-
     pub fn from_key(key: &str, created_by: i32) -> Self {
         Tenant {
             key: key.to_string(),
@@ -1356,7 +1355,7 @@ impl DBContext {
             row.get("id")
         };
 
-        let tenant_key = self.get_next_tenant_key(user_id, &email).await?;
+        let tenant_key = self.get_next_tenant_key(user_id, email).await?;
         let tenant_name = String::from("Self"); // could be Personal
         let tenant_ping_limit = self.default_ping_limit;
 
