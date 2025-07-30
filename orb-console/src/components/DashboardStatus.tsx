@@ -40,7 +40,7 @@ export function DashboardStatus({ label, state }: DashboardStatusProps) {
       </div>
 
       {error && (
-        <div className="text-xs text-red-500 mt-1">Failed to load {label}</div>
+        <div className="text-xs text-red-400 mt-1">Failed to load {label}</div>
       )}
     </div>
   );

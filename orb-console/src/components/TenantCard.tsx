@@ -5,12 +5,11 @@ import { IconApple } from "@/components/IconApple";
 import { Tenant } from "@/types";
 
 type Props = {
-  id: number;
   tenant: Tenant;
   selected: boolean;
 };
 
-export function TenantCard({ id, tenant, selected }: Props) {
+export function TenantCard({ tenant, selected }: Props) {
   return (
     <div
       className={`border rounded p-4 bg-slate-800 ${
@@ -30,9 +29,7 @@ export function TenantCard({ id, tenant, selected }: Props) {
 
       <div>
         <h3 className="text-zinc-300 text-sm">Key</h3>
-        <code className="text-zinc-400 text-sm break-all">
-          {tenant.key}
-        </code>
+        <code className="text-zinc-400 text-sm break-all">{tenant.key}</code>
       </div>
 
       <div className="mt-4 bg-slate-900 p-4">
