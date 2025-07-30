@@ -78,14 +78,17 @@ pub struct Tenant {
     pub key: String,
     pub name: String,
     pub ping_limit: i32,
+    pub created_by: i32,
 }
 
 impl Tenant {
-    pub fn from_key(key: &str) -> Self {
+
+    pub fn from_key(key: &str, created_by: i32) -> Self {
         Tenant {
             key: key.to_string(),
             name: key.to_string(),
             ping_limit: 1,
+            created_by,
         }
     }
 }
@@ -101,9 +104,7 @@ pub struct DBContext {
 }
 
 impl DBContext {
-    pub fn new(pool: PgPool,
-                suffix: Option<String>,
-            ) -> Self {
+    pub fn new(pool: PgPool, suffix: Option<String>) -> Self {
         let default_ping_limit: i32 = env::var("DEFAULT_PING_LIMIT")
             .ok()
             .and_then(|s| s.parse().ok())
@@ -156,7 +157,8 @@ impl DBContext {
                 id SERIAL PRIMARY KEY,
                 key TEXT NOT NULL UNIQUE,
                 name TEXT NOT NULL,
-                ping_limit INTEGER
+                ping_limit INTEGER,
+                created_by INTEGER NOT NULL REFERENCES users(id)
             );
             "#
         );
@@ -320,8 +322,8 @@ impl DBContext {
         let insert_query = format!(
             r#"
             INSERT INTO {table_name}
-            (key, name, ping_limit)
-            VALUES ($1, $2, $3)
+            (key, name, ping_limit, created_by)
+            VALUES ($1, $2, $3, $4)
             RETURNING id
             "#
         );
@@ -329,44 +331,42 @@ impl DBContext {
             .bind(&tenant.key)
             .bind(&tenant.name)
             .bind(tenant.ping_limit)
+            .bind(tenant.created_by)
             .fetch_one(&self.pool)
             .await?;
 
         Ok(row.get("id"))
     }
 
+    /// Get all tenant this user has access too, not just those created by this tenant.
     pub async fn get_tenants(
         &self,
         user_id: Option<i32>,
     ) -> Result<Vec<(i32, Tenant)>, sqlx::Error> {
         let tenant_table = self.get_table("tenant");
 
-        let query: String;
-        let rows;
-
-        if let Some(uid) = user_id {
+        let rows = if let Some(uid) = user_id {
             let user_to_tenant_table = self.get_table("user_to_tenant");
-
-            query = format!(
+            let query = format!(
                 r#"
-                SELECT t.id, t.key, t.name, t.ping_limit
+                SELECT t.id, t.key, t.name, t.ping_limit, t.created_by
                 FROM {tenant_table} t
                 JOIN {user_to_tenant_table} ut ON t.id = ut.tenant_id
                 WHERE ut.user_id = $1
                 ORDER BY t.name
                 "#
             );
-            rows = sqlx::query(&query).bind(uid).fetch_all(&self.pool).await?;
+            sqlx::query(&query).bind(uid).fetch_all(&self.pool).await?
         } else {
-            query = format!(
+            let query = format!(
                 r#"
-                SELECT id, key, name, ping_limit
+                SELECT id, key, name, ping_limit, created_by
                 FROM {tenant_table}
                 ORDER BY name
                 "#
             );
-            rows = sqlx::query(&query).fetch_all(&self.pool).await?;
-        }
+            sqlx::query(&query).fetch_all(&self.pool).await?
+        };
 
         let result = rows
             .into_iter()
@@ -376,6 +376,7 @@ impl DBContext {
                     key: row.get("key"),
                     name: row.get("name"),
                     ping_limit: row.get("ping_limit"),
+                    created_by: row.get("created_by"),
                 };
                 (id, tenant)
             })
@@ -1304,12 +1305,12 @@ impl DBContext {
         user_id: i32,
         email: &str,
     ) -> Result<String, sqlx::Error> {
-        let user_to_tenant_table = self.get_table("user_to_tenant");
+        let tenant_table = self.get_table("tenant");
 
         let query = format!(
             r#"
-            SELECT COUNT(*) FROM {user_to_tenant_table}
-            WHERE user_id = $1
+            SELECT COUNT(*) FROM {tenant_table}
+            WHERE created_by = $1
             "#
         );
 
@@ -1318,11 +1319,7 @@ impl DBContext {
             .fetch_one(&self.pool)
             .await?;
 
-        let tenant_key = strings_to_hash(vec![
-            &self.salt,
-            email,
-            &tenant_count.to_string(),
-        ]);
+        let tenant_key = strings_to_hash(vec![&self.salt, email, &tenant_count.to_string()]);
 
         Ok(tenant_key)
     }
@@ -1373,11 +1370,12 @@ impl DBContext {
             row.get("id")
         } else {
             let insert_tenant =
-                format!("INSERT INTO {tenant_table} (key, name, ping_limit) VALUES ($1, $2, $3) RETURNING id");
+                format!("INSERT INTO {tenant_table} (key, name, ping_limit, created_by) VALUES ($1, $2, $3, $4) RETURNING id");
             let row = sqlx::query(&insert_tenant)
                 .bind(&tenant_key)
                 .bind(&tenant_name)
                 .bind(tenant_ping_limit)
+                .bind(user_id)
                 .fetch_one(&self.pool)
                 .await?;
             row.get("id")

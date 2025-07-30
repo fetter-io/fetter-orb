@@ -20,6 +20,7 @@ async fn test_tenant_a() {
         key: "test".to_string(),
         name: "test".to_string(),
         ping_limit: 1,
+        created_by: 1,
     };
     let id = ctx.tenant_insert_or_get(&t).await.unwrap();
     assert_eq!(id, 1);
@@ -37,6 +38,7 @@ async fn test_get_tenants_a() {
         key: "aaa".to_string(),
         name: "AAA".to_string(),
         ping_limit: 1,
+        created_by: 1,
     };
     let _ = ctx.tenant_insert_or_get(&t1).await.unwrap();
 
@@ -44,13 +46,15 @@ async fn test_get_tenants_a() {
         key: "bbb".to_string(),
         name: "BBB".to_string(),
         ping_limit: 1,
+        created_by: 1,
     };
     let _ = ctx.tenant_insert_or_get(&t2).await.unwrap();
     let tenants = ctx.get_tenants(None).await.unwrap();
     let json = serde_json::to_value(&tenants).unwrap();
+    // println!("{:?}", json);
     assert_eq!(
         serde_json::to_string(&json).unwrap(),
-        r#"[[1,{"key":"aaa","name":"AAA","ping_limit":1}],[2,{"key":"bbb","name":"BBB","ping_limit":1}]]"#
+        r#"[[1,{"created_by":1,"key":"aaa","name":"AAA","ping_limit":1}],[2,{"created_by":1,"key":"bbb","name":"BBB","ping_limit":1}]]"#
     );
 
     ctx.tables_drop().await.unwrap();
@@ -143,6 +147,7 @@ async fn test_load_system_tag_a() {
         key: "ffff".to_string(),
         name: "foo".to_string(),
         ping_limit: 1,
+        created_by: 1,
     };
     let t_id = ctx.tenant_insert_or_get(&t).await.unwrap();
 
@@ -165,7 +170,7 @@ async fn test_system_tag_pings_a() {
     path1.push("tests/fixtures/monitor-scan-01.json");
     let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
 
-    let t = Tenant::from_key("team-a");
+    let t = Tenant::from_key("team-a", 1);
     let _ = ctx.tenant_insert_or_get(&t).await.unwrap();
     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
 
@@ -190,7 +195,7 @@ async fn test_package_counts_a() {
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
-    let t = Tenant::from_key("team-a");
+    let t = Tenant::from_key("team-a", 1);
     let _ = ctx.tenant_insert_or_get(&t).await.unwrap();
     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
 
@@ -235,7 +240,7 @@ async fn test_package_counts_b() {
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
-    let t = Tenant::from_key("team-a");
+    let t = Tenant::from_key("team-a", 1);
     let _ = ctx.tenant_insert_or_get(&t).await.unwrap();
 
     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
@@ -289,7 +294,7 @@ async fn test_dep_manifest_load_a() {
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
-    let t = Tenant::from_key("team-a");
+    let t = Tenant::from_key("team-a", 1);
     let _ = ctx.tenant_insert_or_get(&t).await.unwrap();
 
     // do first to force tenant creation
@@ -330,7 +335,7 @@ async fn test_latest_packages_to_sites_a() {
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
-    let t = Tenant::from_key("team-a");
+    let t = Tenant::from_key("team-a", 1);
     let _ = ctx.tenant_insert_or_get(&t).await.unwrap();
 
     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
