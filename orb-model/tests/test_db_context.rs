@@ -17,7 +17,10 @@ async fn test_tenant_a() {
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
-    let _ = ctx.user_tenant_init("foo", "foo@foo.com", "Foo").await.unwrap();
+    let _ = ctx
+        .user_tenant_init("foo", "foo@foo.com", "Foo")
+        .await
+        .unwrap();
 
     let t = Tenant {
         key: "test".to_string(),
@@ -38,7 +41,10 @@ async fn test_get_tenants_a() {
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
-    let _ = ctx.user_tenant_init("foo", "foo@foo.com", "Foo").await.unwrap();
+    let _ = ctx
+        .user_tenant_init("foo", "foo@foo.com", "Foo")
+        .await
+        .unwrap();
 
     let t1 = Tenant {
         key: "aaa".to_string(),
@@ -157,7 +163,10 @@ async fn test_load_system_tag_a() {
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
-    let _ = ctx.user_tenant_init("foo", "foo@foo.com", "Foo").await.unwrap();
+    let _ = ctx
+        .user_tenant_init("foo", "foo@foo.com", "Foo")
+        .await
+        .unwrap();
 
     let t = Tenant {
         key: "ffff".to_string(),
@@ -186,7 +195,10 @@ async fn test_system_tag_pings_a() {
     path1.push("tests/fixtures/monitor-scan-01.json");
     let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
 
-    let _ = ctx.user_tenant_init("foo", "foo@foo.com", "Foo").await.unwrap();
+    let _ = ctx
+        .user_tenant_init("foo", "foo@foo.com", "Foo")
+        .await
+        .unwrap();
     let t = Tenant::from_key("team-a", 1);
     let _ = ctx.tenant_insert_or_get(&t).await.unwrap();
     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
@@ -212,7 +224,10 @@ async fn test_package_counts_a() {
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
-    let _ = ctx.user_tenant_init("foo", "foo@foo.com", "Foo").await.unwrap();
+    let _ = ctx
+        .user_tenant_init("foo", "foo@foo.com", "Foo")
+        .await
+        .unwrap();
     let t = Tenant::from_key("team-a", 1);
     let _ = ctx.tenant_insert_or_get(&t).await.unwrap();
     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
@@ -258,7 +273,10 @@ async fn test_package_counts_b() {
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
-    let _ = ctx.user_tenant_init("foo", "foo@foo.com", "Foo").await.unwrap();
+    let _ = ctx
+        .user_tenant_init("foo", "foo@foo.com", "Foo")
+        .await
+        .unwrap();
     let t = Tenant::from_key("team-a", 1);
     let _ = ctx.tenant_insert_or_get(&t).await.unwrap();
 
@@ -313,7 +331,10 @@ async fn test_dep_manifest_load_a() {
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
-    let _ = ctx.user_tenant_init("foo", "foo@foo.com", "Foo").await.unwrap();
+    let _ = ctx
+        .user_tenant_init("foo", "foo@foo.com", "Foo")
+        .await
+        .unwrap();
     let t = Tenant::from_key("team-a", 1);
     let _ = ctx.tenant_insert_or_get(&t).await.unwrap();
 
@@ -355,7 +376,10 @@ async fn test_latest_packages_to_sites_a() {
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
-    let _ = ctx.user_tenant_init("foo", "foo@foo.com", "Foo").await.unwrap();
+    let _ = ctx
+        .user_tenant_init("foo", "foo@foo.com", "Foo")
+        .await
+        .unwrap();
     let t = Tenant::from_key("team-a", 1);
     let _ = ctx.tenant_insert_or_get(&t).await.unwrap();
 

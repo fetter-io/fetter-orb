@@ -215,7 +215,6 @@ pub async fn on_login(
     State(db): State<DBContext>,
     Json(payload): Json<OnLoginParams>,
 ) -> Result<Json<serde_json::Value>, (StatusCode, String)> {
-
     let user_id = db
         .user_tenant_init(&payload.login, &payload.email, &payload.name)
         .await
