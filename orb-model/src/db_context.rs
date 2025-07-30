@@ -157,7 +157,7 @@ impl DBContext {
                 key TEXT NOT NULL UNIQUE,
                 name TEXT NOT NULL,
                 ping_limit INTEGER,
-                created_by INTEGER NOT NULL REFERENCES users(id)
+                created_by INTEGER NOT NULL REFERENCES {user_table}(id)
             );
             "#
         );
@@ -242,8 +242,8 @@ impl DBContext {
             "#
         );
 
-        self.pool.execute(&*create_tenant).await?;
         self.pool.execute(&*create_user).await?;
+        self.pool.execute(&*create_tenant).await?;
         self.pool.execute(&*create_user_to_tenant).await?;
         self.pool.execute(&*create_dep_manifest).await?;
         self.pool.execute(&*create_system_tag).await?;

@@ -16,6 +16,9 @@ async fn test_tenant_a() {
     let ctx = DBContext::new(pool, Some("test_tenant_a".into()));
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
+
+    let _ = ctx.user_tenant_init("foo", "foo@foo.com", "Foo").await.unwrap();
+
     let t = Tenant {
         key: "test".to_string(),
         name: "test".to_string(),
@@ -23,7 +26,7 @@ async fn test_tenant_a() {
         created_by: 1,
     };
     let id = ctx.tenant_insert_or_get(&t).await.unwrap();
-    assert_eq!(id, 1);
+    assert_eq!(id, 2);
 
     ctx.tables_drop().await.unwrap();
 }
@@ -34,6 +37,9 @@ async fn test_get_tenants_a() {
     let ctx = DBContext::new(pool, Some("test_get_tenants_a".into()));
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
+
+    let _ = ctx.user_tenant_init("foo", "foo@foo.com", "Foo").await.unwrap();
+
     let t1 = Tenant {
         key: "aaa".to_string(),
         name: "AAA".to_string(),
@@ -49,12 +55,20 @@ async fn test_get_tenants_a() {
         created_by: 1,
     };
     let _ = ctx.tenant_insert_or_get(&t2).await.unwrap();
-    let tenants = ctx.get_tenants(None).await.unwrap();
+
+    let tenants: Vec<(i32, Tenant)> = ctx
+        .get_tenants(None)
+        .await
+        .unwrap()
+        .into_iter()
+        .filter(|(_, t)| t.name != "Self")
+        .collect();
+
     let json = serde_json::to_value(&tenants).unwrap();
     // println!("{:?}", json);
     assert_eq!(
         serde_json::to_string(&json).unwrap(),
-        r#"[[1,{"created_by":1,"key":"aaa","name":"AAA","ping_limit":1}],[2,{"created_by":1,"key":"bbb","name":"BBB","ping_limit":1}]]"#
+        r#"[[2,{"created_by":1,"key":"aaa","name":"AAA","ping_limit":1}],[3,{"created_by":1,"key":"bbb","name":"BBB","ping_limit":1}]]"#
     );
 
     ctx.tables_drop().await.unwrap();
@@ -143,6 +157,8 @@ async fn test_load_system_tag_a() {
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
+    let _ = ctx.user_tenant_init("foo", "foo@foo.com", "Foo").await.unwrap();
+
     let t = Tenant {
         key: "ffff".to_string(),
         name: "foo".to_string(),
@@ -170,11 +186,12 @@ async fn test_system_tag_pings_a() {
     path1.push("tests/fixtures/monitor-scan-01.json");
     let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
 
+    let _ = ctx.user_tenant_init("foo", "foo@foo.com", "Foo").await.unwrap();
     let t = Tenant::from_key("team-a", 1);
     let _ = ctx.tenant_insert_or_get(&t).await.unwrap();
     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
 
-    let post = ctx.system_tag_pings(1, None).await.unwrap().to_string();
+    let post = ctx.system_tag_pings(2, None).await.unwrap().to_string();
     assert_eq!(
         post,
         "[{\"architecture\":\"aarch64\",\"hostname\":\"machine-x\",\"id\":1,\"logical_cores\":16,\"os_name\":\"macos\",\"os_version\":\"14.1.1\",\"pings\":[{\"scanned\":true,\"timestamp\":\"2025-07-18T23:23:45.131879Z\"}],\"site_packages\":[\"/Users/user1/.env311-fetter/lib/python3.11/site-packages\",\"/Users/user1/.env313-sf/lib/python3.13/site-packages\"],\"username\":\"user1\"}]"
@@ -195,6 +212,7 @@ async fn test_package_counts_a() {
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
+    let _ = ctx.user_tenant_init("foo", "foo@foo.com", "Foo").await.unwrap();
     let t = Tenant::from_key("team-a", 1);
     let _ = ctx.tenant_insert_or_get(&t).await.unwrap();
     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
@@ -207,7 +225,7 @@ async fn test_package_counts_a() {
     assert_eq!(post1, r#"[["2025-07-18T23:23:45.131879Z",null,130]]"#);
 
     let post2 = ctx
-        .package_counts(Some(1), Some(1), None)
+        .package_counts(Some(1), Some(2), None)
         .await
         .unwrap()
         .to_string();
@@ -240,6 +258,7 @@ async fn test_package_counts_b() {
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
+    let _ = ctx.user_tenant_init("foo", "foo@foo.com", "Foo").await.unwrap();
     let t = Tenant::from_key("team-a", 1);
     let _ = ctx.tenant_insert_or_get(&t).await.unwrap();
 
@@ -294,19 +313,20 @@ async fn test_dep_manifest_load_a() {
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
+    let _ = ctx.user_tenant_init("foo", "foo@foo.com", "Foo").await.unwrap();
     let t = Tenant::from_key("team-a", 1);
     let _ = ctx.tenant_insert_or_get(&t).await.unwrap();
 
     // do first to force tenant creation
     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
 
-    let msg = r#"[1, "numpy==2.0.0\nstatic-frame==2.0.0\n"]"#;
+    let msg = r#"[2, "numpy==2.0.0\nstatic-frame==2.0.0\n"]"#;
     ctx.dep_manifest_load_from_json(msg).await.unwrap();
 
-    let dm = ctx.dep_manifest_from_tenant_id(1).await.unwrap().unwrap();
+    let dm = ctx.dep_manifest_from_tenant_id(2).await.unwrap().unwrap();
     assert_eq!(dm, "numpy==2.0.0\nstatic-frame==2.0.0\n");
 
-    let json_obj = ctx.validate(Some(1), Some(1)).await.unwrap();
+    let json_obj = ctx.validate(Some(1), Some(2)).await.unwrap();
     let obj = json_obj.as_object().expect("Expected JSON object");
     let map: HashMap<String, String> = obj
         .iter()
@@ -335,13 +355,14 @@ async fn test_latest_packages_to_sites_a() {
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
+    let _ = ctx.user_tenant_init("foo", "foo@foo.com", "Foo").await.unwrap();
     let t = Tenant::from_key("team-a", 1);
     let _ = ctx.tenant_insert_or_get(&t).await.unwrap();
 
     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
 
     let (p_to_s, _p_to_id) = ctx
-        .get_latest_packages_to_sites(None, Some(1))
+        .get_latest_packages_to_sites(None, Some(2))
         .await
         .unwrap();
     assert_eq!(p_to_s.len(), 130);
