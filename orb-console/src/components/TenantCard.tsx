@@ -9,16 +9,17 @@ import { Tenant } from "@/types";
 type Props = {
   tenant: Tenant;
   selected: boolean;
+  scrollIntoViewNow: boolean;
 };
 
-export function TenantCard({ tenant, selected }: Props) {
+export function TenantCard({ tenant, selected, scrollIntoViewNow }: Props) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (selected && ref.current) {
+    if (scrollIntoViewNow && ref.current) {
       ref.current.scrollIntoView({ behavior: "smooth", block: "center" });
     }
-  }, [selected]);
+  }, [scrollIntoViewNow]);
 
   return (
     <div

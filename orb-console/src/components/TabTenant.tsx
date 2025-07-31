@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { Tenant } from "@/types";
-import { useState } from "react";
+import { useRef, useEffect, useState, useMemo } from "react";
 import { TenantCard } from "@/components/TenantCard";
 import { TenantNew } from "@/components/TenantNew";
 
@@ -17,9 +17,33 @@ type TabTenantProps = {
 export function TabTenant({ selectedTenantId, tenantsState }: TabTenantProps) {
   const { data: session } = useSession();
   const [showDialog, setShowDialog] = useState(false);
+  const lastScrolledId = useRef<number | null>(null);
 
-  if (tenantsState.loading)
+  useEffect(() => {
+    // Update ref to current ID so we only scroll once
+    lastScrolledId.current = selectedTenantId;
+  }, [selectedTenantId]);
+
+  const tenantCards = useMemo(() => {
+    if (!tenantsState.data) return null;
+
+    return tenantsState.data.map(([id, tenant]) => {
+      const isSelected = id === selectedTenantId;
+      const scrollIntoViewNow = isSelected && lastScrolledId.current !== id;
+      return (
+        <TenantCard
+          key={id}
+          tenant={tenant}
+          selected={isSelected}
+          scrollIntoViewNow={scrollIntoViewNow}
+        />
+      );
+    });
+  }, [tenantsState.data, selectedTenantId]);
+
+  if (!tenantsState.data) {
     return <div className="text-gray-400 p-4">Loading tenants…</div>;
+  }
 
   return (
     <div className="gap-4 text-gray-300">
@@ -36,15 +60,7 @@ export function TabTenant({ selectedTenantId, tenantsState }: TabTenantProps) {
         </button>
       </div>
 
-      <div className="grid gap-4">
-        {tenantsState.data?.map(([id, tenant]) => (
-          <TenantCard
-            key={id}
-            tenant={tenant}
-            selected={id === selectedTenantId}
-          />
-        ))}
-      </div>
+      <div className="grid gap-4">{tenantCards}</div>
 
       {showDialog && session?.user?.user_id && (
         <TenantNew
