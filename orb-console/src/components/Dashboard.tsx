@@ -2,7 +2,8 @@
 
 // import Image from "next/image";
 import { useState, useCallback, useEffect, useMemo } from "react";
-// import { PackageCard } from "@/components/PackageCard";
+import { useSession } from "next-auth/react";
+
 import { Footer } from "@/components/Footer";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { SystemTagCard } from "@/components/SystemTagCard";
@@ -46,11 +47,23 @@ export default function Dashboard() {
     null,
   );
 
+  // const fetchTenants = useCallback(async (): Promise<[number, Tenant][]> => {
+  //   const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
+  //   const res = await fetch(`${apiBase}/tenant`);
+  //   return await res.json(); // assuming it returns [[id, {key, name}], ...]
+  // }, []);
+
+  const { data: session, status } = useSession();
+
   const fetchTenants = useCallback(async (): Promise<[number, Tenant][]> => {
+    if (status !== "authenticated" || !session?.user?.user_id) return [];
+
     const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
-    const res = await fetch(`${apiBase}/tenant`);
+    const res = await fetch(
+      `${apiBase}/tenant?user_id=${session.user.user_id}`,
+    );
     return await res.json(); // assuming it returns [[id, {key, name}], ...]
-  }, []);
+  }, [session?.user?.user_id, status]);
 
   const fetchSystemTags = useCallback(async (): Promise<SystemTag[]> => {
     const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
@@ -408,7 +421,10 @@ export default function Dashboard() {
           )}
 
           {activeTab === "tenant" && (
-            <TabTenant selectedTenantId={selectedTenantId} />
+            <TabTenant
+              selectedTenantId={selectedTenantId}
+              tenantsState={tenantsState}
+            />
           )}
         </div>
       </main>

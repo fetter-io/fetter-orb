@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+
 import { IconLinux } from "@/components/IconLinux";
 import { IconApple } from "@/components/IconApple";
 import { Tenant } from "@/types";
@@ -10,8 +12,17 @@ type Props = {
 };
 
 export function TenantCard({ tenant, selected }: Props) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (selected && ref.current) {
+      ref.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [selected]);
+
   return (
     <div
+      ref={ref}
       className={`border rounded p-4 bg-slate-800 ${
         selected ? "border-blue-500" : "border-slate-600"
       }`}
