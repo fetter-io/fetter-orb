@@ -1451,6 +1451,7 @@ impl DBContext {
             .bind(user_id)
             .fetch_one(&self.pool)
             .await?;
+        // println!("{} {} {}", "calling user_term_accepted", user_id, result);
 
         Ok(result)
     }
@@ -1465,7 +1466,7 @@ impl DBContext {
             WHERE id = $1
             "#
         );
-
+        // println!("{} {}", "calling user_set_term_accepted", user_id);
         sqlx::query(&query)
             .bind(user_id)
             .execute(&self.pool)
