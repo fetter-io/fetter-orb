@@ -1,5 +1,6 @@
 "use client";
 
+import { useSession } from "next-auth/react";
 import { Tenant } from "@/types";
 import { useState } from "react";
 import { TenantCard } from "@/components/TenantCard";
@@ -14,6 +15,7 @@ type TabTenantProps = {
 };
 
 export function TabTenant({ selectedTenantId, tenantsState }: TabTenantProps) {
+  const { data: session } = useSession();
   const [showDialog, setShowDialog] = useState(false);
 
   if (tenantsState.loading)
