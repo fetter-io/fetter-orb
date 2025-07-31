@@ -384,6 +384,20 @@ impl DBContext {
         Ok(result)
     }
 
+    // Get the count of tenants created by the supplied user_id.
+    pub async fn tenant_count(&self, user_id: i32) -> Result<i64, sqlx::Error> {
+        let tenant_table = self.get_table("tenant");
+
+        let query = format!("SELECT COUNT(*) FROM {tenant_table} WHERE created_by = $1");
+
+        let count: i64 = sqlx::query_scalar(&query)
+            .bind(user_id)
+            .fetch_one(&self.pool)
+            .await?;
+
+        Ok(count)
+    }
+
     pub async fn tenant_assign_user(
         &self,
         tenant_id: i32,
@@ -1379,21 +1393,14 @@ impl DBContext {
             row.get("id")
         };
 
-        let tenant_key = self.get_next_tenant_key(user_id, email).await?;
-        let tenant_name = String::from("Self"); // could be Personal
-        let tenant_ping_limit = self.default_ping_limit;
+        if self.tenant_count(user_id).await? == 0 {
+            let tenant_key = self.get_next_tenant_key(user_id, email).await?;
+            let tenant_name = String::from("Self"); // could be Personal
+            let tenant_ping_limit = self.default_ping_limit;
 
-        // Step 3: Check if tenant exists
-        let select_tenant = format!("SELECT id FROM {tenant_table} WHERE key = $1");
-        let tenant_id: i32 = if let Some(row) = sqlx::query(&select_tenant)
-            .bind(&tenant_key)
-            .fetch_optional(&self.pool)
-            .await?
-        {
-            row.get("id")
-        } else {
-            let insert_tenant =
-                format!("INSERT INTO {tenant_table} (key, name, ping_limit, created_by) VALUES ($1, $2, $3, $4) RETURNING id");
+            let insert_tenant = format!(
+                "INSERT INTO {tenant_table} (key, name, ping_limit, created_by) VALUES ($1, $2, $3, $4) RETURNING id"
+            );
             let row = sqlx::query(&insert_tenant)
                 .bind(&tenant_key)
                 .bind(&tenant_name)
@@ -1401,18 +1408,17 @@ impl DBContext {
                 .bind(user_id)
                 .fetch_one(&self.pool)
                 .await?;
-            row.get("id")
-        };
+            let tenant_id: i32 = row.get("id");
 
-        // Step 4: Ensure mapping exists
-        let insert_mapping = format!(
-            "INSERT INTO {user_to_tenant_table} (user_id, tenant_id) VALUES ($1, $2) ON CONFLICT DO NOTHING"
-        );
-        sqlx::query(&insert_mapping)
-            .bind(user_id)
-            .bind(tenant_id)
-            .execute(&self.pool)
-            .await?;
+            let insert_mapping = format!(
+                "INSERT INTO {user_to_tenant_table} (user_id, tenant_id) VALUES ($1, $2) ON CONFLICT DO NOTHING"
+            );
+            sqlx::query(&insert_mapping)
+                .bind(user_id)
+                .bind(tenant_id)
+                .execute(&self.pool)
+                .await?;
+        }
 
         Ok(user_id)
     }
