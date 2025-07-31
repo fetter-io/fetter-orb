@@ -211,7 +211,7 @@ pub struct OnLoginParams {
     pub name: String,
 }
 
-pub async fn on_login(
+pub async fn post_on_login(
     State(db): State<DBContext>,
     Json(payload): Json<OnLoginParams>,
 ) -> Result<Json<serde_json::Value>, (StatusCode, String)> {
@@ -221,6 +221,41 @@ pub async fn on_login(
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
     Ok(Json(json!({ "user_id": user_id })))
+}
+
+//------------------------------------------------------------------------------
+#[derive(Deserialize)]
+pub struct TenantSetParams {
+    name: String,
+    user_id: i32,
+}
+
+pub async fn set_tenant(
+    State(db): State<DBContext>,
+    Json(input): Json<TenantSetParams>,
+) -> Result<Json<i32>, (StatusCode, String)> {
+    let tenant_key = db
+        .get_next_tenant_key(input.user_id, &input.name)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    let tenant = Tenant {
+        key: tenant_key,
+        name: input.name.clone(),
+        ping_limit: db.default_ping_limit,
+        created_by: input.user_id,
+    };
+
+    let tenant_id = db
+        .tenant_insert_or_get(&tenant)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    db.tenant_assign_user(tenant_id, input.user_id)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    Ok(Json(tenant_id))
 }
 
 //------------------------------------------------------------------------------
@@ -244,14 +279,14 @@ async fn main() {
         .allow_headers(Any);
 
     let app = Router::new()
-        .route("/tenant", get(get_tenant))
+        .route("/tenant", get(get_tenant).post(set_tenant))
         .route("/system_tag_pings", get(get_system_tag_pings))
         .route("/package_versions", get(get_package_versions))
         .route("/package_counts", get(get_package_counts))
         .route("/audit", get(get_audit))
         .route("/validate", get(get_validate))
         // post requests
-        .route("/on_login", post(on_login))
+        .route("/on_login", post(post_on_login))
         .route("/monitor_scan", post(post_monitor_scan))
         .route("/dep_manifest", post(post_dep_manifest))
         .layer(cors)

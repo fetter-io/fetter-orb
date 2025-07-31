@@ -98,7 +98,7 @@ impl Tenant {
 pub struct DBContext {
     pub pool: PgPool,
     suffix: Option<String>,
-    default_ping_limit: i32,
+    pub default_ping_limit: i32,
     salt: String,
 }
 
@@ -384,9 +384,33 @@ impl DBContext {
         Ok(result)
     }
 
+    pub async fn tenant_assign_user(
+        &self,
+        tenant_id: i32,
+        user_id: i32,
+    ) -> Result<(), sqlx::Error> {
+        let user_to_tenant_table = self.get_table("user_to_tenant");
+
+        let query = format!(
+            r#"
+            INSERT INTO {user_to_tenant_table} (user_id, tenant_id)
+            VALUES ($1, $2)
+            ON CONFLICT DO NOTHING
+            "#
+        );
+
+        sqlx::query(&query)
+            .bind(user_id)
+            .bind(tenant_id)
+            .execute(&self.pool)
+            .await?;
+
+        Ok(())
+    }
+
     pub async fn tenant_id_and_ping_limit_from_key(
         &self,
-        key: &str,
+        key: &str, // tenant key
     ) -> Result<Option<(i32, i32)>, sqlx::Error> {
         let table_name = self.get_table("tenant");
         let query = format!("SELECT id, ping_limit FROM {table_name} WHERE key = $1");
