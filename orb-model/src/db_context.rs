@@ -145,6 +145,7 @@ impl DBContext {
                 login TEXT NOT NULL,
                 email TEXT,
                 name TEXT,
+                term_accepted BOOLEAN DEFAULT FALSE,
                 created_at TIMESTAMPTZ DEFAULT now()
             );
             "#
@@ -1434,6 +1435,47 @@ impl DBContext {
 
         Ok(row.map(|r| r.get("id")))
     }
+
+
+    pub async fn user_term_accepted(&self, user_id: i32) -> Result<bool, sqlx::Error> {
+        let user_table = self.get_table("users");
+
+        let query = format!(
+            r#"
+            SELECT term_accepted
+            FROM {user_table}
+            WHERE id = $1
+            "#
+        );
+
+        let result: bool = sqlx::query_scalar(&query)
+            .bind(user_id)
+            .fetch_one(&self.pool)
+            .await?;
+
+        Ok(result)
+    }
+
+    pub async fn user_set_term_accepted(&self, user_id: i32) -> Result<(), sqlx::Error> {
+        let user_table = self.get_table("users");
+
+        let query = format!(
+            r#"
+            UPDATE {user_table}
+            SET term_accepted = TRUE
+            WHERE id = $1
+            "#
+        );
+
+        sqlx::query(&query)
+            .bind(user_id)
+            .execute(&self.pool)
+            .await?;
+
+        Ok(())
+    }
+
+
 
     //--------------------------------------------------------------------------
     pub async fn monitor_scan_load(

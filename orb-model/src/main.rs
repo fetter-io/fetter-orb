@@ -257,6 +257,33 @@ pub async fn set_tenant(
 
     Ok(Json(tenant_id))
 }
+//------------------------------------------------------------------------------
+
+#[derive(Deserialize)]
+pub struct UserTermsParams {
+    pub user_id: i32,
+}
+
+pub async fn get_user_term_accept(
+    State(db): State<DBContext>,
+    Query(params): Query<UserTermsParams>,
+) -> Result<Json<Value>, (StatusCode, String)> {
+    db.user_term_accepted(params.user_id)
+        .await
+        .map(|accepted| Json(json!({ "term_accepted": accepted })))
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
+}
+
+pub async fn set_user_term_accept(
+    State(db): State<DBContext>,
+    Json(body): Json<UserTermsParams>,
+) -> Result<Json<Value>, (StatusCode, String)> {
+    db.user_set_term_accepted(body.user_id)
+        .await
+        .map(|_| Json(json!({ "status": "ok" })))
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
+}
+
 
 //------------------------------------------------------------------------------
 #[tokio::main]
@@ -280,6 +307,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/tenant", get(get_tenant).post(set_tenant))
+        .route("/user_terms", get(get_user_term_accept).post(set_user_term_accept))
         .route("/system_tag_pings", get(get_system_tag_pings))
         .route("/package_versions", get(get_package_versions))
         .route("/package_counts", get(get_package_counts))
