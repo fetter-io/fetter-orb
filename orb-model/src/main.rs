@@ -284,7 +284,6 @@ pub async fn set_user_term_accept(
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
 }
 
-
 //------------------------------------------------------------------------------
 #[tokio::main]
 async fn main() {
@@ -307,7 +306,10 @@ async fn main() {
 
     let app = Router::new()
         .route("/tenant", get(get_tenant).post(set_tenant))
-        .route("/user_terms", get(get_user_term_accept).post(set_user_term_accept))
+        .route(
+            "/user_terms",
+            get(get_user_term_accept).post(set_user_term_accept),
+        )
         .route("/system_tag_pings", get(get_system_tag_pings))
         .route("/package_versions", get(get_package_versions))
         .route("/package_counts", get(get_package_counts))

@@ -1436,7 +1436,6 @@ impl DBContext {
         Ok(row.map(|r| r.get("id")))
     }
 
-
     pub async fn user_term_accepted(&self, user_id: i32) -> Result<bool, sqlx::Error> {
         let user_table = self.get_table("users");
 
@@ -1474,8 +1473,6 @@ impl DBContext {
 
         Ok(())
     }
-
-
 
     //--------------------------------------------------------------------------
     pub async fn monitor_scan_load(
