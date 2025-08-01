@@ -1,6 +1,6 @@
 export default function TermsContent() {
   return (
-    <div className="prose prose-invert max-h-200 overflow-y-auto px-4">
+    <div className="prose prose-invert max-h-140 overflow-y-auto px-4">
       <p>Last updated: August 1, 2025</p>
       <p>
         Please read these terms and conditions carefully before using Our
