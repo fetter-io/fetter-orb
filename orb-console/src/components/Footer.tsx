@@ -56,7 +56,6 @@ export function Footer() {
           </button>
         </div>
 
-
         {/* Empty spacing */}
         <div></div>
       </footer>
@@ -71,7 +70,6 @@ export function Footer() {
           <Privacy onClose={() => setShowPrivacy(false)} />
         </div>
       )}
-
     </>
   );
 }
