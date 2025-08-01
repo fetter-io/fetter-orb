@@ -78,6 +78,16 @@ export default function TermsContent() {
           </p>
         </li>
       </ul>
+
+      <h2>Cookies</h2>
+      <p>
+        This Service uses cookies and other tracking technologies to improve
+        your browsing experience for the following purposes: to enable basic
+        functionality of the website, to provide a better experience on the
+        website, and to measure your interest in our products and services. By
+        accepting these terms, You provide your consent to our use of cookies.
+      </p>
+
       <h2>Acknowledgment</h2>
       <p>
         These are the Terms and Conditions governing the use of this Service and
@@ -136,13 +146,6 @@ export default function TermsContent() {
       <p>
         Upon termination, Your right to use the Service will cease immediately.
       </p>
-
-
-      <h2>Cookies</h2>
-      <p>
-      This Service uses cookies and other tracking technologies to improve your browsing experience for the following purposes: to enable basic functionality of the website, to provide a better experience on the website, and to measure your interest in our products and services. By accepting these terms, You provide your consent to our use of cookies.
-      </p>
-
 
       <h2>Limitation of Liability</h2>
       <p>
