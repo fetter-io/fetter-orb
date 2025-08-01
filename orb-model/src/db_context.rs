@@ -1446,14 +1446,14 @@ impl DBContext {
             WHERE id = $1
             "#
         );
+        // println!("{} {}", "calling user_term_accepted", user_id);
 
-        let result: bool = sqlx::query_scalar(&query)
+        let result: Option<bool> = sqlx::query_scalar(&query)
             .bind(user_id)
-            .fetch_one(&self.pool)
+            .fetch_optional(&self.pool)
             .await?;
-        // println!("{} {} {}", "calling user_term_accepted", user_id, result);
 
-        Ok(result)
+        Ok(result.unwrap_or(false))
     }
 
     pub async fn user_set_term_accepted(&self, user_id: i32) -> Result<(), sqlx::Error> {
@@ -1466,7 +1466,7 @@ impl DBContext {
             WHERE id = $1
             "#
         );
-        // println!("{} {}", "calling user_set_term_accepted", user_id);
+        println!("{} {}", "calling user_set_term_accepted", user_id);
         sqlx::query(&query)
             .bind(user_id)
             .execute(&self.pool)
