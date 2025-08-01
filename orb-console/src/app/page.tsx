@@ -5,6 +5,7 @@ import { useSession, signIn } from "next-auth/react";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { LandingFeature } from "@/components/LandingFeature";
+import { Footer } from "@/components/Footer";
 
 import { Weave } from "@/components/Weave";
 import { WaveDivider } from "@/components/WaveDivider";
@@ -81,6 +82,11 @@ export default function LandingPage() {
         description="Define approved package versions and ensure compliance everywhere."
         imageSrc="/screenshot.png"
       />
+
+
+      <footer className="bg-slate-950 border-t border-slate-700 px-6 py-4">
+        <Footer />
+      </footer>
     </main>
   );
 }
