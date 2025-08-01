@@ -1,11 +1,12 @@
 export default function TermsContent() {
   return (
-    <div className="prose prose-invert max-h-120 overflow-y-auto px-4 mb-6 space-y-4">
+    <div className="prose prose-invert max-h-200 overflow-y-auto px-4">
       <p>Last updated: August 1, 2025</p>
       <p>
         Please read these terms and conditions carefully before using Our
         Service.
       </p>
+
       <h2>Interpretation and Definitions</h2>
       <h3>Interpretation</h3>
       <p>
@@ -135,6 +136,14 @@ export default function TermsContent() {
       <p>
         Upon termination, Your right to use the Service will cease immediately.
       </p>
+
+
+      <h2>Cookies</h2>
+      <p>
+      This Service uses cookies and other tracking technologies to improve your browsing experience for the following purposes: to enable basic functionality of the website, to provide a better experience on the website, and to measure your interest in our products and services. By accepting these terms, You provide your consent to our use of cookies.
+      </p>
+
+
       <h2>Limitation of Liability</h2>
       <p>
         Notwithstanding any damages that You might incur, the entire liability
