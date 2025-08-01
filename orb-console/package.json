@@ -13,6 +13,7 @@
     "quality": "npm run lint && npm run format && npm run tsc && npm run test"
   },
   "dependencies": {
+    "@tailwindcss/typography": "^0.5.16",
     "next": "15.2.4",
     "next-auth": "^4.24.11",
     "react": "^19.0.0",

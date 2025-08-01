@@ -1,6 +1,6 @@
 export default function PrivacyContent() {
   return (
-    <div className="text-sm max-h-120 overflow-y-auto px-4 mb-6 flex flex-col space-y-4">
+    <div className="prose prose-invert max-h-120 overflow-y-auto px-4 mb-6 space-y-4">
       <p>Last updated: August 01, 2025</p>
       <p>
         This Privacy Policy describes Our policies and procedures on the
@@ -35,6 +35,14 @@ export default function PrivacyContent() {
             <strong>Company</strong> (referred to as either &quot;the
             Company&quot;, &quot;We&quot;, &quot;Us&quot; or &quot;Our&quot; in
             this Agreement) refers to Fetter Orb.
+          </p>
+        </li>
+        <li>
+          <p>
+            <strong>Cookies</strong> are small files that are placed on Your
+            computer, mobile device or any other device by a website, containing
+            the details of Your browsing history on that website among its many
+            uses.
           </p>
         </li>
         <li>
@@ -106,6 +114,7 @@ export default function PrivacyContent() {
           <p>Usage Data</p>
         </li>
       </ul>
+
       <h4>Usage Data</h4>
       <p>Usage Data is collected automatically when using the Service.</p>
       <p>
@@ -127,6 +136,87 @@ export default function PrivacyContent() {
         We may also collect information that Your browser sends whenever You
         visit our Service or when You access the Service by or through a mobile
         device.
+      </p>
+
+      <h4>Tracking Technologies and Cookies</h4>
+      <p>
+        We use Cookies and similar tracking technologies to track the activity
+        on Our Service and store certain information. Tracking technologies used
+        are beacons, tags, and scripts to collect and track information and to
+        improve and analyze Our Service. The technologies We use may include:
+      </p>
+      <ul>
+        <li>
+          <strong>Cookies or Browser Cookies.</strong> A cookie is a small file
+          placed on Your Device. You can instruct Your browser to refuse all
+          Cookies or to indicate when a Cookie is being sent. However, if You do
+          not accept Cookies, You may not be able to use some parts of our
+          Service. Unless you have adjusted Your browser setting so that it will
+          refuse Cookies, our Service may use Cookies.
+        </li>
+        <li>
+          <strong>Web Beacons.</strong> Certain sections of our Service and our
+          emails may contain small electronic files known as web beacons (also
+          referred to as clear gifs, pixel tags, and single-pixel gifs) that
+          permit the Company, for example, to count users who have visited those
+          pages or opened an email and for other related website statistics (for
+          example, recording the popularity of a certain section and verifying
+          system and server integrity).
+        </li>
+      </ul>
+      <p>
+        Cookies can be &quot;Persistent&quot; or &quot;Session&quot; Cookies.
+        Persistent Cookies remain on Your personal computer or mobile device
+        when You go offline, while Session Cookies are deleted as soon as You
+        close Your web browser. You can learn more about cookies on{" "}
+        <a
+          href="https://www.termsfeed.com/blog/cookies/#What_Are_Cookies"
+          target="_blank"
+        >
+          TermsFeed website
+        </a>{" "}
+        article.
+      </p>
+      <p>
+        We use both Session and Persistent Cookies for the purposes set out
+        below:
+      </p>
+      <ul>
+        <li>
+          <p>
+            <strong>Necessary / Essential Cookies</strong>
+          </p>
+          <p>Type: Session Cookies</p>
+          <p>Administered by: Us</p>
+          <p>
+            Purpose: These Cookies are essential to provide You with services
+            available through the Website and to enable You to use some of its
+            features. They help to authenticate users and prevent fraudulent use
+            of user accounts. Without these Cookies, the services that You have
+            asked for cannot be provided, and We only use these Cookies to
+            provide You with those services.
+          </p>
+        </li>
+
+        <li>
+          <p>
+            <strong>Functionality Cookies</strong>
+          </p>
+          <p>Type: Persistent Cookies</p>
+          <p>Administered by: Us</p>
+          <p>
+            Purpose: These Cookies allow us to remember choices You make when
+            You use the Website, such as remembering your login details or
+            language preference. The purpose of these Cookies is to provide You
+            with a more personal experience and to avoid You having to re-enter
+            your preferences every time You use the Website.
+          </p>
+        </li>
+      </ul>
+      <p>
+        For more information about the cookies we use and your choices regarding
+        cookies, please visit our Cookies Policy or the Cookies section of our
+        Privacy Policy.
       </p>
 
       <h3>Use of Your Personal Data</h3>
@@ -191,6 +281,7 @@ export default function PrivacyContent() {
         functionality of Our Service, or We are legally obligated to retain this
         data for longer time periods.
       </p>
+
       <h3>Transfer of Your Personal Data</h3>
       <p>
         Your information, including Personal Data, is processed at the Company's
