@@ -265,12 +265,12 @@ export default function PrivacyContent() {
       </p>
       <h2>Children's Privacy</h2>
       <p>
-        Our Service does not address anyone under the age of 13. We do not
+        Our Service does not address anyone under the age of 18. We do not
         knowingly collect personally identifiable information from anyone under
-        the age of 13. If You are a parent or guardian and You are aware that
+        the age of 18. If You are a parent or guardian and You are aware that
         Your child has provided Us with Personal Data, please contact Us. If We
         become aware that We have collected Personal Data from anyone under the
-        age of 13 without verification of parental consent, We take steps to
+        age of 18 without verification of parental consent, We take steps to
         remove that information from Our servers.
       </p>
       <p>
