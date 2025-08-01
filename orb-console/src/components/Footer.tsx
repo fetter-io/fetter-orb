@@ -1,12 +1,14 @@
 import { useState } from "react";
 import Terms from "@/components/Terms";
+import Privacy from "@/components/Privacy";
 
 export function Footer() {
   const [showTerms, setShowTerms] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
 
   return (
     <>
-      <footer className="grid grid-cols-5 gap-4 text-gray-500 text-sm">
+      <footer className="grid grid-cols-6 gap-4 text-gray-500 text-sm">
         {/* Empty first column for spacing */}
         <div></div>
 
@@ -18,7 +20,7 @@ export function Footer() {
             target="_blank"
             rel="noopener noreferrer"
           >
-            fetter.io
+            GitHub
           </a>
         </div>
 
@@ -40,9 +42,20 @@ export function Footer() {
             onClick={() => setShowTerms(true)}
             className="hover:underline hover:underline-offset-4"
           >
-            Terms of Service
+            Terms
           </button>
         </div>
+
+        {/* Column 5: privacy */}
+        <div className="flex justify-center">
+          <button
+            onClick={() => setShowPrivacy(true)}
+            className="hover:underline hover:underline-offset-4"
+          >
+            Privacy
+          </button>
+        </div>
+
 
         {/* Empty spacing */}
         <div></div>
@@ -53,6 +66,12 @@ export function Footer() {
           <Terms readOnly onClose={() => setShowTerms(false)} />
         </div>
       )}
+      {showPrivacy && (
+        <div className="fixed inset-0 bg-slate-900/80 flex items-center justify-center z-50">
+          <Privacy onClose={() => setShowPrivacy(false)} />
+        </div>
+      )}
+
     </>
   );
 }
