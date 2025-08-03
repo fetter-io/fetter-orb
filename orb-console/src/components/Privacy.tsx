@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { signOut, useSession } from "next-auth/react";
 import PrivacyContent from "@/components/PrivacyContent";
 
 type TermsProps = {
