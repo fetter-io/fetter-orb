@@ -32,7 +32,7 @@ export default function Terms({
       );
 
       if (res.ok) {
-        onAccepted();
+        onAccepted?.();
       } else {
         console.error("Failed to accept terms");
       }
