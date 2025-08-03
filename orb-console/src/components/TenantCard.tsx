@@ -29,7 +29,7 @@ export function TenantCard({ tenant, selected, scrollIntoViewNow }: Props) {
       }`}
     >
       <div className="text-xl font-semibold text-zinc-400 mb-2">
-        Tenant: {tenant.name}
+        {tenant.name}
       </div>
 
       <div>
