@@ -46,9 +46,6 @@ export const authOptions: NextAuthOptions = {
       if (typeof token.login === "string") {
         session.user.login = token.login;
       }
-
-      // session.user.user_id = token.user_id;
-      // session.user.login = token.login;
       return session;
     },
   },

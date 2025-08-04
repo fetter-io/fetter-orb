@@ -454,5 +454,12 @@ async fn test_user_tenant_init_a() {
 
     let uid_post = ctx.user_id_from_login("foo").await.unwrap();
     assert!(uid_post == Some(1));
+
+    let u = ctx.user_from_user_id(1).await.unwrap();
+    assert_eq!(u.id, 1);
+    assert_eq!(u.login, "foo");
+    assert_eq!(u.email, Some("foo@foo.com".to_string()));
+    assert_eq!(u.term_accepted, false);
+
     ctx.tables_drop().await.unwrap();
 }
