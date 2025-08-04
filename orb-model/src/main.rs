@@ -295,6 +295,16 @@ pub async fn get_user(
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
 }
 
+pub async fn post_delete_user(
+    State(db): State<DBContext>,
+    Json(body): Json<UserParams>
+) -> Result<Json<Value>, (StatusCode, String)> {
+    db.user_delete(body.user_id)
+        .await
+        .map(|_| Json(json!({ "status": "ok" })))
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
+}
+
 //------------------------------------------------------------------------------
 #[tokio::main]
 async fn main() {
@@ -331,6 +341,7 @@ async fn main() {
         .route("/on_login", post(post_on_login))
         .route("/monitor_scan", post(post_monitor_scan))
         .route("/dep_manifest", post(post_dep_manifest))
+        .route("/user_delete", post(post_delete_user))
         .layer(cors)
         .with_state(dbx);
 
