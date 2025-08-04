@@ -1379,7 +1379,6 @@ impl DBContext {
         row
     }
 
-
     pub async fn user_delete(&self, user_id: i32) -> Result<(), sqlx::Error> {
         let mut tx = self.pool.begin().await?;
 
@@ -1444,25 +1443,20 @@ impl DBContext {
         .await?;
 
         // Step 6: Delete tenants
-        let _ = sqlx::query(&format!(
-            "DELETE FROM {tenant_table} WHERE created_by = $1"
-        ))
-        .bind(user_id)
-        .execute(&mut *tx)
-        .await?;
+        let _ = sqlx::query(&format!("DELETE FROM {tenant_table} WHERE created_by = $1"))
+            .bind(user_id)
+            .execute(&mut *tx)
+            .await?;
 
         // Step 7: Delete user
-        let _ = sqlx::query(&format!(
-            "DELETE FROM {user_table} WHERE id = $1"
-        ))
-        .bind(user_id)
-        .execute(&mut *tx)
-        .await?;
+        let _ = sqlx::query(&format!("DELETE FROM {user_table} WHERE id = $1"))
+            .bind(user_id)
+            .execute(&mut *tx)
+            .await?;
 
         tx.commit().await?;
         Ok(())
     }
-
 
     pub async fn get_next_tenant_key(
         &self,
