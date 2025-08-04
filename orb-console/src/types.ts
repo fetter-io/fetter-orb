@@ -85,6 +85,15 @@ export type AuditEntry = {
   record: VulnRecord;
 };
 
+export type UserRecord = {
+  id: number;
+  login: string;
+  email: string | null;
+  name: string | null;
+  term_accepted: boolean;
+  created_at: string;
+};
+
 export type Tenant = {
   key: string;
   name: string;

@@ -33,7 +33,6 @@ import colors from "tailwindcss/colors";
 import { ValidationPanel } from "@/components/ValidationPanel";
 import { UserMenuDropdown } from "@/components/UserMenuDropdown";
 
-
 //------------------------------------------------------------------------------
 
 export default function Dashboard() {
@@ -59,7 +58,7 @@ export default function Dashboard() {
       if (!session?.user?.user_id || userInfo) return;
 
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_ORB_MODEL}/user?user_id=${session.user.user_id}`
+        `${process.env.NEXT_PUBLIC_ORB_MODEL}/user?user_id=${session.user.user_id}`,
       );
       if (!res.ok) {
         console.error("Failed to fetch user info");
