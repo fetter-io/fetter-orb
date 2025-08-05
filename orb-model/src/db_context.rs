@@ -13,7 +13,6 @@ use sha2::{Digest, Sha256};
 use sqlx::postgres::PgRow;
 use sqlx::Executor;
 use sqlx::{Arguments, PgPool, Row};
-// use sqlx::{Postgres, Transaction};
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -1395,8 +1394,6 @@ impl DBContext {
     }
 
     pub async fn user_delete(&self, user_id: i32) -> Result<(), sqlx::Error> {
-        let mut tx = self.pool.begin().await?;
-
         let tenant_table = self.get_table("tenant");
         let system_tag_table = self.get_table("system_tag");
         let ping_table = self.get_table("ping");
@@ -1404,6 +1401,8 @@ impl DBContext {
         let dep_manifest_table = self.get_table("dep_manifest");
         let user_tenant_last_table = self.get_table("user_tenant_last");
         let user_table = self.get_table("users");
+
+        let mut tx = self.pool.begin().await?;
 
         // Step 1: Get all tenant IDs created by the user
         let tenant_ids: Vec<i32> = sqlx::query_scalar(&format!(
@@ -1674,6 +1673,8 @@ impl DBContext {
         let timestamp: DateTime<Utc> = (UNIX_EPOCH + *ts).into();
         let scanned = scan_fs.is_some();
 
+        let mut tx = self.pool.begin().await?;
+
         let ping_id: i32 = sqlx::query_scalar(&format!(
             r#"
             INSERT INTO {ping_table} (system_tag_id, timestamp, scanned)
@@ -1684,7 +1685,7 @@ impl DBContext {
         .bind(st_id)
         .bind(timestamp)
         .bind(scanned)
-        .fetch_one(&self.pool)
+        .fetch_one(&mut *tx)
         .await?;
 
         if let Some(sfs) = scan_fs {
@@ -1706,12 +1707,12 @@ impl DBContext {
                         .bind(ping_id)
                         .bind(pkg_id)
                         .bind(sp_id)
-                        .execute(&self.pool)
+                        .execute(&mut *tx)
                         .await?;
                 }
             }
         }
-
+        tx.commit().await?;
         Ok(())
     }
 
