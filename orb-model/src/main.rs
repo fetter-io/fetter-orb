@@ -14,6 +14,7 @@ use tower_http::cors::{Any, CorsLayer};
 
 use orb_model::db_context::DBContext;
 use orb_model::db_context::Tenant;
+use orb_model::db_context::User;
 use orb_model::db_via_container::get_db_pool;
 use orb_model::env_loader::load_env;
 
@@ -260,13 +261,13 @@ pub async fn set_tenant(
 //------------------------------------------------------------------------------
 
 #[derive(Deserialize)]
-pub struct UserTermsParams {
+pub struct UserParams {
     pub user_id: i32,
 }
 
 pub async fn get_user_term_accept(
     State(db): State<DBContext>,
-    Query(params): Query<UserTermsParams>,
+    Query(params): Query<UserParams>,
 ) -> Result<Json<Value>, (StatusCode, String)> {
     db.user_term_accepted(params.user_id)
         .await
@@ -276,9 +277,29 @@ pub async fn get_user_term_accept(
 
 pub async fn set_user_term_accept(
     State(db): State<DBContext>,
-    Json(body): Json<UserTermsParams>,
+    Json(body): Json<UserParams>,
 ) -> Result<Json<Value>, (StatusCode, String)> {
     db.user_set_term_accepted(body.user_id)
+        .await
+        .map(|_| Json(json!({ "status": "ok" })))
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
+}
+
+pub async fn get_user(
+    State(db): State<DBContext>,
+    Query(params): Query<UserParams>,
+) -> Result<Json<User>, (StatusCode, String)> {
+    db.user_from_user_id(params.user_id)
+        .await
+        .map(Json)
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
+}
+
+pub async fn post_delete_user(
+    State(db): State<DBContext>,
+    Json(body): Json<UserParams>,
+) -> Result<Json<Value>, (StatusCode, String)> {
+    db.user_delete(body.user_id)
         .await
         .map(|_| Json(json!({ "status": "ok" })))
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
@@ -310,6 +331,7 @@ async fn main() {
             "/user_terms",
             get(get_user_term_accept).post(set_user_term_accept),
         )
+        .route("/user", get(get_user))
         .route("/system_tag_pings", get(get_system_tag_pings))
         .route("/package_versions", get(get_package_versions))
         .route("/package_counts", get(get_package_counts))
@@ -319,6 +341,7 @@ async fn main() {
         .route("/on_login", post(post_on_login))
         .route("/monitor_scan", post(post_monitor_scan))
         .route("/dep_manifest", post(post_dep_manifest))
+        .route("/user_delete", post(post_delete_user))
         .layer(cors)
         .with_state(dbx);
 

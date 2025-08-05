@@ -1,4 +1,10 @@
-export type Tab = "packages" | "systems" | "allow" | "vulns" | "tenant";
+export type Tab =
+  | "packages"
+  | "systems"
+  | "allow"
+  | "vulns"
+  | "tenant"
+  | "account";
 
 export type Package = {
   id: number;
@@ -77,6 +83,15 @@ export type VulnRecord = {
 export type AuditEntry = {
   package_id: number; // this is a package id!
   record: VulnRecord;
+};
+
+export type UserRecord = {
+  id: number;
+  login: string;
+  email: string | null;
+  name: string | null;
+  term_accepted: boolean;
+  created_at: string;
 };
 
 export type Tenant = {

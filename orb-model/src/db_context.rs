@@ -92,6 +92,16 @@ impl Tenant {
     }
 }
 
+#[derive(Debug, Serialize)]
+pub struct User {
+    pub id: i32,
+    pub login: String,
+    pub email: Option<String>,
+    pub name: Option<String>,
+    pub term_accepted: bool,
+    pub created_at: String,
+}
+
 //------------------------------------------------------------------------------
 // NOTE: DBContext is cloneable as PgPoll is an Arc.
 #[derive(Clone)]
@@ -1337,6 +1347,116 @@ impl DBContext {
     }
 
     //--------------------------------------------------------------------------
+
+    pub async fn user_from_user_id(&self, user_id: i32) -> Result<User, sqlx::Error> {
+        let user_table = self.get_table("users");
+
+        let query = format!(
+            r#"
+            SELECT id, login, email, name, term_accepted, created_at
+            FROM {user_table}
+            WHERE id = $1
+            "#
+        );
+
+        let row = sqlx::query(&query)
+            .bind(user_id)
+            .map(|row: sqlx::postgres::PgRow| {
+                Ok(User {
+                    id: row.get("id"),
+                    login: row.get("login"),
+                    email: row.get("email"),
+                    name: row.get("name"),
+                    term_accepted: row.get("term_accepted"),
+                    created_at: row
+                        .get::<chrono::DateTime<chrono::Utc>, _>("created_at")
+                        .to_rfc3339(),
+                })
+            })
+            .fetch_one(&self.pool)
+            .await?;
+
+        row
+    }
+
+    pub async fn user_delete(&self, user_id: i32) -> Result<(), sqlx::Error> {
+        let mut tx = self.pool.begin().await?;
+
+        let tenant_table = self.get_table("tenant");
+        let system_tag_table = self.get_table("system_tag");
+        let ping_table = self.get_table("ping");
+        let monitor_scan_table = self.get_table("monitor_scan");
+        let dep_manifest_table = self.get_table("dep_manifest");
+        let user_table = self.get_table("users");
+
+        // Step 1: Get all tenant IDs created by the user
+        let tenant_ids: Vec<i32> = sqlx::query_scalar(&format!(
+            "SELECT id FROM {tenant_table} WHERE created_by = $1"
+        ))
+        .bind(user_id)
+        .fetch_all(&mut *tx)
+        .await?;
+
+        // Step 2: Delete monitor scans (by joining to ping -> system_tag -> tenant)
+        let _ = sqlx::query(&format!(
+            r#"
+            DELETE FROM {monitor_scan_table}
+            WHERE ping_id IN (
+              SELECT p.id FROM {ping_table} p
+              JOIN {system_tag_table} st ON p.system_tag_id = st.id
+              WHERE st.tenant_id = ANY($1)
+            )
+            "#
+        ))
+        .bind(&tenant_ids)
+        .execute(&mut *tx)
+        .await?;
+
+        // Step 3: Delete pings
+        let _ = sqlx::query(&format!(
+            r#"
+            DELETE FROM {ping_table}
+            WHERE system_tag_id IN (
+              SELECT id FROM {system_tag_table}
+              WHERE tenant_id = ANY($1)
+            )
+            "#
+        ))
+        .bind(&tenant_ids)
+        .execute(&mut *tx)
+        .await?;
+
+        // Step 4: Delete system tags
+        let _ = sqlx::query(&format!(
+            "DELETE FROM {system_tag_table} WHERE tenant_id = ANY($1)"
+        ))
+        .bind(&tenant_ids)
+        .execute(&mut *tx)
+        .await?;
+
+        // Step 5: Delete dep manifests
+        let _ = sqlx::query(&format!(
+            "DELETE FROM {dep_manifest_table} WHERE tenant_id = ANY($1)"
+        ))
+        .bind(&tenant_ids)
+        .execute(&mut *tx)
+        .await?;
+
+        // Step 6: Delete tenants
+        let _ = sqlx::query(&format!("DELETE FROM {tenant_table} WHERE created_by = $1"))
+            .bind(user_id)
+            .execute(&mut *tx)
+            .await?;
+
+        // Step 7: Delete user
+        let _ = sqlx::query(&format!("DELETE FROM {user_table} WHERE id = $1"))
+            .bind(user_id)
+            .execute(&mut *tx)
+            .await?;
+
+        tx.commit().await?;
+        Ok(())
+    }
 
     pub async fn get_next_tenant_key(
         &self,

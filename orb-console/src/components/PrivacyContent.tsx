@@ -1,6 +1,6 @@
 export default function PrivacyContent() {
   return (
-    <div className="prose prose-invert max-h-140 overflow-y-auto px-4">
+    <div className="prose prose-invert bg-slate-900 max-h-140 overflow-y-auto px-4">
       <p>Last updated: August 01, 2025</p>
       <p>
         This Privacy Policy describes Our policies and procedures on the
@@ -284,12 +284,13 @@ export default function PrivacyContent() {
 
       <h3>Transfer of Your Personal Data</h3>
       <p>
-        Your information, including Personal Data, is processed at the Company&rsquo;s
-        operating offices and in any other places where the parties involved in
-        the processing are located. It means that this information may be
-        transferred to — and maintained on — computers located outside of Your
-        state, province, country or other governmental jurisdiction where the
-        data protection laws may differ than those from Your jurisdiction.
+        Your information, including Personal Data, is processed at the
+        Company&rsquo;s operating offices and in any other places where the
+        parties involved in the processing are located. It means that this
+        information may be transferred to — and maintained on — computers
+        located outside of Your state, province, country or other governmental
+        jurisdiction where the data protection laws may differ than those from
+        Your jurisdiction.
       </p>
       <p>
         Your consent to this Privacy Policy followed by Your submission of such
@@ -374,8 +375,8 @@ export default function PrivacyContent() {
       <p>
         Our Service may contain links to other websites that are not operated by
         Us. If You click on a third party link, You will be directed to that
-        third party&rsquo;s site. We strongly advise You to review the Privacy Policy
-        of every site You visit.
+        third party&rsquo;s site. We strongly advise You to review the Privacy
+        Policy of every site You visit.
       </p>
       <p>
         We have no control over and assume no responsibility for the content,

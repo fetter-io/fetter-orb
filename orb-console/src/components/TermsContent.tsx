@@ -1,6 +1,6 @@
 export default function TermsContent() {
   return (
-    <div className="prose prose-invert max-h-140 overflow-y-auto px-4">
+    <div className="prose prose-invert bg-slate-900 max-h-140 overflow-y-auto px-4">
       <p>Last updated: August 1, 2025</p>
       <p>
         Please read these terms and conditions carefully before using Our
@@ -171,8 +171,8 @@ export default function TermsContent() {
         Some states do not allow the exclusion of implied warranties or
         limitation of liability for incidental or consequential damages, which
         means that some of the above limitations may not apply. In these states,
-        each party&rsquo;s liability will be limited to the greatest extent permitted
-        by law.
+        each party&rsquo;s liability will be limited to the greatest extent
+        permitted by law.
       </p>
       <h2>&quot;AS IS&quot; and &quot;AS AVAILABLE&quot; Disclaimer</h2>
       <p>
@@ -196,8 +196,8 @@ export default function TermsContent() {
       </p>
       <p>
         Without limiting the foregoing, neither the Company nor any of the
-        company&rsquo;s provider makes any representation or warranty of any kind,
-        express or implied: (i) as to the operation or availability of the
+        company&rsquo;s provider makes any representation or warranty of any
+        kind, express or implied: (i) as to the operation or availability of the
         Service, or the information, content, and materials or products included
         thereon; (ii) that the Service will be uninterrupted or error-free;
         (iii) as to the accuracy, reliability, or currency of any information or
@@ -253,9 +253,9 @@ export default function TermsContent() {
       <p>
         Except as provided herein, the failure to exercise a right or to require
         performance of an obligation under these Terms shall not affect a
-        party&rsquo;s ability to exercise such right or require such performance at
-        any time thereafter nor shall the waiver of a breach constitute a waiver
-        of any subsequent breach.
+        party&rsquo;s ability to exercise such right or require such performance
+        at any time thereafter nor shall the waiver of a breach constitute a
+        waiver of any subsequent breach.
       </p>
       <h2>Translation Interpretation</h2>
       <p>

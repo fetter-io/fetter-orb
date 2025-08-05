@@ -16,6 +16,7 @@ import {
   Tab,
   AuditEntry,
   Tenant,
+  UserRecord,
   ValidationResult,
   ValidationEntry,
 } from "@/types";
@@ -25,6 +26,7 @@ import { PackageCountsChart } from "@/components/PackageCountsChart";
 import { VulnCard } from "@/components/VulnCard";
 import { TenantSelector } from "@/components/TenantSelector";
 import { TabTenant } from "@/components/TabTenant";
+import { TabAccount } from "@/components/TabAccount";
 import { AllowListEditor } from "@/components/AllowListEditor";
 import { Weave } from "@/components/Weave";
 import colors from "tailwindcss/colors";
@@ -46,15 +48,30 @@ export default function Dashboard() {
   const [highlightedVulnId, setHighlightedVulnId] = useState<string | null>(
     null,
   );
-
-  // const fetchTenants = useCallback(async (): Promise<[number, Tenant][]> => {
-  //   const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
-  //   const res = await fetch(`${apiBase}/tenant`);
-  //   return await res.json(); // assuming it returns [[id, {key, name}], ...]
-  // }, []);
-
   const { data: session, status } = useSession();
 
+  //----------------------------------------------------------------------------
+  const [userInfo, setUserInfo] = useState<UserRecord | null>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (!session?.user?.user_id || userInfo) return;
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_ORB_MODEL}/user?user_id=${session.user.user_id}`,
+      );
+      if (!res.ok) {
+        console.error("Failed to fetch user info");
+        return;
+      }
+      const data = await res.json();
+      setUserInfo(data);
+    };
+
+    fetchUser();
+  }, [session?.user?.user_id, userInfo]);
+
+  //----------------------------------------------------------------------------
   const fetchTenants = useCallback(async (): Promise<[number, Tenant][]> => {
     if (status !== "authenticated" || !session?.user?.user_id) return [];
 
@@ -426,6 +443,8 @@ export default function Dashboard() {
               tenantsState={tenantsState}
             />
           )}
+
+          {activeTab === "account" && <TabAccount userInfo={userInfo} />}
         </div>
       </main>
 
