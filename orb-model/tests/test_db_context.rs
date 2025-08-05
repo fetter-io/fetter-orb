@@ -518,7 +518,7 @@ async fn test_user_tenant_last_a() {
         .unwrap();
 
     let post1 = ctx.user_tenant_last(1).await.unwrap();
-    assert_eq!(post1, None);
+    assert_eq!(post1, Some(1));
 
     let _ = ctx.user_set_tenant_last(1, 1).await.unwrap();
 
