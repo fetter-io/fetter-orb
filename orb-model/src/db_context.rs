@@ -1402,6 +1402,7 @@ impl DBContext {
         let ping_table = self.get_table("ping");
         let monitor_scan_table = self.get_table("monitor_scan");
         let dep_manifest_table = self.get_table("dep_manifest");
+        let user_tenant_last_table = self.get_table("user_tenant_last");
         let user_table = self.get_table("users");
 
         // Step 1: Get all tenant IDs created by the user
@@ -1462,6 +1463,14 @@ impl DBContext {
             .bind(user_id)
             .execute(&mut *tx)
             .await?;
+
+        // Step 6.5: Delete user_tenant_last
+        let _ = sqlx::query(&format!(
+            "DELETE FROM {user_tenant_last_table} WHERE user_id = $1"
+        ))
+        .bind(user_id)
+        .execute(&mut *tx)
+        .await?;
 
         // Step 7: Delete user
         let _ = sqlx::query(&format!("DELETE FROM {user_table} WHERE id = $1"))
