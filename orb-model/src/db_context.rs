@@ -1636,14 +1636,15 @@ impl DBContext {
 
         let query = format!(
             r#"
-            UPDATE {user_tenant_last_table}
-            SET tenant_id = $1
-            WHERE user_id = $2
+            INSERT INTO {user_tenant_last_table} (user_id, tenant_id)
+            VALUES ($1, $2)
+            ON CONFLICT (user_id)
+            DO UPDATE SET tenant_id = EXCLUDED.tenant_id
             "#
         );
         sqlx::query(&query)
-            .bind(tenant_id)
             .bind(user_id)
+            .bind(tenant_id)
             .execute(&self.pool)
             .await?;
 

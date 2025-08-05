@@ -524,4 +524,20 @@ async fn test_user_tenant_last_a() {
 
     let post2 = ctx.user_tenant_last(1).await.unwrap();
     assert_eq!(post2, Some(1));
+
+    assert!(ctx.user_set_tenant_last(1, 2).await.is_err());
+
+    let t = Tenant {
+        key: "test".to_string(),
+        name: "test".to_string(),
+        ping_limit: 1,
+        created_by: 1,
+    };
+    let id = ctx.tenant_insert_or_get(&t).await.unwrap();
+    assert_eq!(id, 2);
+
+    let _ = ctx.user_set_tenant_last(1, 2).await.unwrap();
+
+    let post3 = ctx.user_tenant_last(1).await.unwrap();
+    assert_eq!(post3, Some(2));
 }
