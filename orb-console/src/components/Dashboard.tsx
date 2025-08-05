@@ -186,23 +186,34 @@ export default function Dashboard() {
     pollInterval: 30000,
   });
 
-  const packagesState = useDashboardData(fetchPackages, {
-    active: activeTab === "packages",
-    pollInterval: 30000,
-  });
-
-  const packageCountsState = useDashboardData(fetchPackageCounts, {
-    active: activeTab === "packages",
-    pollInterval: 30000,
-  });
-
-  //----------------------------------------------------------------------------
-  // Tenant state and related routines
-
   const tenantsState = useDashboardData(fetchTenants, {
     active: true,
     pollInterval: 20000,
   });
+
+  // Only fetch packages after tenant selected and system tag is loaded
+  const shouldFetchPackages =
+    selectedTenantId !== null &&
+    tenantsState.loading === false &&
+    systemTagsState.loading === false;
+
+  const packagesState = useDashboardData(fetchPackages, {
+    active: activeTab === "packages" && shouldFetchPackages,
+    pollInterval: 30000,
+  });
+
+  // const packageRefresh = packagesState.refresh;
+
+  const packageCountsState = useDashboardData(fetchPackageCounts, {
+    active: activeTab === "packages" && shouldFetchPackages,
+    pollInterval: 30000,
+  });
+
+  // const packageCountsRefresh = packageCountsState.refresh;
+
+
+  //----------------------------------------------------------------------------
+  // Tenant state and related routines
 
   const hasSetInitialTenant = useRef(false);
 
@@ -223,13 +234,15 @@ export default function Dashboard() {
       .catch((err) => console.error("Failed to load last tenant", err));
   }, [tenantsState.data, session?.user?.user_id]);
 
-  // Send update to backend when user changes tenant
+  // Send update to backend when user tenant changes.
   useEffect(() => {
     if (!hasSetInitialTenant.current) return; // skip initial
     if (selectedTenantId == null) return;
 
     // Reset system ID first
     setSelectedSystemId(null);
+    packagesState.refresh();
+    packageCountsState.refresh();
 
     fetch(`${process.env.NEXT_PUBLIC_ORB_MODEL}/user_tenant_last`, {
       method: "POST",
@@ -285,6 +298,7 @@ export default function Dashboard() {
   });
 
   const auditRefresh = auditState.refresh;
+
   // force refresh when selectedSystemId changes
   useEffect(() => {
     auditRefresh();
