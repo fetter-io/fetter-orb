@@ -297,7 +297,7 @@ pub async fn get_user(
 
 pub async fn post_delete_user(
     State(db): State<DBContext>,
-    Json(body): Json<UserParams>
+    Json(body): Json<UserParams>,
 ) -> Result<Json<Value>, (StatusCode, String)> {
     db.user_delete(body.user_id)
         .await
