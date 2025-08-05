@@ -231,6 +231,7 @@ pub struct TenantSetParams {
     user_id: i32,
 }
 
+// This is used to create a new Tenant, given the tenant's name and the user_id. NOTE: this does not automatically set thew tenant as the tenant last.
 pub async fn set_tenant(
     State(db): State<DBContext>,
     Json(input): Json<TenantSetParams>,
@@ -305,6 +306,32 @@ pub async fn post_delete_user(
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
 }
 
+pub async fn get_user_tenant_last(
+    State(db): State<DBContext>,
+    Query(params): Query<UserParams>,
+) -> Result<Json<Value>, (StatusCode, String)> {
+    db.user_tenant_last(params.user_id)
+        .await
+        .map(|id| Json(json!({ "tenant_id": id })))
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
+}
+
+#[derive(Deserialize)]
+pub struct UserTenantParams {
+    pub user_id: i32,
+    pub tenant_id: i32,
+}
+
+pub async fn set_user_tenant_last(
+    State(db): State<DBContext>,
+    Json(body): Json<UserTenantParams>,
+) -> Result<Json<Value>, (StatusCode, String)> {
+    db.user_set_tenant_last(body.user_id, body.tenant_id)
+        .await
+        .map(|_| Json(json!({ "status": "ok" })))
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
+}
+
 //------------------------------------------------------------------------------
 #[tokio::main]
 async fn main() {
@@ -327,6 +354,10 @@ async fn main() {
 
     let app = Router::new()
         .route("/tenant", get(get_tenant).post(set_tenant))
+        .route(
+            "/user_tenant_last",
+            get(get_user_tenant_last).post(set_user_tenant_last),
+        )
         .route(
             "/user_terms",
             get(get_user_term_accept).post(set_user_term_accept),
