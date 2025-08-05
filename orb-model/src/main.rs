@@ -231,6 +231,7 @@ pub struct TenantSetParams {
     user_id: i32,
 }
 
+// This is used to create a new Tenant, given the tenant's name and the user_id. NOTE: this does not automatically set thew tenant as the tenant last.
 pub async fn set_tenant(
     State(db): State<DBContext>,
     Json(input): Json<TenantSetParams>,

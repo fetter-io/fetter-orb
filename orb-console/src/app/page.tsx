@@ -72,7 +72,7 @@ export default function LandingPage() {
 
       <WaveDivider
         height={80}
-        controlPoints={[20, 0, 400, 15]}
+        controlPoints={[800, 0, 800, 0]}
         fillClass="text-slate-900"
         flip={true}
       />

@@ -1532,7 +1532,6 @@ impl DBContext {
         if self.tenant_count(user_id).await? == 0 {
             let tenant_key = self.get_next_tenant_key(user_id, email).await?;
             let tenant_name = String::from("Self"); // could be Personal
-            let tenant_ping_limit = self.default_ping_limit;
 
             let insert_tenant = format!(
                 "INSERT INTO {tenant_table} (key, name, ping_limit, created_by) VALUES ($1, $2, $3, $4) RETURNING id"
@@ -1540,7 +1539,7 @@ impl DBContext {
             let row = sqlx::query(&insert_tenant)
                 .bind(&tenant_key)
                 .bind(&tenant_name)
-                .bind(tenant_ping_limit)
+                .bind(self.default_ping_limit)
                 .bind(user_id)
                 .fetch_one(&self.pool)
                 .await?;
@@ -1554,6 +1553,8 @@ impl DBContext {
                 .bind(tenant_id)
                 .execute(&self.pool)
                 .await?;
+
+            self.user_set_tenant_last(user_id, tenant_id).await?;
         }
 
         Ok(user_id)
