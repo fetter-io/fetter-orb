@@ -138,6 +138,7 @@ impl DBContext {
     pub async fn tables_create(&self, if_not_exists: bool) -> Result<(), sqlx::Error> {
         let user_table = self.get_table("users");
         let user_to_tenant_table = self.get_table("user_to_tenant");
+        let user_tenant_last_table = self.get_table("user_tenant_last");
         let tenant_table = self.get_table("tenant");
         let system_tag_table = self.get_table("system_tag");
         let package_table = self.get_table("package");
@@ -179,6 +180,15 @@ impl DBContext {
                 user_id INTEGER NOT NULL REFERENCES {user_table}(id) ON DELETE CASCADE,
                 tenant_id INTEGER NOT NULL REFERENCES {tenant_table}(id) ON DELETE CASCADE,
                 PRIMARY KEY (user_id, tenant_id)
+            );
+            "#
+        );
+
+        let create_user_tenant_last_table = format!(
+            r#"
+            CREATE TABLE {if_clause}{user_tenant_last_table} (
+                user_id INTEGER PRIMARY KEY REFERENCES {user_table}(id) ON DELETE CASCADE,
+                tenant_id INTEGER REFERENCES {tenant_table}(id) ON DELETE SET NULL
             );
             "#
         );
@@ -256,6 +266,7 @@ impl DBContext {
         self.pool.execute(&*create_user).await?;
         self.pool.execute(&*create_tenant).await?;
         self.pool.execute(&*create_user_to_tenant).await?;
+        self.pool.execute(&*create_user_tenant_last_table).await?;
         self.pool.execute(&*create_dep_manifest).await?;
         self.pool.execute(&*create_system_tag).await?;
         self.pool.execute(&*create_package).await?;
@@ -285,6 +296,7 @@ impl DBContext {
         let monitor_scan_table = self.get_table("monitor_scan");
         let dep_manifest_table = self.get_table("dep_manifest");
         let user_to_tenant_table = self.get_table("user_to_tenant");
+        let user_tenant_last_table = self.get_table("user_tenant_last");
         let tenant_table = self.get_table("tenant");
         let user_table = self.get_table("users");
 
@@ -296,6 +308,8 @@ impl DBContext {
         let drop_dep_manifest = format!(r#"DROP TABLE IF EXISTS {dep_manifest_table} CASCADE;"#);
         let drop_user_to_tenant =
             format!(r#"DROP TABLE IF EXISTS {user_to_tenant_table} CASCADE;"#);
+        let drop_user_tenant_last =
+            format!(r#"DROP TABLE IF EXISTS {user_tenant_last_table} CASCADE;"#);
         let drop_tenant = format!(r#"DROP TABLE IF EXISTS {tenant_table} CASCADE;"#);
         let drop_user = format!(r#"DROP TABLE IF EXISTS {user_table} CASCADE;"#);
 
@@ -306,6 +320,7 @@ impl DBContext {
         self.pool.execute(&*drop_system_tag).await?;
         self.pool.execute(&*drop_dep_manifest).await?;
         self.pool.execute(&*drop_user_to_tenant).await?;
+        self.pool.execute(&*drop_user_tenant_last).await?;
         self.pool.execute(&*drop_tenant).await?;
         self.pool.execute(&*drop_user).await?;
 
