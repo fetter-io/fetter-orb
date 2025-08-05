@@ -1,7 +1,7 @@
 "use client";
 
 // import Image from "next/image";
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { useSession } from "next-auth/react";
 
 import { Footer } from "@/components/Footer";
@@ -36,6 +36,11 @@ import { UserMenuDropdown } from "@/components/UserMenuDropdown";
 //------------------------------------------------------------------------------
 
 export default function Dashboard() {
+  // NOTE: the dashboard is called after the /on_login endpoint is called and the session is created. Thus, the user has been created and they hae at least on tenant.
+
+  const { data: session, status } = useSession();
+
+  //----------------------------------------------------------------------------
   const [activeTab, setActiveTab] = useState<Tab>("packages");
   const [selectedTenantId, setSelectedTenantId] = useState<number | null>(null);
   const [selectedSystemId, setSelectedSystemId] = useState<number | null>(null);
@@ -48,7 +53,6 @@ export default function Dashboard() {
   const [highlightedVulnId, setHighlightedVulnId] = useState<string | null>(
     null,
   );
-  const { data: session, status } = useSession();
 
   //----------------------------------------------------------------------------
   const [userInfo, setUserInfo] = useState<UserRecord | null>(null);
@@ -72,6 +76,7 @@ export default function Dashboard() {
   }, [session?.user?.user_id, userInfo]);
 
   //----------------------------------------------------------------------------
+
   const fetchTenants = useCallback(async (): Promise<[number, Tenant][]> => {
     if (status !== "authenticated" || !session?.user?.user_id) return [];
 
@@ -176,11 +181,6 @@ export default function Dashboard() {
   }, [selectedTenantId, selectedSystemId]);
 
   //----------------------------------------------------------------------------
-  const tenantsState = useDashboardData(fetchTenants, {
-    active: true,
-    pollInterval: 20000,
-  });
-
   const packagesState = useDashboardData(fetchPackages, {
     active: activeTab === "packages",
     pollInterval: 30000,
@@ -197,6 +197,50 @@ export default function Dashboard() {
   });
 
   //----------------------------------------------------------------------------
+  // Tenant state and related routines
+
+  const tenantsState = useDashboardData(fetchTenants, {
+    active: true,
+    pollInterval: 20000,
+  });
+
+  const hasSetInitialTenant = useRef(false);
+
+  // Load last-selected tenant on first load of tenants
+  useEffect(() => {
+    if (!tenantsState.data || hasSetInitialTenant.current) return;
+
+    fetch(
+      `${process.env.NEXT_PUBLIC_ORB_MODEL}/user_tenant_last?user_id=${session.user.user_id}`,
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.tenant_id != null) {
+          setSelectedTenantId(data.tenant_id);
+          hasSetInitialTenant.current = true;
+        }
+      })
+      .catch((err) => console.error("Failed to load last tenant", err));
+  }, [tenantsState.data, session?.user?.user_id]);
+
+  // Send update to backend when user changes tenant
+  useEffect(() => {
+    if (!hasSetInitialTenant.current) return; // skip initial
+    if (selectedTenantId == null) return;
+
+    fetch(`${process.env.NEXT_PUBLIC_ORB_MODEL}/user_tenant_last`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: session.user.user_id,
+        tenant_id: selectedTenantId,
+      }),
+    }).catch((err) => console.error("Failed to save last tenant", err));
+  }, [selectedTenantId, session?.user?.user_id]);
+
+  //----------------------------------------------------------------------------
+  // Validation state and related routines
+
   const validationState = useDashboardData(fetchValidation, {
     active: activeTab === "packages" || activeTab === "allow",
     pollInterval: 0,
