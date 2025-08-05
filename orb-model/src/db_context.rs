@@ -1609,6 +1609,48 @@ impl DBContext {
         Ok(())
     }
 
+    pub async fn user_tenant_last(&self, user_id: i32) -> Result<Option<i32>, sqlx::Error> {
+        let user_tenant_last_table = self.get_table("user_tenant_last");
+
+        let query = format!(
+            r#"
+            SELECT tenant_id
+            FROM {user_tenant_last_table}
+            WHERE user_id = $1
+            "#
+        );
+
+        let result: Option<bool> = sqlx::query_scalar(&query)
+            .bind(user_id)
+            .fetch_optional(&self.pool)
+            .await?;
+
+        Ok(result)
+    }
+
+    pub async fn user_set_tenant_last(
+        &self,
+        user_id: i32,
+        tenant_id: i32,
+    ) -> Result<(), sqlx::Error> {
+        let user_tenant_last_table = self.get_table("user_tenant_last");
+
+        let query = format!(
+            r#"
+            UPDATE {user_tenant_last_table}
+            SET tenant_id = $1
+            WHERE user_id = $2
+            "#
+        );
+        sqlx::query(&query)
+            .bind(tenant_id)
+            .bind(user_id)
+            .execute(&self.pool)
+            .await?;
+
+        Ok(())
+    }
+
     //--------------------------------------------------------------------------
     pub async fn monitor_scan_load(
         &self,
