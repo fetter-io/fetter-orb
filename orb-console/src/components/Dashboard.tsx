@@ -211,7 +211,7 @@ export default function Dashboard() {
     if (!tenantsState.data || hasSetInitialTenant.current) return;
 
     fetch(
-      `${process.env.NEXT_PUBLIC_ORB_MODEL}/user_tenant_last?user_id=${session.user.user_id}`,
+      `${process.env.NEXT_PUBLIC_ORB_MODEL}/user_tenant_last?user_id=${session?.user?.user_id}`,
     )
       .then((res) => res.json())
       .then((data) => {
@@ -232,7 +232,7 @@ export default function Dashboard() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        user_id: session.user.user_id,
+        user_id: session?.user?.user_id,
         tenant_id: selectedTenantId,
       }),
     }).catch((err) => console.error("Failed to save last tenant", err));
