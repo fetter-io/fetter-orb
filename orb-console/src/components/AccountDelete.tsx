@@ -16,14 +16,17 @@ export function AccountDelete() {
     setError(null);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_ORB_MODEL}/user_delete`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-user-id": session.user.user_id.toString(),
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_ORB_MODEL}/user_delete`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-user-id": session.user.user_id.toString(),
+          },
+          body: JSON.stringify({ user_id: session.user.user_id }),
         },
-        body: JSON.stringify({ user_id: session.user.user_id }),
-      });
+      );
 
       if (!res.ok) {
         const err = await res.text();
@@ -60,7 +63,8 @@ export function AccountDelete() {
               Confirm Account Deletion
             </h3>
             <p>
-              Are you sure you want to delete your account? This action is permanent and cannot be undone.
+              Are you sure you want to delete your account? This action is
+              permanent and cannot be undone.
             </p>
             <div className="flex justify-end space-x-2 pt-2">
               <button

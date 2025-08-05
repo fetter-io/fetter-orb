@@ -1,6 +1,7 @@
 "use client";
 
 import { AccountDelete } from "@/components/AccountDelete";
+import { UserRecord } from "@/types";
 
 export function TabAccount({ userInfo }: { userInfo: UserRecord | null }) {
   if (!userInfo) {
@@ -35,8 +36,8 @@ export function TabAccount({ userInfo }: { userInfo: UserRecord | null }) {
         </div>
       </div>
       <div className="pt-4">
-  <AccountDelete />
-</div>
+        <AccountDelete />
+      </div>
     </div>
   );
 }
