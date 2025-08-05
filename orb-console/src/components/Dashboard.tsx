@@ -181,6 +181,11 @@ export default function Dashboard() {
   }, [selectedTenantId, selectedSystemId]);
 
   //----------------------------------------------------------------------------
+  const systemTagsState = useDashboardData(fetchSystemTags, {
+    active: true, // not sure how often to update
+    pollInterval: 30000,
+  });
+
   const packagesState = useDashboardData(fetchPackages, {
     active: activeTab === "packages",
     pollInterval: 30000,
@@ -188,11 +193,6 @@ export default function Dashboard() {
 
   const packageCountsState = useDashboardData(fetchPackageCounts, {
     active: activeTab === "packages",
-    pollInterval: 30000,
-  });
-
-  const systemTagsState = useDashboardData(fetchSystemTags, {
-    active: true, // not sure how often to update
     pollInterval: 30000,
   });
 
@@ -227,6 +227,9 @@ export default function Dashboard() {
   useEffect(() => {
     if (!hasSetInitialTenant.current) return; // skip initial
     if (selectedTenantId == null) return;
+
+    // Reset system ID first
+    setSelectedSystemId(null);
 
     fetch(`${process.env.NEXT_PUBLIC_ORB_MODEL}/user_tenant_last`, {
       method: "POST",
