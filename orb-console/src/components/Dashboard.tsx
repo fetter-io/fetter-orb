@@ -252,7 +252,7 @@ export default function Dashboard() {
         tenant_id: selectedTenantId,
       }),
     }).catch((err) => console.error("Failed to save last tenant", err));
-  }, [selectedTenantId, session?.user?.user_id]);
+  }, [selectedTenantId, session?.user?.user_id]); // NOTE: packageState, packageCountsState
 
   //----------------------------------------------------------------------------
   // Validation state and related routines
