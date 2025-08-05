@@ -1581,7 +1581,6 @@ impl DBContext {
             WHERE id = $1
             "#
         );
-        // println!("{} {}", "calling user_term_accepted", user_id);
 
         let result: Option<bool> = sqlx::query_scalar(&query)
             .bind(user_id)
@@ -1620,7 +1619,7 @@ impl DBContext {
             "#
         );
 
-        let result: Option<bool> = sqlx::query_scalar(&query)
+        let result: Option<i32> = sqlx::query_scalar(&query)
             .bind(user_id)
             .fetch_optional(&self.pool)
             .await?;
