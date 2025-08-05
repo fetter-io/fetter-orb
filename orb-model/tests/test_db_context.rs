@@ -502,3 +502,26 @@ async fn test_user_tenant_init_a() {
 
     ctx.tables_drop().await.unwrap();
 }
+
+//------------------------------------------------------------------------------
+
+#[tokio::test]
+async fn test_user_tenant_last_a() {
+    let pool = get_db_pool().await;
+    let ctx = DBContext::new(pool, Some("test_user_tenant_last_a".into()));
+    ctx.tables_drop().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
+
+    let _ = ctx
+        .user_tenant_init("foo", "foo@foo.com", "Foo")
+        .await
+        .unwrap();
+
+    let post1 = ctx.user_tenant_last(1).await.unwrap();
+    assert_eq!(post1, None);
+
+    let _ = ctx.user_set_tenant_last(1, 1).await.unwrap();
+
+    let post2 = ctx.user_tenant_last(1).await.unwrap();
+    assert_eq!(post2, Some(1));
+}
