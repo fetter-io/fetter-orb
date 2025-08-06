@@ -65,7 +65,7 @@ export default function LandingPage() {
 
       <LandingFeature
         title="A Secure, Open-Source Agent"
-        description="End-point scans are published with fetter, an efficient client writte in Rust."
+        description="End-point scans are published with fetter, an efficient client written in Rust."
         imageSrc="/screenshot.png"
         reverse={true}
 
