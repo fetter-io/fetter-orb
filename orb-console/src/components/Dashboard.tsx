@@ -202,15 +202,16 @@ export default function Dashboard() {
     pollInterval: 30000,
   });
 
-  // const packageRefresh = packagesState.refresh;
-
   const packageCountsState = useDashboardData(fetchPackageCounts, {
     active: activeTab === "packages" && shouldFetchPackages,
     pollInterval: 30000,
   });
 
-  // const packageCountsRefresh = packageCountsState.refresh;
-
+  useEffect(() => {
+    if (!shouldFetchPackages) return;
+    packagesState.refresh();
+    packageCountsState.refresh();
+  }, [selectedTenantId, selectedSystemId, shouldFetchPackages]);
 
   //----------------------------------------------------------------------------
   // Tenant state and related routines
@@ -241,8 +242,6 @@ export default function Dashboard() {
 
     // Reset system ID first
     setSelectedSystemId(null);
-    packagesState.refresh();
-    packageCountsState.refresh();
 
     fetch(`${process.env.NEXT_PUBLIC_ORB_MODEL}/user_tenant_last`, {
       method: "POST",
@@ -252,7 +251,7 @@ export default function Dashboard() {
         tenant_id: selectedTenantId,
       }),
     }).catch((err) => console.error("Failed to save last tenant", err));
-  }, [selectedTenantId, session?.user?.user_id]); // NOTE: packageState, packageCountsState
+  }, [selectedTenantId, session?.user?.user_id]);
 
   //----------------------------------------------------------------------------
   // Validation state and related routines
@@ -292,17 +291,24 @@ export default function Dashboard() {
   }, [validationState.data]);
 
   //----------------------------------------------------------------------------
+
+  const shouldAudit =
+    selectedTenantId !== null &&
+    tenantsState.loading === false &&
+    systemTagsState.loading === false &&
+    packagesState.loading === false;
+
   const auditState = useDashboardData(fetchAudit, {
-    active: false,
+    active: activeTab === "vulns" && shouldAudit,
     pollInterval: 0,
   });
 
-  const auditRefresh = auditState.refresh;
-
+  // NOTE: we do not these changes to load vulns in the background...
+  // const auditRefresh = auditState.refresh;
   // force refresh when selectedSystemId changes
-  useEffect(() => {
-    auditRefresh();
-  }, [selectedSystemId, selectedTenantId, auditRefresh]);
+  // useEffect(() => {
+  //   auditRefresh();
+  // }, [selectedSystemId, selectedTenantId, auditRefresh]);
 
   const vulnerablePackageIds = useMemo(() => {
     if (!auditState.data) return new Set<number>();
