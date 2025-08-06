@@ -49,9 +49,9 @@ export function AccountDelete() {
         <button
           onClick={() => setShowModal(true)}
           disabled={loading}
-          className="text-sm px-4 py-2 rounded bg-red-800 text-white hover:bg-red-600 disabled:opacity-50"
+          className="button-danger"
         >
-          {loading ? "Deleting..." : "Delete Account"}
+          Delete Account
         </button>
         {error && <div className="text-xs text-red-400">{error}</div>}
       </div>
@@ -69,14 +69,14 @@ export function AccountDelete() {
             <div className="flex justify-end space-x-2 pt-2">
               <button
                 onClick={() => setShowModal(false)}
-                className="px-4 py-1 rounded bg-slate-600 hover:bg-slate-500 text-white"
+                className="button-close"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDelete}
                 disabled={loading}
-                className="px-4 py-1 rounded bg-red-800 hover:bg-red-600 text-white disabled:opacity-50"
+                className="button-danger"
               >
                 {loading ? "Deleting..." : "Confirm Delete"}
               </button>

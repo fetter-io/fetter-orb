@@ -36,7 +36,7 @@ export default function LandingPage() {
         {status !== "authenticated" && (
           <button
             onClick={() => signIn("github")}
-            className="px-4 py-2 bg-slate-800 text-zinc-400 rounded hover:bg-slate-700 hover:text-zinc-200 cursor-pointer transition-colors duration-150 border border-blue-600/50  hover:border-blue-400"
+            className="button-entry"
           >
             Sign in with GitHub
           </button>

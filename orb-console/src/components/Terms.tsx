@@ -56,16 +56,16 @@ export default function Terms({
         <div className="flex justify-end gap-4 mt-4">
           <button
             onClick={declineTerms}
-            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+            className="button-close"
           >
             Decline
           </button>
           <button
             onClick={acceptTerms}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            className="button-accept"
             disabled={loading}
           >
-            {loading ? "Accepting..." : "Accept"}
+            Accept
           </button>
         </div>
       )}
@@ -74,7 +74,7 @@ export default function Terms({
         <div className="mt-6 text-right">
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-white px-3 py-2 border border-gray-600 rounded"
+            className="button-close"
           >
             Close
           </button>
