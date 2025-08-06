@@ -12,7 +12,6 @@ export function TenantSelector({
 }: TenantSelectorProps) {
   return (
     <div className="flex flex-col gap-1 mb-2">
-      <span className="text-xs text-gray-400 font-semibold">Tenant</span>
       <select
         className="text-sm bg-slate-800 text-white border border-slate-600 rounded px-2 py-1"
         value={selectedId ?? ""}
@@ -22,7 +21,7 @@ export function TenantSelector({
         }}
       >
         <option value="" disabled>
-          Select a tenant
+          🏢
         </option>
 
         {tenants.map(([id, tenant]) => (

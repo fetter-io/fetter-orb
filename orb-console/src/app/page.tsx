@@ -30,7 +30,7 @@ export default function LandingPage() {
         </div>
         <h1 className="text-4xl font-bold text-zinc-500 mb-2">Fetter Orb</h1>
         <p className="text-lg text-zinc-400 mb-6">
-          Python Supply-Chain Transparency
+          Python Supply-Chain Omniscience
         </p>
 
         {status !== "authenticated" && (
