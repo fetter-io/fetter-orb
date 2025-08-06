@@ -51,10 +51,7 @@ export function AllowListEditor({
           <pre className="bg-gray-900 text-gray-500 p-2 rounded max-h-48 overflow-auto whitespace-pre-wrap text-xs">
             {value || "No allow list provided."}
           </pre>
-          <button
-            className="button-entry"
-            onClick={() => setIsEditing(true)}
-          >
+          <button className="button-entry" onClick={() => setIsEditing(true)}>
             Edit
           </button>
         </>

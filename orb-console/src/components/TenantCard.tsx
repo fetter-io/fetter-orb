@@ -70,18 +70,12 @@ export function TenantCard({ tenant, selected, scrollIntoViewNow }: Props) {
         </h2>
 
         <div className="flex gap-4 mt-2">
-          <button
-            disabled
-            className="button-download-deactivated"
-          >
+          <button disabled className="button-download-deactivated">
             <IconLinux />
             Ubuntu Installer
           </button>
 
-          <button
-            disabled
-            className="button-download-deactivated"
-          >
+          <button disabled className="button-download-deactivated">
             <IconApple />
             Mac Installer
           </button>

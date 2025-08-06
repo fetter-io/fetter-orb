@@ -34,10 +34,7 @@ export default function LandingPage() {
         </p>
 
         {status !== "authenticated" && (
-          <button
-            onClick={() => signIn("github")}
-            className="button-entry"
-          >
+          <button onClick={() => signIn("github")} className="button-entry">
             Sign in with GitHub
           </button>
         )}

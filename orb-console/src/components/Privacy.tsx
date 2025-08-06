@@ -14,10 +14,7 @@ export default function Terms({ onClose }: TermsProps) {
 
       {onClose && (
         <div className="mt-6 text-right">
-          <button
-            onClick={onClose}
-            className="button-close"
-          >
+          <button onClick={onClose} className="button-close">
             Close
           </button>
         </div>

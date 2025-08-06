@@ -54,10 +54,7 @@ export default function Terms({
 
       {!readOnly && (
         <div className="flex justify-end gap-4 mt-4">
-          <button
-            onClick={declineTerms}
-            className="button-close"
-          >
+          <button onClick={declineTerms} className="button-close">
             Decline
           </button>
           <button
@@ -72,10 +69,7 @@ export default function Terms({
 
       {readOnly && onClose && (
         <div className="mt-6 text-right">
-          <button
-            onClick={onClose}
-            className="button-close"
-          >
+          <button onClick={onClose} className="button-close">
             Close
           </button>
         </div>
