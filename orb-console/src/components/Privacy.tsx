@@ -14,10 +14,7 @@ export default function Terms({ onClose }: TermsProps) {
 
       {onClose && (
         <div className="mt-6 text-right">
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-white px-3 py-2 border border-gray-600 rounded"
-          >
+          <button onClick={onClose} className="button-close">
             Close
           </button>
         </div>

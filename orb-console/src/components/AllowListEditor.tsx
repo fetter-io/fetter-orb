@@ -51,10 +51,7 @@ export function AllowListEditor({
           <pre className="bg-gray-900 text-gray-500 p-2 rounded max-h-48 overflow-auto whitespace-pre-wrap text-xs">
             {value || "No allow list provided."}
           </pre>
-          <button
-            className="text-sm rounded px-2 py-1 border border-slate-600 bg-gray-800 text-zinc-400 hover:bg-gray-700 hover:text-zinc-300 transition"
-            onClick={() => setIsEditing(true)}
-          >
+          <button className="button-entry" onClick={() => setIsEditing(true)}>
             Edit
           </button>
         </>
@@ -71,7 +68,7 @@ export function AllowListEditor({
             <button
               onClick={handleSubmit}
               disabled={submitting}
-              className="text-sm rounded px-2 py-1 border border-slate-600 bg-slate-900 text-white  hover:bg-blue-700 "
+              className="button-accept"
             >
               {submitting ? "Submitting..." : "Submit"}
             </button>
@@ -80,7 +77,7 @@ export function AllowListEditor({
                 setEditValue(value);
                 setIsEditing(false);
               }}
-              className="text-sm rounded px-2 py-1 border border-slate-600 bg-gray-800 text-zinc-400 hover:bg-gray-700 hover:text-zinc-300 transition"
+              className="button-close"
             >
               Cancel
             </button>
