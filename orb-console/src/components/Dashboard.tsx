@@ -181,14 +181,16 @@ export default function Dashboard() {
   }, [selectedTenantId, selectedSystemId]);
 
   //----------------------------------------------------------------------------
-  const systemTagsState = useDashboardData(fetchSystemTags, {
-    active: true, // not sure how often to update
-    pollInterval: 30000,
-  });
+  // All applications of useDashboardData
 
   const tenantsState = useDashboardData(fetchTenants, {
     active: true,
-    pollInterval: 20000,
+    pollInterval: 30000,
+  });
+
+  const systemTagsState = useDashboardData(fetchSystemTags, {
+    active: true, // not sure how often to update
+    pollInterval: 30000,
   });
 
   // Only fetch packages after tenant selected and system tag is loaded
@@ -207,11 +209,44 @@ export default function Dashboard() {
     pollInterval: 30000,
   });
 
+  // Update packages when selectedTenantId, selectedSystemId change
+  const packagesStateRefresh = packagesState.refresh;
+  const packageCountsStateRefresh = packageCountsState.refresh;
+
   useEffect(() => {
     if (!shouldFetchPackages) return;
-    packagesState.refresh();
-    packageCountsState.refresh();
-  }, [selectedTenantId, selectedSystemId, shouldFetchPackages]);
+    packagesStateRefresh();
+    packageCountsStateRefresh();
+  }, [
+    selectedTenantId,
+    selectedSystemId,
+    packagesStateRefresh,
+    packageCountsStateRefresh,
+    shouldFetchPackages,
+  ]);
+
+  const shouldValidate =
+    selectedTenantId !== null &&
+    tenantsState.loading === false &&
+    systemTagsState.loading === false &&
+    packagesState.loading === false;
+
+  const validationState = useDashboardData(fetchValidation, {
+    active:
+      (activeTab === "packages" || activeTab === "allow") && shouldValidate,
+    pollInterval: 0,
+  });
+
+  const shouldAudit =
+    selectedTenantId !== null &&
+    tenantsState.loading === false &&
+    systemTagsState.loading === false &&
+    packagesState.loading === false;
+
+  const auditState = useDashboardData(fetchAudit, {
+    active: activeTab === "vulns" && shouldAudit,
+    pollInterval: 0,
+  });
 
   //----------------------------------------------------------------------------
   // Tenant state and related routines
@@ -256,11 +291,6 @@ export default function Dashboard() {
   //----------------------------------------------------------------------------
   // Validation state and related routines
 
-  const validationState = useDashboardData(fetchValidation, {
-    active: activeTab === "packages" || activeTab === "allow",
-    pollInterval: 0,
-  });
-
   const validationSets = useMemo(() => {
     if (!validationState.data) {
       const empty = new Map<number, string | null>();
@@ -291,24 +321,7 @@ export default function Dashboard() {
   }, [validationState.data]);
 
   //----------------------------------------------------------------------------
-
-  const shouldAudit =
-    selectedTenantId !== null &&
-    tenantsState.loading === false &&
-    systemTagsState.loading === false &&
-    packagesState.loading === false;
-
-  const auditState = useDashboardData(fetchAudit, {
-    active: activeTab === "vulns" && shouldAudit,
-    pollInterval: 0,
-  });
-
-  // NOTE: we do not these changes to load vulns in the background...
-  // const auditRefresh = auditState.refresh;
-  // force refresh when selectedSystemId changes
-  // useEffect(() => {
-  //   auditRefresh();
-  // }, [selectedSystemId, selectedTenantId, auditRefresh]);
+  // Audit updates
 
   const vulnerablePackageIds = useMemo(() => {
     if (!auditState.data) return new Set<number>();
@@ -316,6 +329,7 @@ export default function Dashboard() {
   }, [auditState.data]);
 
   //----------------------------------------------------------------------------
+  // These methods support on click actions that change the currently active tab
 
   const handleSystemTagClick = (id: number) => {
     setHighlightedSystemTagId(id);
