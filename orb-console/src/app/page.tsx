@@ -24,6 +24,7 @@ export default function LandingPage() {
 
   return (
     <main className="min-h-screen font-[family-name:var(--font-geist-sans)] text-white bg-gradient-to-b from-slate-950 to-slate-900">
+
       <section className="flex flex-col items-center justify-center text-center py-32 px-4">
         <div className="flex w-32 h-32 mb-4">
           <Weave fill={colors.slate[600]} className="w-full h-full" />
@@ -49,8 +50,25 @@ export default function LandingPage() {
 
       <LandingFeature
         title="Track All Python Packages"
-        description="See every installed package across your entire system fleet, organized by environment."
+        description="See every installed package across many machines or an entire organization."
         imageSrc="/screenshot.png"
+        reverse={false}
+      />
+
+      <WaveDivider
+        height={80}
+        controlPoints={[800, 0, 2000, 15]}
+        fillClass="text-slate-900"
+        flip={false}
+      />
+
+
+      <LandingFeature
+        title="A Secure, Open-Source Agent"
+        description="End-point scans are published with fetter, an efficient client writte in Rust."
+        imageSrc="/screenshot.png"
+        reverse={true}
+
       />
 
       <WaveDivider
@@ -61,10 +79,10 @@ export default function LandingPage() {
       />
 
       <LandingFeature
-        title="Monitor for Vulnerabilities"
-        description="Fetter Orb flags vulnerable packages in real time using OSV data."
+        title="Monitor Vulnerabilities"
+        description="See details on vulnerable packages in real time using the Open Source Vulnerability database."
         imageSrc="/screenshot.png"
-        reverse
+        reverse={false}
       />
 
       <WaveDivider
@@ -75,9 +93,10 @@ export default function LandingPage() {
       />
 
       <LandingFeature
-        title="Validate Against an Allow List"
-        description="Define approved package versions and ensure compliance everywhere."
+        title="Validate Against a Global Allow List"
+        description="Define approved packages and identify outliers."
         imageSrc="/screenshot.png"
+        reverse={true}
       />
 
       <footer className="bg-slate-950 border-t border-slate-700 px-6 py-4">
