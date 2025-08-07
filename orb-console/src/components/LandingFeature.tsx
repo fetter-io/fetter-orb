@@ -19,9 +19,9 @@ export function LandingFeature({
         reverse && "md:flex-row-reverse",
       )}
     >
-      <div className="md:w-1/3 text-zinc-300">
-        <h2 className="text-3xl font-bold mb-4 text-zinc-500">{title}</h2>
-        <p className="text-l text-zinc-600">{description}</p>
+      <div className="md:w-1/3">
+        <h2 className="text-3xl font-bold mb-4 text-zinc-400">{title}</h2>
+        <p className="text-l text-zinc-500">{description}</p>
       </div>
       <div className="md:w-1/2 flex justify-center">
         <Image
@@ -29,7 +29,7 @@ export function LandingFeature({
           alt={title}
           width={400}
           height={400}
-          className="rounded-lg shadow-xl"
+          className="rounded-lg shadow-xl outline outline-2 outline-blue-950"
         />
       </div>
     </section>
