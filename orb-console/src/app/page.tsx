@@ -30,9 +30,11 @@ export default function LandingPage() {
           <Weave fill={colors.slate[600]} className="w-full h-full" />
         </div>
         <h1 className="text-4xl font-bold text-zinc-400 mb-2">Fetter Orb</h1>
-        <p className="text-lg text-zinc-400 mb-6">
+
+        <p className="text-lg text-zinc-400">
           Python Supply-Chain Omniscience
         </p>
+        <p className="text-xs text-zinc-600 mb-6">v0.2.0</p>
 
         {status !== "authenticated" && (
           <button onClick={() => signIn("github")} className="button-entry">
