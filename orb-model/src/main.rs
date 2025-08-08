@@ -296,6 +296,22 @@ pub async fn get_user(
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
 }
 
+
+#[derive(Serialize)]
+struct TenantCountResponse {
+    count: i64,
+}
+
+pub async fn get_tenant_count(
+    State(db): State<DBContext>,
+    Query(params): Query<UserParams>,
+) -> Result<Json<TenantCountResponse>, (StatusCode, String)> {
+    db.tenant_count(params.user_id)
+        .await
+        .map(|count| Json(TenantCountResponse { count }))
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
+}
+
 pub async fn post_delete_user(
     State(db): State<DBContext>,
     Json(body): Json<UserParams>,
@@ -341,7 +357,7 @@ async fn main() {
     let dbx = DBContext::new(pool, None);
 
     // TODO: only if testing
-    dbx.tables_drop().await.expect("failed to drop tables");
+    // dbx.tables_drop().await.expect("failed to drop tables");
 
     dbx.tables_create(true)
         .await
@@ -354,6 +370,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/tenant", get(get_tenant).post(set_tenant))
+        .route("/tenant_count", get(get_tenant_count))
         .route(
             "/user_tenant_last",
             get(get_user_tenant_last).post(set_user_tenant_last),

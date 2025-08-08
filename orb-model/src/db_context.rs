@@ -362,7 +362,7 @@ impl DBContext {
         Ok(row.get("id"))
     }
 
-    /// Get all tenant this user has access too, not just those created by this tenant.
+    /// Get all tenant this user has access too, not just those created by this user.
     pub async fn get_tenants(
         &self,
         user_id: Option<i32>,
