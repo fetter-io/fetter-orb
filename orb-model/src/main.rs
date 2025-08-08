@@ -296,7 +296,6 @@ pub async fn get_user(
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
 }
 
-
 #[derive(Serialize)]
 struct TenantCountResponse {
     count: i64,
