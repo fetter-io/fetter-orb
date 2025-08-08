@@ -11,6 +11,9 @@ type NewTenantDialogProps = {
 type TenantCountResponse = { count: number };
 
 const MAX_TENANTS = 4;
+// replace with thsi below
+//  const max_tenatns = process.env.DEFAULT_MAX_TENANTS!;
+
 
 export function TenantNew({
   onClose,
