@@ -1,12 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type NewTenantDialogProps = {
   onClose: () => void;
   onSuccess: () => void;
   userId: number;
 };
+
+type TenantCountResponse = { count: number };
+
+const MAX_TENANTS = 4;
 
 export function TenantNew({
   onClose,
@@ -15,6 +19,9 @@ export function TenantNew({
 }: NewTenantDialogProps) {
   const [newTenantName, setNewTenantName] = useState("");
   const [creating, setCreating] = useState(false);
+  const [count, setCount] = useState<number | null>(null);
+  const [countLoading, setCountLoading] = useState(true);
+  const [countError, setCountError] = useState<string | null>(null);
 
   const trimmedName = newTenantName.trim();
   const nameValid = /^[a-zA-Z0-9_-]+$/.test(trimmedName);
@@ -23,19 +30,55 @@ export function TenantNew({
       ? "Only letters, numbers, dashes (-), and underscores (_) are allowed."
       : "";
 
+  const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
+
+  const fetchTenantCount = async () => {
+    setCountLoading(true);
+    setCountError(null);
+    try {
+      const res = await fetch(`${apiBase}/tenant_count?user_id=${userId}`, {
+        cache: "no-store",
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data: TenantCountResponse = await res.json();
+      setCount(data.count);
+    } catch (err: unknown) {
+      console.error(err);
+      setCountError("Failed to load current tenant count");
+    } finally {
+      setCountLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTenantCount();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
+
+  const overLimit = (count ?? 0) >= MAX_TENANTS;
+
   const handleCreate = async () => {
     if (!trimmedName || creating || !nameValid) return;
-    setCreating(true);
 
+    setCreating(true);
     try {
-      const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
+      // Re-check count right before creating to avoid races
+      await fetchTenantCount();
+      if ((count ?? 0) >= MAX_TENANTS) {
+        alert(`Tenant limit reached (max ${MAX_TENANTS}).`);
+        return;
+      }
+
       const res = await fetch(`${apiBase}/tenant`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: trimmedName, user_id: userId }),
       });
 
-      if (!res.ok) throw new Error("Failed to create tenant");
+      if (!res.ok) {
+        // Optional: read error text for better message
+        throw new Error("Failed to create tenant");
+      }
 
       setNewTenantName("");
       onSuccess();
@@ -54,31 +97,59 @@ export function TenantNew({
           Create New Tenant
         </h2>
 
+        {countLoading ? (
+          <p className="text-sm text-zinc-400 mb-3">
+            Checking your tenant count…
+          </p>
+        ) : countError ? (
+          <p className="text-sm text-red-400 mb-3">{countError}</p>
+        ) : (
+          <div className="mb-3">
+            <p className="text-sm text-zinc-300">
+              You currently have {count} {count === 1 ? "tenant" : "tenants"}.
+              Max allowed is {MAX_TENANTS}.
+            </p>
+            {overLimit && (
+              <p className="mt-1 text-sm text-amber-300">
+                Tenant limit reached.
+              </p>
+            )}
+          </div>
+        )}
+
         <label className="block text-sm text-zinc-400 mb-1">Name</label>
         <input
           type="text"
           value={newTenantName}
           onChange={(e) => setNewTenantName(e.target.value)}
-          className="w-full px-3 py-2 text-sm rounded bg-slate-700 text-white border border-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full px-3 py-2 text-sm rounded bg-slate-700 text-white border border-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-60"
+          disabled={overLimit || countLoading}
         />
         {errorMessage && (
           <p className="mt-1 text-sm text-red-400">{errorMessage}</p>
         )}
 
         <div className="flex justify-end gap-2 mt-4">
-          <button
-            onClick={onClose}
-            className="text-sm px-3 py-1 bg-slate-700 text-white rounded hover:bg-slate-600"
-          >
+          <button onClick={onClose} className="button-close">
             Cancel
           </button>
           <button
             onClick={handleCreate}
-            disabled={!trimmedName || creating || !nameValid}
-            className={`text-sm px-3 py-1 rounded text-white ${
-              creating || !nameValid
-                ? "bg-gray-700 cursor-not-allowed opacity-60"
-                : "bg-blue-600 hover:bg-blue-500"
+            disabled={
+              !trimmedName ||
+              creating ||
+              !nameValid ||
+              overLimit ||
+              countLoading
+            }
+            className={`button-entry ${
+              !trimmedName ||
+              creating ||
+              !nameValid ||
+              overLimit ||
+              countLoading
+                ? "cursor-not-allowed opacity-40"
+                : ""
             }`}
           >
             {creating ? "Creating..." : "Create"}

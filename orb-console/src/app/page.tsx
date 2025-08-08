@@ -24,16 +24,13 @@ export default function LandingPage() {
 
   return (
     <main className="min-h-screen font-[family-name:var(--font-geist-sans)] text-white bg-gradient-to-b from-slate-950 to-slate-900">
-
       <section className="flex flex-col items-center justify-center text-center py-32 px-4">
         <div className="flex w-32 h-32 mb-4">
           <Weave fill={colors.slate[600]} className="w-full h-full" />
         </div>
         <h1 className="text-4xl font-bold text-zinc-400 mb-2">Fetter Orb</h1>
 
-        <p className="text-lg text-zinc-400">
-          Python Supply-Chain Omniscience
-        </p>
+        <p className="text-lg text-zinc-400">Python Supply-Chain Omniscience</p>
         <p className="text-xs text-zinc-600 mb-6">v0.2.0</p>
 
         {status !== "authenticated" && (
@@ -64,13 +61,11 @@ export default function LandingPage() {
         flip={false}
       />
 
-
       <LandingFeature
         title="A Secure, Open-Source Agent"
         description="End-point scans are published with fetter, an efficient client written in Rust."
         imageSrc="/screenshot.png"
         reverse={true}
-
       />
 
       <WaveDivider
