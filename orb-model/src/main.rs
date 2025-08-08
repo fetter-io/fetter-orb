@@ -6,6 +6,7 @@ use axum::{
     Json, Router,
 };
 use serde::Deserialize;
+use serde::Serialize;
 use serde_json::json;
 use serde_json::Value;
 use std::net::SocketAddr;
@@ -297,7 +298,7 @@ pub async fn get_user(
 }
 
 #[derive(Serialize)]
-struct TenantCountResponse {
+pub struct TenantCountResponse {
     count: i64,
 }
 
