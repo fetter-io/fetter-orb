@@ -29,7 +29,7 @@ export function TenantNew({
       : "";
 
   const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
-  const tenantLimit = 4!;
+  const tenantLimit = 4;
 
   const fetchTenantCount = async () => {
     setCountLoading(true);
