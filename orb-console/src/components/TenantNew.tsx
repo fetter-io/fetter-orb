@@ -10,11 +10,6 @@ type NewTenantDialogProps = {
 
 type TenantCountResponse = { count: number };
 
-const MAX_TENANTS = 4;
-// replace with thsi below
-//  const max_tenatns = process.env.DEFAULT_MAX_TENANTS!;
-
-
 export function TenantNew({
   onClose,
   onSuccess,
@@ -34,6 +29,7 @@ export function TenantNew({
       : "";
 
   const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
+  const tenantLimit = 4!;
 
   const fetchTenantCount = async () => {
     setCountLoading(true);
@@ -58,7 +54,7 @@ export function TenantNew({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
-  const overLimit = (count ?? 0) >= MAX_TENANTS;
+  const overLimit = (count ?? 0) >= tenantLimit;
 
   const handleCreate = async () => {
     if (!trimmedName || creating || !nameValid) return;
@@ -67,8 +63,8 @@ export function TenantNew({
     try {
       // Re-check count right before creating to avoid races
       await fetchTenantCount();
-      if ((count ?? 0) >= MAX_TENANTS) {
-        alert(`Tenant limit reached (max ${MAX_TENANTS}).`);
+      if ((count ?? 0) >= tenantLimit) {
+        alert(`Tenant limit reached (max ${tenantLimit}).`);
         return;
       }
 
@@ -110,7 +106,7 @@ export function TenantNew({
           <div className="mb-3">
             <p className="text-sm text-zinc-300">
               You currently have {count} {count === 1 ? "tenant" : "tenants"}.
-              Max allowed is {MAX_TENANTS}.
+              Max allowed is {tenantLimit}.
             </p>
             {overLimit && (
               <p className="mt-1 text-sm text-amber-300">
