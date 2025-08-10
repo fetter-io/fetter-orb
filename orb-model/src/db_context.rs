@@ -97,6 +97,7 @@ pub struct User {
     pub login: String,
     pub email: Option<String>,
     pub name: Option<String>,
+    pub tenant_limit: i32,
     pub term_accepted: bool,
     pub created_at: String,
 }
@@ -108,6 +109,7 @@ pub struct DBContext {
     pub pool: PgPool,
     suffix: Option<String>,
     pub default_ping_limit: i32,
+    pub default_tenant_limit: i32,
     salt: String,
 }
 
@@ -117,11 +119,19 @@ impl DBContext {
             .ok()
             .and_then(|s| s.parse().ok())
             .unwrap_or(1);
+
+        let default_tenant_limit: i32 = env::var("DEFAULT_TENANT_LIMIT")
+            .ok()
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(1);
+
         let salt = env::var("TENANT_SECRET").unwrap_or_else(|_| "".to_string());
+
         Self {
             pool,
             suffix,
             default_ping_limit,
+            default_tenant_limit,
             salt,
         }
     }
@@ -155,6 +165,7 @@ impl DBContext {
                 login TEXT NOT NULL,
                 email TEXT,
                 name TEXT,
+                tenant_limit INTEGER,
                 term_accepted BOOLEAN DEFAULT FALSE,
                 created_at TIMESTAMPTZ DEFAULT now()
             );
@@ -1367,7 +1378,7 @@ impl DBContext {
 
         let query = format!(
             r#"
-            SELECT id, login, email, name, term_accepted, created_at
+            SELECT id, login, email, name, tenant_limit, term_accepted, created_at
             FROM {user_table}
             WHERE id = $1
             "#
@@ -1381,6 +1392,7 @@ impl DBContext {
                     login: row.get("login"),
                     email: row.get("email"),
                     name: row.get("name"),
+                    tenant_limit: row.get("tenant_limit"),
                     term_accepted: row.get("term_accepted"),
                     created_at: row
                         .get::<chrono::DateTime<chrono::Utc>, _>("created_at")
@@ -1526,12 +1538,13 @@ impl DBContext {
             row.get("id")
         } else {
             let insert_user = format!(
-                "INSERT INTO {user_table} (login, email, name) VALUES ($1, $2, $3) RETURNING id"
+                "INSERT INTO {user_table} (login, email, name, tenant_limit) VALUES ($1, $2, $3, $4) RETURNING id"
             );
             let row = sqlx::query(&insert_user)
                 .bind(login)
                 .bind(email)
                 .bind(name)
+                .bind(self.default_tenant_limit)
                 .fetch_one(&self.pool)
                 .await?;
             row.get("id")

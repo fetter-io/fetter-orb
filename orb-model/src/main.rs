@@ -393,7 +393,6 @@ async fn main() {
         .layer(cors)
         .with_state(dbx);
 
-    // let listener = tokio::net::TcpListener::bind("0.0.0.0:3001").await.unwrap();
     let addr = SocketAddr::from(([0, 0, 0, 0], 3001));
     let listener = TcpListener::bind(addr).await.unwrap();
 
