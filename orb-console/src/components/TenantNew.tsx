@@ -62,15 +62,13 @@ export function TenantNew({
     } catch (err: unknown) {
       console.error(err);
       setErrMsg("Failed to load tenant status");
-      // Provide safe fallbacks
-      return { count: 0, limit: 2 };
+      return { count: 0, limit: 2 }; // Provide safe fallbacks
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    // initial load
     fetchTenantStatus();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
@@ -82,13 +80,12 @@ export function TenantNew({
 
     setCreating(true);
     try {
-      // Re-check *both* count and limit right before creating to avoid races
+      // Re-check count and limit right before creating to avoid races
       const fresh = await fetchTenantStatus();
       if (fresh.count >= fresh.limit) {
         alert(`Tenant limit reached (max ${fresh.limit}).`);
         return;
       }
-
       const res = await fetch(`${apiBase}/tenant`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

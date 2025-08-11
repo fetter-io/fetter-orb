@@ -318,7 +318,11 @@ pub async fn get_tenant_limit(
 ) -> Result<Json<TenantCountResponse>, (StatusCode, String)> {
     db.tenant_limit(params.user_id)
         .await
-        .map(|count| Json(TenantCountResponse { count: count.into() }))
+        .map(|count| {
+            Json(TenantCountResponse {
+                count: count.into(),
+            })
+        })
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
 }
 
