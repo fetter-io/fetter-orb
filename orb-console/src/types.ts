@@ -90,6 +90,7 @@ export type UserRecord = {
   login: string;
   email: string | null;
   name: string | null;
+  tenant_limit: number;
   term_accepted: boolean;
   created_at: string;
 };
