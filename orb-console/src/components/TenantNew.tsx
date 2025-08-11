@@ -8,7 +8,7 @@ type NewTenantDialogProps = {
   userId: number;
 };
 
-type TenantCountResponse = { count: number };
+type CountResponse = { count: number }; // used by both /tenant_count and /tenant_limit
 
 export function TenantNew({
   onClose,
@@ -17,9 +17,11 @@ export function TenantNew({
 }: NewTenantDialogProps) {
   const [newTenantName, setNewTenantName] = useState("");
   const [creating, setCreating] = useState(false);
+
   const [count, setCount] = useState<number | null>(null);
-  const [countLoading, setCountLoading] = useState(true);
-  const [countError, setCountError] = useState<string | null>(null);
+  const [limit, setLimit] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [errMsg, setErrMsg] = useState<string | null>(null);
 
   const trimmedName = newTenantName.trim();
   const nameValid = /^[a-zA-Z0-9_-]+$/.test(trimmedName);
@@ -29,42 +31,61 @@ export function TenantNew({
       : "";
 
   const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
-  const tenantLimit = 4;
 
-  const fetchTenantCount = async () => {
-    setCountLoading(true);
-    setCountError(null);
+  // Fetch both count and limit. Return values so callers can use fresh numbers immediately.
+  const fetchTenantStatus = async (): Promise<{
+    count: number;
+    limit: number;
+  }> => {
+    setLoading(true);
+    setErrMsg(null);
     try {
-      const res = await fetch(`${apiBase}/tenant_count?user_id=${userId}`, {
-        cache: "no-store",
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data: TenantCountResponse = await res.json();
-      setCount(data.count);
+      const [countRes, limitRes] = await Promise.all([
+        fetch(`${apiBase}/tenant_count?user_id=${userId}`, {
+          cache: "no-store",
+        }),
+        fetch(`${apiBase}/tenant_limit?user_id=${userId}`, {
+          cache: "no-store",
+        }),
+      ]);
+
+      if (!countRes.ok) throw new Error(`tenant_count HTTP ${countRes.status}`);
+      if (!limitRes.ok) throw new Error(`tenant_limit HTTP ${limitRes.status}`);
+
+      const countJson: CountResponse = await countRes.json();
+      const limitJson: CountResponse = await limitRes.json();
+
+      setCount(countJson.count);
+      setLimit(limitJson.count);
+
+      return { count: countJson.count, limit: limitJson.count };
     } catch (err: unknown) {
       console.error(err);
-      setCountError("Failed to load current tenant count");
+      setErrMsg("Failed to load tenant status");
+      // Provide safe fallbacks
+      return { count: 0, limit: 2 };
     } finally {
-      setCountLoading(false);
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchTenantCount();
+    // initial load
+    fetchTenantStatus();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
-  const overLimit = (count ?? 0) >= tenantLimit;
+  const overLimit = count !== null && limit !== null ? count >= limit : false;
 
   const handleCreate = async () => {
     if (!trimmedName || creating || !nameValid) return;
 
     setCreating(true);
     try {
-      // Re-check count right before creating to avoid races
-      await fetchTenantCount();
-      if ((count ?? 0) >= tenantLimit) {
-        alert(`Tenant limit reached (max ${tenantLimit}).`);
+      // Re-check *both* count and limit right before creating to avoid races
+      const fresh = await fetchTenantStatus();
+      if (fresh.count >= fresh.limit) {
+        alert(`Tenant limit reached (max ${fresh.limit}).`);
         return;
       }
 
@@ -74,14 +95,11 @@ export function TenantNew({
         body: JSON.stringify({ name: trimmedName, user_id: userId }),
       });
 
-      if (!res.ok) {
-        // Optional: read error text for better message
-        throw new Error("Failed to create tenant");
-      }
+      if (!res.ok) throw new Error("Failed to create tenant");
 
       setNewTenantName("");
       onSuccess();
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(err);
       alert("Could not create tenant");
     } finally {
@@ -96,17 +114,16 @@ export function TenantNew({
           Create New Tenant
         </h2>
 
-        {countLoading ? (
+        {loading ? (
           <p className="text-sm text-zinc-400 mb-3">
-            Checking your tenant count…
+            Checking your tenant status…
           </p>
-        ) : countError ? (
-          <p className="text-sm text-red-400 mb-3">{countError}</p>
+        ) : errMsg ? (
+          <p className="text-sm text-red-400 mb-3">{errMsg}</p>
         ) : (
           <div className="mb-3">
             <p className="text-sm text-zinc-300">
-              You currently have {count} {count === 1 ? "tenant" : "tenants"}.
-              Max allowed is {tenantLimit}.
+              You currently have {count}. Max allowed is {limit}.
             </p>
             {overLimit && (
               <p className="mt-1 text-sm text-amber-300">
@@ -122,7 +139,7 @@ export function TenantNew({
           value={newTenantName}
           onChange={(e) => setNewTenantName(e.target.value)}
           className="w-full px-3 py-2 text-sm rounded bg-slate-700 text-white border border-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-60"
-          disabled={overLimit || countLoading}
+          disabled={overLimit || loading}
         />
         {errorMessage && (
           <p className="mt-1 text-sm text-red-400">{errorMessage}</p>
@@ -135,18 +152,10 @@ export function TenantNew({
           <button
             onClick={handleCreate}
             disabled={
-              !trimmedName ||
-              creating ||
-              !nameValid ||
-              overLimit ||
-              countLoading
+              !trimmedName || creating || !nameValid || overLimit || loading
             }
             className={`button-entry ${
-              !trimmedName ||
-              creating ||
-              !nameValid ||
-              overLimit ||
-              countLoading
+              !trimmedName || creating || !nameValid || overLimit || loading
                 ? "cursor-not-allowed opacity-40"
                 : ""
             }`}
