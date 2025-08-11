@@ -97,6 +97,7 @@ pub struct User {
     pub login: String,
     pub email: Option<String>,
     pub name: Option<String>,
+    pub tenant_limit: i32,
     pub term_accepted: bool,
     pub created_at: String,
 }
@@ -108,6 +109,7 @@ pub struct DBContext {
     pub pool: PgPool,
     suffix: Option<String>,
     pub default_ping_limit: i32,
+    pub default_tenant_limit: i32,
     salt: String,
 }
 
@@ -117,11 +119,19 @@ impl DBContext {
             .ok()
             .and_then(|s| s.parse().ok())
             .unwrap_or(1);
+
+        let default_tenant_limit: i32 = env::var("DEFAULT_TENANT_LIMIT")
+            .ok()
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(1);
+
         let salt = env::var("TENANT_SECRET").unwrap_or_else(|_| "".to_string());
+
         Self {
             pool,
             suffix,
             default_ping_limit,
+            default_tenant_limit,
             salt,
         }
     }
@@ -155,6 +165,7 @@ impl DBContext {
                 login TEXT NOT NULL,
                 email TEXT,
                 name TEXT,
+                tenant_limit INTEGER NOT NULL,
                 term_accepted BOOLEAN DEFAULT FALSE,
                 created_at TIMESTAMPTZ DEFAULT now()
             );
@@ -167,7 +178,7 @@ impl DBContext {
                 id SERIAL PRIMARY KEY,
                 key TEXT NOT NULL UNIQUE,
                 name TEXT NOT NULL,
-                ping_limit INTEGER,
+                ping_limit INTEGER NOT NULL,
                 created_by INTEGER NOT NULL REFERENCES {user_table}(id)
             );
             "#
@@ -362,7 +373,7 @@ impl DBContext {
         Ok(row.get("id"))
     }
 
-    /// Get all tenant this user has access too, not just those created by this tenant.
+    /// Get all tenant this user has access too, not just those created by this user.
     pub async fn get_tenants(
         &self,
         user_id: Option<i32>,
@@ -421,6 +432,17 @@ impl DBContext {
             .await?;
 
         Ok(count)
+    }
+
+    // Get the tenant_limit for the supplied user.
+    pub async fn tenant_limit(&self, user_id: i32) -> Result<i32, sqlx::Error> {
+        let user_table = self.get_table("users");
+        let query = format!("SELECT tenant_limit FROM {user_table} WHERE id = $1");
+        let limit: i32 = sqlx::query_scalar(&query)
+            .bind(user_id)
+            .fetch_one(&self.pool)
+            .await?;
+        Ok(limit)
     }
 
     pub async fn tenant_assign_user(
@@ -1367,7 +1389,7 @@ impl DBContext {
 
         let query = format!(
             r#"
-            SELECT id, login, email, name, term_accepted, created_at
+            SELECT id, login, email, name, tenant_limit, term_accepted, created_at
             FROM {user_table}
             WHERE id = $1
             "#
@@ -1381,6 +1403,7 @@ impl DBContext {
                     login: row.get("login"),
                     email: row.get("email"),
                     name: row.get("name"),
+                    tenant_limit: row.get("tenant_limit"),
                     term_accepted: row.get("term_accepted"),
                     created_at: row
                         .get::<chrono::DateTime<chrono::Utc>, _>("created_at")
@@ -1526,12 +1549,13 @@ impl DBContext {
             row.get("id")
         } else {
             let insert_user = format!(
-                "INSERT INTO {user_table} (login, email, name) VALUES ($1, $2, $3) RETURNING id"
+                "INSERT INTO {user_table} (login, email, name, tenant_limit) VALUES ($1, $2, $3, $4) RETURNING id"
             );
             let row = sqlx::query(&insert_user)
                 .bind(login)
                 .bind(email)
                 .bind(name)
+                .bind(self.default_tenant_limit)
                 .fetch_one(&self.pool)
                 .await?;
             row.get("id")

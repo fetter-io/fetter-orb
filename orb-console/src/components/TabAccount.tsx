@@ -26,6 +26,10 @@ export function TabAccount({ userInfo }: { userInfo: UserRecord | null }) {
             <span>{userInfo.name ?? "—"}</span>
           </div>
           <div className="grid grid-cols-2 gap-2 px-4 py-2 bg-slate-800">
+            <span className="font-medium text-slate-400">Tenant Limit</span>
+            <span>{userInfo.tenant_limit ?? "—"}</span>
+          </div>
+          <div className="grid grid-cols-2 gap-2 px-4 py-2 bg-slate-800">
             <span className="font-medium text-slate-400">Terms Accepted</span>
             <span>{userInfo.term_accepted ? "Yes" : "No"}</span>
           </div>

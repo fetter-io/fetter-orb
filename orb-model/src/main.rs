@@ -6,6 +6,7 @@ use axum::{
     Json, Router,
 };
 use serde::Deserialize;
+use serde::Serialize;
 use serde_json::json;
 use serde_json::Value;
 use std::net::SocketAddr;
@@ -296,6 +297,35 @@ pub async fn get_user(
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
 }
 
+#[derive(Serialize)]
+pub struct TenantCountResponse {
+    count: i64,
+}
+
+pub async fn get_tenant_count(
+    State(db): State<DBContext>,
+    Query(params): Query<UserParams>,
+) -> Result<Json<TenantCountResponse>, (StatusCode, String)> {
+    db.tenant_count(params.user_id)
+        .await
+        .map(|count| Json(TenantCountResponse { count }))
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
+}
+
+pub async fn get_tenant_limit(
+    State(db): State<DBContext>,
+    Query(params): Query<UserParams>,
+) -> Result<Json<TenantCountResponse>, (StatusCode, String)> {
+    db.tenant_limit(params.user_id)
+        .await
+        .map(|count| {
+            Json(TenantCountResponse {
+                count: count.into(),
+            })
+        })
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
+}
+
 pub async fn post_delete_user(
     State(db): State<DBContext>,
     Json(body): Json<UserParams>,
@@ -341,7 +371,7 @@ async fn main() {
     let dbx = DBContext::new(pool, None);
 
     // TODO: only if testing
-    dbx.tables_drop().await.expect("failed to drop tables");
+    // dbx.tables_drop().await.expect("failed to drop tables");
 
     dbx.tables_create(true)
         .await
@@ -354,6 +384,8 @@ async fn main() {
 
     let app = Router::new()
         .route("/tenant", get(get_tenant).post(set_tenant))
+        .route("/tenant_count", get(get_tenant_count))
+        .route("/tenant_limit", get(get_tenant_limit))
         .route(
             "/user_tenant_last",
             get(get_user_tenant_last).post(set_user_tenant_last),
@@ -376,7 +408,6 @@ async fn main() {
         .layer(cors)
         .with_state(dbx);
 
-    // let listener = tokio::net::TcpListener::bind("0.0.0.0:3001").await.unwrap();
     let addr = SocketAddr::from(([0, 0, 0, 0], 3001));
     let listener = TcpListener::bind(addr).await.unwrap();
 
