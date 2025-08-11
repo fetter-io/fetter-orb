@@ -165,7 +165,7 @@ impl DBContext {
                 login TEXT NOT NULL,
                 email TEXT,
                 name TEXT,
-                tenant_limit INTEGER,
+                tenant_limit INTEGER NOT NULL,
                 term_accepted BOOLEAN DEFAULT FALSE,
                 created_at TIMESTAMPTZ DEFAULT now()
             );
@@ -178,7 +178,7 @@ impl DBContext {
                 id SERIAL PRIMARY KEY,
                 key TEXT NOT NULL UNIQUE,
                 name TEXT NOT NULL,
-                ping_limit INTEGER,
+                ping_limit INTEGER NOT NULL,
                 created_by INTEGER NOT NULL REFERENCES {user_table}(id)
             );
             "#
@@ -432,6 +432,17 @@ impl DBContext {
             .await?;
 
         Ok(count)
+    }
+
+    // Get the tenant_limit for the supplied user.
+    pub async fn tenant_limit(&self, user_id: i32) -> Result<i32, sqlx::Error> {
+        let user_table = self.get_table("users");
+        let query = format!("SELECT tenant_limit FROM {user_table} WHERE id = $1");
+        let limit: i32 = sqlx::query_scalar(&query)
+            .bind(user_id)
+            .fetch_one(&self.pool)
+            .await?;
+        Ok(limit)
     }
 
     pub async fn tenant_assign_user(

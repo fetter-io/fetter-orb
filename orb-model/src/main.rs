@@ -312,6 +312,16 @@ pub async fn get_tenant_count(
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
 }
 
+pub async fn get_tenant_limit(
+    State(db): State<DBContext>,
+    Query(params): Query<UserParams>,
+) -> Result<Json<TenantCountResponse>, (StatusCode, String)> {
+    db.tenant_limit(params.user_id)
+        .await
+        .map(|count| Json(TenantCountResponse { count: count.into() }))
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
+}
+
 pub async fn post_delete_user(
     State(db): State<DBContext>,
     Json(body): Json<UserParams>,
@@ -371,6 +381,7 @@ async fn main() {
     let app = Router::new()
         .route("/tenant", get(get_tenant).post(set_tenant))
         .route("/tenant_count", get(get_tenant_count))
+        .route("/tenant_limit", get(get_tenant_limit))
         .route(
             "/user_tenant_last",
             get(get_user_tenant_last).post(set_user_tenant_last),
