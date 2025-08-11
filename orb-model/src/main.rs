@@ -9,10 +9,10 @@ use serde::Deserialize;
 use serde::Serialize;
 use serde_json::json;
 use serde_json::Value;
-use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
-use std::net::SocketAddr;
+use sqlx::PgPool;
 use std::env;
+use std::net::SocketAddr;
 use tokio::net::TcpListener;
 use tower_http::cors::{Any, CorsLayer};
 
