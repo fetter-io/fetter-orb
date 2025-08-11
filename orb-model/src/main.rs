@@ -9,7 +9,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use serde_json::json;
 use serde_json::Value;
-use sqlx::postgres::PgPoolOptions;
+// use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 use std::env;
 use std::net::SocketAddr;
@@ -366,26 +366,28 @@ pub async fn set_user_tenant_last(
 }
 
 //------------------------------------------------------------------------------
-pub async fn make_pool() -> PgPool {
-    // max_connections ≈ (num_cores × 2) to (num_cores × 4), but less than 100
-    // Each Postgres connection consumes ~5–10 MB RAM idle, and more under heavy load.
-    if let Some(db_url) = env::var("DATABASE_URL").ok().filter(|s| !s.is_empty()) {
-        PgPoolOptions::new()
-            .max_connections(8)
-            .connect(&db_url)
-            .await
-            .expect("DB connection failed")
-    } else {
-        // Fallback to local containers
-        get_db_pool().await
-    }
-}
+// pub async fn make_pool() -> PgPool {
+//     // max_connections ≈ (num_cores × 2) to (num_cores × 4), but less than 100
+//     // Each Postgres connection consumes ~5–10 MB RAM idle, and more under heavy load.
+//     if let Some(db_url) = env::var("DATABASE_URL").ok().filter(|s| !s.is_empty()) {
+//         println!("attempting to creat pool from URL");
+//         PgPoolOptions::new()
+//             .max_connections(8)
+//             .connect(&db_url)
+//             .await
+//             .expect("DB connection failed")
+//     } else {
+//         // Fallback to local containers
+//         get_db_pool().await
+//     }
+// }
 
 #[tokio::main]
 async fn main() {
     load_env(); // Loads .env, .env.local
 
-    let pool = make_pool().await;
+    // let pool = make_pool().await;
+    let pool = get_db_pool().await;
     let dbx = DBContext::new(pool, None);
 
     // TODO: only if testing
