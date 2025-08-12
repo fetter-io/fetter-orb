@@ -1764,8 +1764,9 @@ impl DBContext {
                 "Ping limit exceeded for tenant: {tenant_key} (limit: {ping_limit}, found: {ping_count})"
             )));
         }
-
         let st_id = self.system_tag_insert_or_get(tenant_id, &st).await?;
+
+        println!("start load scan fs");
         self.monitor_scan_load(&scan_fs, st_id, &ts).await
     }
 

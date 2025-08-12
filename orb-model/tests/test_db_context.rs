@@ -464,13 +464,6 @@ async fn test_tables_create_and_index_check() -> Result<(), sqlx::Error> {
         .bind(index_name)
         .fetch_one(&ctx.pool)
         .await?;
-
-        if exists.0 {
-            println!("`{}` exists", index_name);
-        } else {
-            println!("`{}` is missing", index_name);
-        }
-
         assert!(exists.0, "Index `{}` was not created", index_name);
     }
 
