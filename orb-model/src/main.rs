@@ -365,8 +365,12 @@ pub async fn set_user_tenant_last(
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
 }
 
+async fn get_health() -> &'static str {
+    "OK"
+}
+
 //------------------------------------------------------------------------------
-pub async fn make_pool() -> PgPool {
+pub async fn pick_db_pool() -> PgPool {
     // max_connections ≈ (num_cores × 2) to (num_cores × 4), but less than 100
     // connection consumes ~5–10 MB RAM idle, and more under heavy load.
     if let Some(db_url) = env::var("DATABASE_URL").ok().filter(|s| !s.is_empty()) {
@@ -375,7 +379,7 @@ pub async fn make_pool() -> PgPool {
             .expect("DB url failed")
             .ssl_mode(PgSslMode::Require);
         let pool = PgPoolOptions::new()
-            .max_connections(8)
+            .max_connections(20)
             .acquire_timeout(std::time::Duration::from_secs(120))
             .idle_timeout(None)
             .max_lifetime(None)
@@ -390,11 +394,12 @@ pub async fn make_pool() -> PgPool {
     }
 }
 
+//------------------------------------------------------------------------------
 #[tokio::main]
 async fn main() {
     load_env(); // Loads .env, .env.local
 
-    let pool = make_pool().await;
+    let pool = pick_db_pool().await;
     // let pool = get_db_pool().await;
     let dbx = DBContext::new(pool, None);
 
@@ -411,6 +416,7 @@ async fn main() {
         .allow_headers(Any);
 
     let app = Router::new()
+        .route("/health", get(get_health))
         .route("/tenant", get(get_tenant).post(set_tenant))
         .route("/tenant_count", get(get_tenant_count))
         .route("/tenant_limit", get(get_tenant_limit))
