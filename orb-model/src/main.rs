@@ -5,6 +5,11 @@ use axum::{
     routing::{get, post},
     Json, Router,
 };
+use orb_model::db_context::DBContext;
+use orb_model::db_context::Tenant;
+use orb_model::db_context::User;
+use orb_model::db_via_container::get_db_pool;
+use orb_model::env_loader::load_env;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_json::json;
@@ -13,14 +18,9 @@ use sqlx::postgres::{PgConnectOptions, PgPoolOptions, PgSslMode};
 use sqlx::PgPool;
 use std::env;
 use std::net::SocketAddr;
+use std::str::FromStr;
 use tokio::net::TcpListener;
 use tower_http::cors::{Any, CorsLayer};
-use std::str::FromStr;
-use orb_model::db_context::DBContext;
-use orb_model::db_context::Tenant;
-use orb_model::db_context::User;
-use orb_model::db_via_container::get_db_pool;
-use orb_model::env_loader::load_env;
 
 //------------------------------------------------------------------------------
 // endpoint implementations
@@ -374,12 +374,16 @@ pub async fn make_pool() -> PgPool {
         let options = PgConnectOptions::from_str(&db_url)
             .expect("DB url failed")
             .ssl_mode(PgSslMode::Require);
-        PgPoolOptions::new()
+        let pool = PgPoolOptions::new()
             .max_connections(8)
+            .acquire_timeout(std::time::Duration::from_secs(120))
+            .idle_timeout(None)
+            .max_lifetime(None)
             .connect_with(options)
             .await
-            .expect("DB connection failed")
+            .expect("DB connection failed");
         println!("pool created");
+        pool
     } else {
         // Fallback to local containers
         get_db_pool().await
@@ -395,7 +399,7 @@ async fn main() {
     let dbx = DBContext::new(pool, None);
 
     // TODO: only if testing
-    dbx.tables_drop().await.expect("failed to drop tables");
+    // dbx.tables_drop().await.expect("failed to drop tables");
 
     dbx.tables_create(true)
         .await
