@@ -31,7 +31,7 @@ export default function LandingPage() {
         <h1 className="text-4xl font-bold text-zinc-400 mb-2">Fetter Orb</h1>
 
         <p className="text-lg text-zinc-400">Python Supply-Chain Omniscience</p>
-        <p className="text-xs text-zinc-600 mb-6">v0.2.0</p>
+        <p className="text-xs text-zinc-600 mb-6">v0.3.0 Beta</p>
 
         {status !== "authenticated" && (
           <button onClick={() => signIn("github")} className="button-entry">
