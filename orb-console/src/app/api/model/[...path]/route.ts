@@ -61,22 +61,24 @@ async function forward(
   return new NextResponse(r.body, { status: r.status, headers: outHeaders });
 }
 
-export async function GET(
-  req: Request,
-  { params }: { params: { path?: string[] } },
-) {
+/** Narrow `ctx` without `any` and satisfy Next’s “await params” rule */
+type RouteContext = { params: Promise<{ path?: string[] }> };
+async function extractPath(ctx: unknown): Promise<string[]> {
+  const { params } = ctx as RouteContext; // narrow once
+  const { path = [] } = await params; // must await
+  return path;
+}
+
+export async function GET(req: Request, ctx: unknown) {
   const gate = await ensureSession();
   if (!gate.ok) return gate.res;
-  const { path = [] } = await params;
+  const path = await extractPath(ctx);
   return forward(req, "GET", path, gate.session.user?.login ?? "");
 }
 
-export async function POST(
-  req: Request,
-  { params }: { params: { path?: string[] } },
-) {
+export async function POST(req: Request, ctx: unknown) {
   const gate = await ensureSession();
   if (!gate.ok) return gate.res;
-  const { path = [] } = await params;
+  const path = await extractPath(ctx);
   return forward(req, "POST", path, gate.session.user?.login ?? "");
 }
