@@ -23,8 +23,6 @@ export const authOptions: NextAuthOptions = {
           email?: string;
           name?: string;
         };
-        // can send to backend
-        // console.log(`calling on_login: ${onLoginEndpoint}`);
         const res = await fetch(onLoginEndpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -34,14 +32,10 @@ export const authOptions: NextAuthOptions = {
             name: githubProfile.name,
           }),
         });
-
         const data = await res.json();
-        console.log(`result of on_login fetch: ${data}`);
-
         token.user_id = data.user_id;
         token.login = githubProfile.login;
       }
-
       return token;
     },
     async session({ session, token }) {

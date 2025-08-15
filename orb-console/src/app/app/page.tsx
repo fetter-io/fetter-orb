@@ -13,10 +13,6 @@ export default function AppPage() {
   const router = useRouter();
   const [acceptedTerms, setAcceptedTerms] = useState<boolean | null>(null);
 
-  console.log(
-    `calling AppPage: ${status}, user_id is ${session?.user?.user_id}`,
-  );
-
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/");
@@ -27,7 +23,6 @@ export default function AppPage() {
     if (status !== "authenticated" || !session?.user?.user_id) return;
 
     const checkTerms = async () => {
-      console.log("calling checkTerms");
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_ORB_MODEL}/user_terms?user_id=${session.user.user_id}`,
       );
@@ -40,7 +35,6 @@ export default function AppPage() {
 
   if (status === "loading" || acceptedTerms === null) {
     return <Loading message="Loading..." />;
-    // return <div className="text-white p-4">Loading...</div>;
   }
 
   if (!acceptedTerms) {
