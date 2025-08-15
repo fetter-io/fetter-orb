@@ -7,7 +7,7 @@ export const runtime = "nodejs"; // ensure Node runtime (not Edge)
 export const dynamic = "force-dynamic"; // no caching for a proxy
 
 const PRIVATE_ORB_MODEL = process.env.PRIVATE_ORB_MODEL!;
-// const ORB_INTERNAL_KEY   = process.env.ORB_INTERNAL_KEY!;   // same value Axum expects
+const TENANT_SECRET   = process.env.TENANT_SECRET!;   // same value Axum expects
 
 function joinPath(parts: string[]) {
   return parts.map(encodeURIComponent).join("/");
@@ -28,24 +28,22 @@ async function forward(
   req: NextRequest,
   method: string,
   path: string[],
-  userEmail: string,
+  login: string,
 ) {
   const url = new URL(req.url);
   const qs = url.search; // preserve ?query=...
-
   const backendUrl = `${PRIVATE_ORB_MODEL}/${joinPath(path)}${qs}`;
 
   const headers = new Headers();
+
   const accept = req.headers.get("accept");
   if (accept) headers.set("accept", accept);
+
   const contentType = req.headers.get("content-type");
   if (contentType) headers.set("content-type", contentType);
 
-  // Add hop-secret so Axum's internal_gate allows it
-  //   headers.set('x-orb-internal', ORB_INTERNAL_KEY);
-
-  // (Optional) forward authenticated user identity to Axum
-  headers.set("x-orb-user", userEmail);
+  headers.set("x-orb-internal", TENANT_SECRET);
+  headers.set("x-orb-login", login);
 
   const init: RequestInit = {
     method,
@@ -74,12 +72,7 @@ export async function GET(
 ) {
   const gate = await ensureSession();
   if (!gate.ok) return gate.res;
-  return forward(
-    req,
-    "GET",
-    ctx.params.path,
-    gate.session.user?.email ?? "unknown",
-  );
+  return forward(req, "GET", ctx.params.path, gate.session.user?.login ?? "");
 }
 
 export async function POST(
@@ -88,10 +81,5 @@ export async function POST(
 ) {
   const gate = await ensureSession();
   if (!gate.ok) return gate.res;
-  return forward(
-    req,
-    "POST",
-    ctx.params.path,
-    gate.session.user?.email ?? "unknown",
-  );
+  return forward(req, "POST", ctx.params.path, gate.session.user?.login ?? "");
 }
