@@ -9,8 +9,13 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
     }),
   ],
+
   callbacks: {
     async jwt({ token, profile, account }) {
+      const onLoginEndpoint = `${process.env.PRIVATE_ORB_MODEL}/on_login`;
+      // using this causes the auth to get stuck
+      // const onLoginEndpoint = `${process.env.NEXT_PUBLIC_ORB_MODEL}/on_login`;
+
       if (account && profile && account.provider === "github") {
         const githubProfile = profile as {
           login: string;
@@ -18,25 +23,19 @@ export const authOptions: NextAuthOptions = {
           email?: string;
           name?: string;
         };
-        // Send to backend once at login to get user_id
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_ORB_MODEL}/on_login`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              login: githubProfile.login,
-              email: githubProfile.email,
-              name: githubProfile.name,
-            }),
-          },
-        );
-
+        const res = await fetch(onLoginEndpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            login: githubProfile.login,
+            email: githubProfile.email,
+            name: githubProfile.name,
+          }),
+        });
         const data = await res.json();
         token.user_id = data.user_id;
         token.login = githubProfile.login;
       }
-
       return token;
     },
     async session({ session, token }) {

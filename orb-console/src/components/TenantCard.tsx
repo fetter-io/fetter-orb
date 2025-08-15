@@ -59,7 +59,7 @@ export function TenantCard({ tenant, selected, scrollIntoViewNow }: Props) {
         </h2>
 
         <code className="text-zinc-400 text-xs break-all">
-          fetter monitor-scan --url http://localhost:3001/monitor_scan --tenant{" "}
+          fetter monitor-scan --url https://fetter.io/monitor_scan --tenant{" "}
           {tenant.key}
         </code>
       </div>

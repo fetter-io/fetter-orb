@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Dashboard from "@/components/Dashboard";
 import { useEffect } from "react";
 import Terms from "@/components/Terms";
+import Loading from "@/components/Loading";
 
 export default function AppPage() {
   const { data: session, status } = useSession();
@@ -33,7 +34,7 @@ export default function AppPage() {
   }, [status, session?.user?.user_id]);
 
   if (status === "loading" || acceptedTerms === null) {
-    return <div className="text-white p-4">Loading...</div>;
+    return <Loading message="Loading..." />;
   }
 
   if (!acceptedTerms) {
