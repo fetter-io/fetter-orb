@@ -6,7 +6,7 @@ import { authOptions } from "@/pages/api/auth/[...nextauth]";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const PRIVATE_ORB_MODEL = process.env.PRIVATE_ORB_MODEL!.replace(/\/+$/, "");
+const PRIVATE_ORB_MODEL = process.env.PRIVATE_ORB_MODEL!;
 const TENANT_SECRET = process.env.TENANT_SECRET!;
 
 function joinPath(parts: string[] = []) {
