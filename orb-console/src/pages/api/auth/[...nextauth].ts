@@ -11,6 +11,8 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, profile, account }) {
+      console.log("jwt callback");
+
       if (account && profile && account.provider === "github") {
         const githubProfile = profile as {
           login: string;
