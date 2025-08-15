@@ -78,10 +78,5 @@ export async function POST(
   const gate = await ensureSession();
   if (!gate.ok) return gate.res;
   const { path = [] } = await params;
-  return forward(
-    req,
-    "POST",
-    path,
-    gate.session.user?.login ?? "",
-  );
+  return forward(req, "POST", path, gate.session.user?.login ?? "");
 }
