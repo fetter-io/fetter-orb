@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Dashboard from "@/components/Dashboard";
 import { useEffect } from "react";
@@ -22,6 +22,7 @@ export default function AppPage() {
     if (status !== "authenticated" || !session?.user?.user_id) return;
 
     const checkTerms = async () => {
+      console.log("calling checkTerms");
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_ORB_MODEL}/user_terms?user_id=${session.user.user_id}`,
       );
@@ -33,6 +34,8 @@ export default function AppPage() {
   }, [status, session?.user?.user_id]);
 
   if (status === "loading" || acceptedTerms === null) {
+    console.log(`status: ${status}`);
+    // signOut({ callbackUrl: "/" });
     return <div className="text-white p-4">Loading...</div>;
   }
 
