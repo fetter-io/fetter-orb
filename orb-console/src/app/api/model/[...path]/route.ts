@@ -73,12 +73,20 @@ export async function GET(req: Request, ctx: unknown) {
   const gate = await ensureSession();
   if (!gate.ok) return gate.res;
   const path = await extractPath(ctx);
-  return forward(req, "GET", path, gate.session.user?.login ?? "");
+  const login = gate.session.user?.login;
+  if (!login) {
+    return NextResponse.json({ error: "missing login" }, { status: 401 });
+  }
+  return forward(req, "GET", path, login);
 }
 
 export async function POST(req: Request, ctx: unknown) {
   const gate = await ensureSession();
   if (!gate.ok) return gate.res;
   const path = await extractPath(ctx);
-  return forward(req, "POST", path, gate.session.user?.login ?? "");
+  const login = gate.session.user?.login;
+  if (!login) {
+    return NextResponse.json({ error: "missing login" }, { status: 401 });
+  }
+  return forward(req, "POST", path, login);
 }
