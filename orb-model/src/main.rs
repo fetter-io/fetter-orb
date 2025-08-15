@@ -474,7 +474,6 @@ async fn main() {
         .route("/package_counts", get(get_package_counts))
         .route("/audit", get(get_audit))
         .route("/validate", get(get_validate))
-        .route("/monitor_scan", post(post_monitor_scan))
         .route("/dep_manifest", post(post_dep_manifest))
         .route("/user_delete", post(post_delete_user))
         .with_state(app_state.clone())
@@ -483,8 +482,8 @@ async fn main() {
             require_internal_header,
         ));
 
-    // Unprotected routes
     let unprotected_routes = Router::new()
+        .route("/monitor_scan", post(post_monitor_scan)) // TODO: can move to protected
         .route("/health", get(get_health))
         .route("/on_login", post(post_on_login));
 
