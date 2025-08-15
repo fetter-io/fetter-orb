@@ -30,12 +30,9 @@ async function forward(
   path: string[],
   login: string,
 ) {
-  console.log("calling forward");
   const url = new URL(req.url);
   const qs = url.search; // preserve ?query=...
   const backendUrl = `${PRIVATE_ORB_MODEL}/${joinPath(path)}${qs}`;
-  console.log(`backend url: {backendUrl}`);
-
   const headers = new Headers();
 
   const accept = req.headers.get("accept");

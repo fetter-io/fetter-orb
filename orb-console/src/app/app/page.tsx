@@ -12,6 +12,10 @@ export default function AppPage() {
   const router = useRouter();
   const [acceptedTerms, setAcceptedTerms] = useState<boolean | null>(null);
 
+  console.log(
+    `calling AppPage: ${status}, user_id is ${session?.user?.user_id}`,
+  );
+
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/");
