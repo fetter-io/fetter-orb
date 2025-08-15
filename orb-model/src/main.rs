@@ -1,10 +1,17 @@
 use axum::{
+    body::Body,
+    extract::FromRef,
     extract::Query,
     extract::State,
+    http::Request,
     http::StatusCode,
+    middleware::from_fn_with_state,
+    middleware::Next,
+    response::Response,
     routing::{get, post},
     Json, Router,
 };
+
 use orb_model::db_context::DBContext;
 use orb_model::db_context::Tenant;
 use orb_model::db_context::User;
@@ -19,6 +26,7 @@ use sqlx::PgPool;
 use std::env;
 use std::net::SocketAddr;
 use std::str::FromStr;
+use std::sync::Arc;
 use tokio::net::TcpListener;
 use tower_http::cors::{Any, CorsLayer};
 
@@ -26,7 +34,7 @@ use tower_http::cors::{Any, CorsLayer};
 // endpoint implementations
 
 pub async fn post_monitor_scan(
-    State(db): State<DBContext>,
+    State(db): State<Arc<DBContext>>,
     body: String,
 ) -> Result<StatusCode, (StatusCode, String)> {
     match db.monitor_scan_load_from_json(&body).await {
@@ -36,7 +44,7 @@ pub async fn post_monitor_scan(
 }
 
 pub async fn post_dep_manifest(
-    State(db): State<DBContext>,
+    State(db): State<Arc<DBContext>>,
     body: String,
 ) -> Result<StatusCode, (StatusCode, String)> {
     match db.dep_manifest_load_from_json(&body).await {
@@ -53,7 +61,7 @@ pub struct TenantQueryParams {
 }
 
 pub async fn get_tenant(
-    State(db): State<DBContext>,
+    State(db): State<Arc<DBContext>>,
     Query(params): Query<TenantQueryParams>,
 ) -> Result<Json<Vec<(i32, Tenant)>>, (StatusCode, String)> {
     match params.user_id {
@@ -78,7 +86,7 @@ pub struct DepManifestParams {
 }
 
 pub async fn get_dep_manifest(
-    State(db): State<DBContext>,
+    State(db): State<Arc<DBContext>>,
     Query(params): Query<DepManifestParams>,
 ) -> Result<Json<Value>, (StatusCode, String)> {
     // println!("{:?}", params);
@@ -98,7 +106,7 @@ pub async fn get_dep_manifest(
 }
 
 pub async fn get_validate(
-    State(db): State<DBContext>,
+    State(db): State<Arc<DBContext>>,
     Query(params): Query<DepManifestParams>,
 ) -> Result<Json<Value>, (StatusCode, String)> {
     match params.tenant_id {
@@ -126,7 +134,7 @@ pub struct PackageVersionsParams {
 }
 
 pub async fn get_package_versions(
-    State(db): State<DBContext>,
+    State(db): State<Arc<DBContext>>,
     Query(params): Query<PackageVersionsParams>,
 ) -> Result<Json<Value>, (StatusCode, String)> {
     // println!("{:?}", params);
@@ -150,7 +158,7 @@ pub struct PackageCountsParams {
 }
 
 pub async fn get_package_counts(
-    State(db): State<DBContext>,
+    State(db): State<Arc<DBContext>>,
     Query(params): Query<PackageCountsParams>,
 ) -> Result<Json<Value>, (StatusCode, String)> {
     match params.tenant_id {
@@ -171,7 +179,7 @@ pub struct SystemTagPingsParams {
 }
 
 pub async fn get_system_tag_pings(
-    State(db): State<DBContext>,
+    State(db): State<Arc<DBContext>>,
     Query(params): Query<SystemTagPingsParams>,
 ) -> Result<Json<Value>, (StatusCode, String)> {
     match params.tenant_id {
@@ -193,7 +201,7 @@ pub struct AuditParams {
 }
 
 pub async fn get_audit(
-    State(db): State<DBContext>,
+    State(db): State<Arc<DBContext>>,
     Query(params): Query<AuditParams>,
 ) -> Result<Json<Value>, (StatusCode, String)> {
     match params.tenant_id {
@@ -217,7 +225,7 @@ pub struct OnLoginParams {
 }
 
 pub async fn post_on_login(
-    State(db): State<DBContext>,
+    State(db): State<Arc<DBContext>>,
     Json(payload): Json<OnLoginParams>,
 ) -> Result<Json<serde_json::Value>, (StatusCode, String)> {
     let user_id = db
@@ -237,7 +245,7 @@ pub struct TenantSetParams {
 
 // This is used to create a new Tenant, given the tenant's name and the user_id. NOTE: this does not automatically set thew tenant as the tenant last.
 pub async fn set_tenant(
-    State(db): State<DBContext>,
+    State(db): State<Arc<DBContext>>,
     Json(input): Json<TenantSetParams>,
 ) -> Result<Json<i32>, (StatusCode, String)> {
     let tenant_key = db
@@ -271,7 +279,7 @@ pub struct UserParams {
 }
 
 pub async fn get_user_term_accept(
-    State(db): State<DBContext>,
+    State(db): State<Arc<DBContext>>,
     Query(params): Query<UserParams>,
 ) -> Result<Json<Value>, (StatusCode, String)> {
     db.user_term_accepted(params.user_id)
@@ -281,7 +289,7 @@ pub async fn get_user_term_accept(
 }
 
 pub async fn set_user_term_accept(
-    State(db): State<DBContext>,
+    State(db): State<Arc<DBContext>>,
     Json(body): Json<UserParams>,
 ) -> Result<Json<Value>, (StatusCode, String)> {
     db.user_set_term_accepted(body.user_id)
@@ -291,7 +299,7 @@ pub async fn set_user_term_accept(
 }
 
 pub async fn get_user(
-    State(db): State<DBContext>,
+    State(db): State<Arc<DBContext>>,
     Query(params): Query<UserParams>,
 ) -> Result<Json<User>, (StatusCode, String)> {
     db.user_from_user_id(params.user_id)
@@ -306,7 +314,7 @@ pub struct TenantCountResponse {
 }
 
 pub async fn get_tenant_count(
-    State(db): State<DBContext>,
+    State(db): State<Arc<DBContext>>,
     Query(params): Query<UserParams>,
 ) -> Result<Json<TenantCountResponse>, (StatusCode, String)> {
     db.tenant_count(params.user_id)
@@ -316,7 +324,7 @@ pub async fn get_tenant_count(
 }
 
 pub async fn get_tenant_limit(
-    State(db): State<DBContext>,
+    State(db): State<Arc<DBContext>>,
     Query(params): Query<UserParams>,
 ) -> Result<Json<TenantCountResponse>, (StatusCode, String)> {
     db.tenant_limit(params.user_id)
@@ -330,7 +338,7 @@ pub async fn get_tenant_limit(
 }
 
 pub async fn post_delete_user(
-    State(db): State<DBContext>,
+    State(db): State<Arc<DBContext>>,
     Json(body): Json<UserParams>,
 ) -> Result<Json<Value>, (StatusCode, String)> {
     db.user_delete(body.user_id)
@@ -340,7 +348,7 @@ pub async fn post_delete_user(
 }
 
 pub async fn get_user_tenant_last(
-    State(db): State<DBContext>,
+    State(db): State<Arc<DBContext>>,
     Query(params): Query<UserParams>,
 ) -> Result<Json<Value>, (StatusCode, String)> {
     db.user_tenant_last(params.user_id)
@@ -356,7 +364,7 @@ pub struct UserTenantParams {
 }
 
 pub async fn set_user_tenant_last(
-    State(db): State<DBContext>,
+    State(db): State<Arc<DBContext>>,
     Json(body): Json<UserTenantParams>,
 ) -> Result<Json<Value>, (StatusCode, String)> {
     db.user_set_tenant_last(body.user_id, body.tenant_id)
@@ -394,29 +402,61 @@ pub async fn pick_db_pool() -> PgPool {
     }
 }
 
+#[derive(Clone)]
+struct AppState {
+    db: Arc<DBContext>,
+    tenant_secret: Arc<String>,
+}
+
+impl FromRef<AppState> for Arc<DBContext> {
+    fn from_ref(app_state: &AppState) -> Self {
+        app_state.db.clone() // just clones the Arc, cheap
+    }
+}
+
+impl FromRef<AppState> for Arc<String> {
+    fn from_ref(app_state: &AppState) -> Self {
+        app_state.tenant_secret.clone()
+    }
+}
+
+pub async fn require_internal_header(
+    State(secret): State<Arc<String>>,
+    req: Request<Body>,
+    next: Next,
+) -> Result<Response, StatusCode> {
+    if let Some(value) = req.headers().get("x-orb-internal") {
+        if value == secret.as_str() {
+            return Ok(next.run(req).await);
+        }
+    }
+    Err(StatusCode::UNAUTHORIZED)
+}
+
 //------------------------------------------------------------------------------
 #[tokio::main]
 async fn main() {
     load_env(); // Loads .env, .env.local
-
     let pool = pick_db_pool().await;
-    // let pool = get_db_pool().await;
     let dbx = DBContext::new(pool, None);
 
     // TODO: only if testing
     // dbx.tables_drop().await.expect("failed to drop tables");
-
     dbx.tables_create(true)
         .await
         .expect("failed to create tables");
+
+    let app_state = AppState {
+        db: Arc::new(dbx),
+        tenant_secret: Arc::new(env::var("TENANT_SECRET").unwrap_or_default()),
+    };
 
     let cors = CorsLayer::new()
         .allow_origin(Any) // TODO: tighten later
         .allow_methods(Any)
         .allow_headers(Any);
 
-    let app = Router::new()
-        .route("/health", get(get_health))
+    let protected_routes = Router::new()
         .route("/tenant", get(get_tenant).post(set_tenant))
         .route("/tenant_count", get(get_tenant_count))
         .route("/tenant_limit", get(get_tenant_limit))
@@ -434,13 +474,24 @@ async fn main() {
         .route("/package_counts", get(get_package_counts))
         .route("/audit", get(get_audit))
         .route("/validate", get(get_validate))
-        // post requests
-        .route("/on_login", post(post_on_login))
         .route("/monitor_scan", post(post_monitor_scan))
         .route("/dep_manifest", post(post_dep_manifest))
         .route("/user_delete", post(post_delete_user))
+        .with_state(app_state.clone())
+        .layer(from_fn_with_state(
+            app_state.clone(),
+            require_internal_header,
+        ));
+
+    // Unprotected routes
+    let unprotected_routes = Router::new()
+        .route("/health", get(get_health))
+        .route("/on_login", post(post_on_login));
+
+    let app = unprotected_routes
+        .merge(protected_routes)
         .layer(cors)
-        .with_state(dbx);
+        .with_state(app_state);
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 3001));
     let listener = TcpListener::bind(addr).await.unwrap();
