@@ -24,7 +24,7 @@ export const authOptions: NextAuthOptions = {
           name?: string;
         };
         // can send to backend
-        console.log(`calling on_login: ${onLoginEndpoint}`);
+        // console.log(`calling on_login: ${onLoginEndpoint}`);
         const res = await fetch(onLoginEndpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
