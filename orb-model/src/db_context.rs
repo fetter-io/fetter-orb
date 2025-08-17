@@ -1741,6 +1741,7 @@ impl DBContext {
     }
 
     pub async fn monitor_scan_load_from_json(&self, payload: &str) -> Result<(), sqlx::Error> {
+        println!("monitor_scan_load_from_json: {}", payload);
         let (tenant_key, st, scan_fs, ts): (String, SystemTag, Option<ScanFS>, Duration) =
             serde_json::from_str(payload).expect("Invalid JSON payload");
 
