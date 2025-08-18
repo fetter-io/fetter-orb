@@ -421,11 +421,11 @@ impl FromRef<AppState> for Arc<String> {
 }
 
 pub async fn require_internal_header(
-    State(secret): State<Arc<String>>,
+    State(_secret): State<Arc<String>>,
     req: Request<Body>,
     next: Next,
 ) -> Result<Response, StatusCode> {
-    return Ok(next.run(req).await);
+    Ok(next.run(req).await)
     // TEMP: do not valduate header for now
     // if let Some(value) = req.headers().get("x-orb-internal") {
     //     if value == secret.as_str() {
