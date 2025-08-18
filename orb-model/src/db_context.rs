@@ -1741,7 +1741,8 @@ impl DBContext {
     }
 
     pub async fn monitor_scan_load_from_json(&self, payload: &str) -> Result<(), sqlx::Error> {
-        println!("monitor_scan_load_from_json: {}", payload);
+        // println!("monitor_scan_load_from_json: {}", payload);
+        // TODO: return more rebust error message on malformed json
         let (tenant_key, st, scan_fs, ts): (String, SystemTag, Option<ScanFS>, Duration) =
             serde_json::from_str(payload).expect("Invalid JSON payload");
 
