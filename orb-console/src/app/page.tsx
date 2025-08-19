@@ -50,7 +50,7 @@ export default function LandingPage() {
       <LandingFeature
         title="Track All Python Packages"
         description="See every installed package across many machines or an entire organization."
-        imageSrc="/screenshot.png"
+        imageSrc="/screen-package.png"
         reverse={false}
       />
 
@@ -78,7 +78,7 @@ export default function LandingPage() {
       <LandingFeature
         title="Monitor Vulnerabilities"
         description="See details on vulnerable packages in real time using the Open Source Vulnerability database."
-        imageSrc="/screenshot.png"
+        imageSrc="/screen-vulns.png"
         reverse={false}
       />
 
