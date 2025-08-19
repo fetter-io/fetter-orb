@@ -14,7 +14,7 @@ export function SystemTagCard({
   return (
     <div
       id={`system-tag-${tag.id}`}
-      className={`py-2 px-4 border rounded-lg shadow-sm text-sm w-full text-gray-300 transition-colors duration-1000
+      className={`py-2 px-2 border rounded-lg shadow-sm text-sm w-full text-gray-300 transition-colors duration-1000
         ${
           highlight
             ? "border-blue-500 bg-gray-800"
@@ -27,7 +27,7 @@ export function SystemTagCard({
         <span>{tag.username}</span>
       </p>
 
-      <div className="grid grid-cols-5 gap-4 mb-2">
+      <div className="grid grid-cols-5 gap-2 mb-2 break-all">
         <div>
           <span className="text-gray-500">Host: </span>
           <span>{tag.hostname}</span>

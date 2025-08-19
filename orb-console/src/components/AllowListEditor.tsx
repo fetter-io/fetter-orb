@@ -43,8 +43,8 @@ export function AllowListEditor({
   };
 
   return (
-    <div className="p-4 border border-slate-600 rounded-lg bg-gray-800 shadow-md text-sm text-gray-200 space-y-2">
-      <h3 className="text-white font-semibold text-base">Allow List</h3>
+    <div className="p-2 border border-slate-600 rounded-lg bg-gray-800 shadow-md text-sm text-gray-200 space-y-2">
+      <h3 className="text-white font-semibold text-base pl-1">Allow List</h3>
 
       {!isEditing ? (
         <>

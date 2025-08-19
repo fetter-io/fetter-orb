@@ -18,14 +18,14 @@ export function PackageVersionsCard({
   return (
     <div
       id={`package-${pkg.key}`}
-      className={`p-4 border rounded-lg shadow-md text-sm w-full transition-colors duration-1000
+      className={`p-2 border rounded-lg shadow-md text-sm w-full transition-colors duration-1000
       ${
         highlight
           ? "border-blue-500 bg-gray-800"
           : "border-slate-600 bg-gray-800"
       }`}
     >
-      <h3 className="font-bold text-white mb-2">{pkg.name}</h3>
+      <h3 className="font-bold text-white ml-1 mb-2">{pkg.name}</h3>
       <div className="space-y-1">
         {pkg.data.map((entry, index) => {
           const isVulnerable =
@@ -69,7 +69,7 @@ export function PackageVersionsCard({
               <div className="col-span-1">
                 {entry.system_tag_username && entry.system_tag_hostname && (
                   <button
-                    className="hover:text-gray-300 hover:underline ml-auto cursor-pointer"
+                    className="break-all hover:text-gray-300 hover:underline ml-auto cursor-pointer"
                     onClick={() => onTagClick?.(entry.system_tag_id)}
                   >
                     {entry.system_tag_username}: {entry.system_tag_hostname}

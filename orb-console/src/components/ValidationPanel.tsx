@@ -32,8 +32,8 @@ export function ValidationPanel({
   ];
 
   return (
-    <div className="py-2 px-4 border border-slate-600 rounded-lg shadow-sm text-sm w-full text-gray-300 bg-gray-800">
-      <h3 className="text-white font-semibold text-base mb-2">Validation</h3>
+    <div className="py-2 px-2 border border-slate-600 rounded-lg shadow-sm text-sm w-full text-gray-300 bg-gray-800">
+      <h3 className="text-white font-semibold text-base mb-2 ml-1">Validation</h3>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {sections.map(({ label, map }) => (
@@ -59,7 +59,7 @@ export function ValidationPanel({
                     return (
                       <tr
                         key={`${label}-${id}`}
-                        className="border-b border-slate-800 bg-gray-900"
+                        className="border-b border-slate-800 bg-gray-900 break-all"
                       >
                         <td className="px-2 py-1 truncate">
                           {pkg?.name ?? "Unknown"}

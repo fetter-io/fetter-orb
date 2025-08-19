@@ -18,14 +18,14 @@ export function VulnCard({
   return (
     <div
       id={`vuln-pkg-${package_id}`}
-      className={`p-4 border rounded-lg bg-gray-900 shadow-md text-sm text-gray-200 space-y-2 transition-colors duration-1000
+      className={`p-2 border rounded-lg bg-gray-900 shadow-md text-sm text-gray-200 space-y-2 transition-colors duration-1000
         ${
           highlight
             ? "border-blue-500 bg-gray-700"
             : "border-slate-600 bg-gray-800"
         }`}
     >
-      <h3 className="text-white font-semibold text-base flex items-center gap-2">
+      <h3 className="text-white font-semibold text-base flex items-center gap-2 pl-1">
         {pkg.name}
         <span className="text-gray-400 text-sm">{pkg.version}</span>
         <button
