@@ -378,21 +378,22 @@ export default function Dashboard() {
       {/* Frosted header with sticky tab selector */}
       <header className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur border-b border-slate-700 px-6 py-4">
         <div className="max-w-4xl mx-auto flex flex-col gap-2">
-          <div className="flex gap-0 items-center mb-0 items-center justify-center">
-            <div className="flex w-16 h-16 ">
+          <div className="relative flex items-center justify-between w-full my-2">
+            <div className="flex-shrink-0">
+              {tenantsState.data && (
+                <TenantSelector
+                  tenants={tenantsState.data}
+                  selectedId={selectedTenantId}
+                  onChange={setSelectedTenantId}
+                />
+              )}
+            </div>
+            <div className="absolute left-1/2 transform -translate-x-1/2 flex w-16 h-16">
               <Weave fill={colors.slate[600]} className="w-full h-full" />
             </div>
-          </div>
-
-          <div className="flex justify-between items-center">
-            {tenantsState.data && (
-              <TenantSelector
-                tenants={tenantsState.data}
-                selectedId={selectedTenantId}
-                onChange={setSelectedTenantId}
-              />
-            )}
-            <UserMenuDropdown />
+            <div className="flex-shrink-0">
+              <UserMenuDropdown />
+            </div>
           </div>
 
           <TabSelector activeTab={activeTab} onTabChange={setActiveTab} />
