@@ -24,7 +24,7 @@ export function UserMenuDropdown() {
 
   if (status !== "authenticated" || !session?.user) return null;
 
-  const { login, name, email, image } = session.user;
+  const { login, name, image } = session.user;
 
   return (
     <div

@@ -15,13 +15,12 @@ export function PackageVersionsCard({
   highlight,
   vulnerablePackageIds,
 }: PackageVersionsCardProps) {
-  const vulnCount =
-    vulnerablePackageIds
-      ? pkg.data.reduce(
-          (acc, e) => acc + (vulnerablePackageIds.has(e.package_id) ? 1 : 0),
-          0,
-        )
-      : 0;
+  const vulnCount = vulnerablePackageIds
+    ? pkg.data.reduce(
+        (acc, e) => acc + (vulnerablePackageIds.has(e.package_id) ? 1 : 0),
+        0,
+      )
+    : 0;
   const hasAnyVuln = vulnCount > 0;
 
   return (
