@@ -64,7 +64,7 @@ export default function LandingPage() {
       <LandingFeature
         title="A Secure, Open-Source Agent"
         description="End-point scans are published with fetter, an efficient client written in Rust."
-        imageSrc="/screenshot.png"
+        imageSrc="/screen-sys.png"
         reverse={true}
       />
 
@@ -92,7 +92,7 @@ export default function LandingPage() {
       <LandingFeature
         title="Validate Against a Global Allow List"
         description="Define approved packages and identify outliers."
-        imageSrc="/screenshot.png"
+        imageSrc="/screen-allow.png"
         reverse={true}
       />
 
