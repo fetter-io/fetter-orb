@@ -50,13 +50,10 @@ export function UserMenuDropdown() {
           <div className="px-4 py-2 text-xs text-slate-400 border-b border-slate-700">
             <div>Signed in as</div>
             {name && (
-              <div className="text-slate-200 font-medium truncate">{name}</div>
+              <div className="text-slate-300 font-medium truncate">{name}</div>
             )}
             {login && (
               <div className="text-slate-300 font-medium truncate">{login}</div>
-            )}
-            {email && (
-              <div className="text-slate-200 font-medium truncate">{email}</div>
             )}
           </div>
           <button

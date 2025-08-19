@@ -1,3 +1,5 @@
+import { Spinner } from "@/components/Spinner";
+
 type DashboardStatusProps = {
   label: string;
   state: {
@@ -17,19 +19,19 @@ export function DashboardStatus({ label, state }: DashboardStatusProps) {
         <button
           onClick={refresh}
           disabled={loading}
-          className={`text-sm rounded-full px-2 py-1 border border-slate-600 transition-colors duration-200
-    text-zinc-400 hover:text-zinc-300
-    ${
-      loading
-        ? "bg-gray-700 animate-pulse cursor-not-allowed opacity-90"
-        : "bg-gray-800 hover:bg-gray-600"
-    }`}
+          className={`flex items-center justify-center rounded-full p-2 border border-slate-600 hover:border-slate-500 transition-colors duration-200
+            text-zinc-400 hover:text-zinc-300
+            ${
+              loading
+                ? "bg-slate-800 cursor-not-allowed"
+                : "bg-gray-900 hover:bg-slate-800"
+            }`}
           aria-label="Refresh"
           title="Refresh"
         >
-          <span className={`inline-block ${loading ? "text-gray-300" : ""}`}>
-            ↻
-          </span>
+          <Spinner
+            className={`h-4 w-4 ${loading ? "animate-spin text-gray-200" : ""}`}
+          />
         </button>
 
         <div className="text-xs text-gray-500">
