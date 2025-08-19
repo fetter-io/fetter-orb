@@ -1,6 +1,6 @@
 export default function PrivacyContent() {
   return (
-    <div className="prose prose-invert bg-slate-900 max-h-140 overflow-y-auto px-4">
+    <div className="prose-sm prose-invert bg-slate-900 max-h-140 rounded-lg overflow-y-auto p-4">
       <p>Last updated: August 01, 2025</p>
       <p>
         This Privacy Policy describes Our policies and procedures on the

@@ -33,7 +33,9 @@ export function ValidationPanel({
 
   return (
     <div className="py-2 px-2 border border-slate-600 rounded-lg shadow-sm text-sm w-full text-gray-300 bg-gray-800">
-      <h3 className="text-white font-semibold text-base mb-2 ml-1">Validation</h3>
+      <h3 className="text-white font-semibold text-base mb-2 ml-1">
+        Validation
+      </h3>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {sections.map(({ label, map }) => (

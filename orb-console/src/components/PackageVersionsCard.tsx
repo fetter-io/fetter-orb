@@ -7,7 +7,7 @@ type PackageVersionsCardProps = {
   highlight?: boolean;
   vulnerablePackageIds?: Set<number>;
 };
-
+// ...
 export function PackageVersionsCard({
   pkg,
   onTagClick,
@@ -15,70 +15,96 @@ export function PackageVersionsCard({
   highlight,
   vulnerablePackageIds,
 }: PackageVersionsCardProps) {
+  const vulnCount =
+    vulnerablePackageIds
+      ? pkg.data.reduce(
+          (acc, e) => acc + (vulnerablePackageIds.has(e.package_id) ? 1 : 0),
+          0,
+        )
+      : 0;
+  const hasAnyVuln = vulnCount > 0;
+
   return (
     <div
       id={`package-${pkg.key}`}
       className={`p-2 border rounded-lg shadow-md text-sm w-full transition-colors duration-1000
-      ${
-        highlight
-          ? "border-blue-500 bg-gray-800"
-          : "border-slate-600 bg-gray-800"
-      }`}
+      ${highlight ? "border-blue-500 bg-gray-800" : "border-slate-600 bg-gray-800"}`}
     >
-      <h3 className="font-bold text-white ml-1 mb-2">{pkg.name}</h3>
-      <div className="space-y-1">
-        {pkg.data.map((entry, index) => {
-          const isVulnerable =
-            vulnerablePackageIds?.has(entry.package_id) ?? false;
+      <h3 className="font-bold text-white ml-1 mb-2 flex items-center gap-2">
+        <span className="truncate">{pkg.name}</span>
+        {hasAnyVuln && (
+          <span
+            title={`${vulnCount} vulnerable ${vulnCount === 1 ? "version" : "versions"}`}
+            aria-label="Vulnerable versions present"
+            className="inline-flex items-center text-yellow-400"
+          >
+            ⚠️
+          </span>
+        )}
+      </h3>
+      <div
+        className="max-h-56 overflow-y-auto border-t border-slate-700"
+        aria-label={`${pkg.name} versions`}
+      >
+        <table className="w-full text-xs text-left text-gray-400 table-fixed">
+          <thead className="sticky top-0 bg-gray-950 text-gray-500 border-b border-slate-700">
+            <tr>
+              <th className="px-2 py-1 w-1/6">Version</th>
+              <th className="px-2 py-1 w-1/6">Links</th>
+              <th className="px-2 py-1 w-2/6">Path</th>
+              <th className="px-2 py-1 w-2/6">System</th>
+            </tr>
+          </thead>
+          <tbody>
+            {pkg.data.map((entry, index) => {
+              const isVulnerable =
+                vulnerablePackageIds?.has(entry.package_id) ?? false;
 
-          return (
-            <div
-              key={index}
-              className="grid grid-cols-6 gap-2 p-2 bg-gray-900 rounded-md text-gray-400 items-center"
-            >
-              <div>
-                <span className="inline-flex items-center gap-1">
-                  {entry.version}
-                </span>
-              </div>
-              <div>
-                <span className="inline-flex items-center gap-x-2">
-                  <a
-                    href={`https://pypi.org/project/${pkg.key}/${entry.version}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:underline"
-                  >
-                    PyPI
-                  </a>
-
-                  {isVulnerable && (
-                    <button
-                      title="Vulnerability details"
-                      className="border-b border-transparent hover:border-yellow-400 cursor-pointer"
-                      onClick={() => onVulnClick?.(entry.package_id)}
-                    >
-                      ⚠️
-                    </button>
-                  )}
-                </span>
-              </div>
-              <div className="col-span-3">
-                <span className="break-all">{entry.path}</span>
-              </div>
-              <div className="col-span-1">
-                {entry.system_tag_username && entry.system_tag_hostname && (
-                  <button
-                    className="break-all hover:text-gray-300 hover:underline ml-auto cursor-pointer"
-                    onClick={() => onTagClick?.(entry.system_tag_id)}
-                  >
-                    {entry.system_tag_username}: {entry.system_tag_hostname}
-                  </button>
-                )}
-              </div>
-            </div>
-          );
-        })}
+              return (
+                <tr
+                  key={index}
+                  className="border-b border-slate-800 bg-gray-900"
+                >
+                  <td className="px-2 py-1 whitespace-nowrap truncate">
+                    {entry.version}
+                  </td>
+                  <td className="px-2 py-1 truncate">
+                    <span className="inline-flex items-center gap-x-2">
+                      <a
+                        href={`https://pypi.org/project/${pkg.key}/${entry.version}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:underline"
+                      >
+                        PyPI
+                      </a>
+                      {isVulnerable && (
+                        <button
+                          title="Vulnerability details"
+                          className="border-b border-transparent hover:border-yellow-400 cursor-pointer"
+                          onClick={() => onVulnClick?.(entry.package_id)}
+                        >
+                          ⚠️
+                        </button>
+                      )}
+                    </span>
+                  </td>
+                  <td className="px-2 py-1 break-all">{entry.path}</td>
+                  <td className="px-2 py-1 break-all">
+                    {entry.system_tag_username && entry.system_tag_hostname && (
+                      <button
+                        className="hover:text-gray-300 hover:underline cursor-pointer"
+                        onClick={() => onTagClick?.(entry.system_tag_id)}
+                      >
+                        {entry.system_tag_username}: {entry.system_tag_hostname}
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     </div>
   );

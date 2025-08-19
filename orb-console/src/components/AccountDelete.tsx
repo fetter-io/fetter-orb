@@ -45,7 +45,7 @@ export function AccountDelete() {
 
   return (
     <>
-      <div className="space-y-2 border border-slate-600 rounded-lg bg-gray-800 p-4">
+      <div className="space-y-2 border border-slate-600 rounded bg-gray-800 p-4">
         <button
           onClick={() => setShowModal(true)}
           disabled={loading}

@@ -48,8 +48,8 @@ export default function Terms({
   };
 
   const Content = (
-    <div className="max-w-2xl bg-slate-800 rounded p-6 shadow-lg">
-      <h1 className="text-2xl font-bold mb-4">Terms and Conditions</h1>
+    <div className="max-w-xl bg-slate-800 rounded p-4 shadow-lg">
+      <h1 className="text-xl font-bold mb-2 ml-1">Terms and Conditions</h1>
       <TermsContent />
 
       {!readOnly && (
@@ -68,7 +68,7 @@ export default function Terms({
       )}
 
       {readOnly && onClose && (
-        <div className="mt-6 text-right">
+        <div className="mt-4 text-right">
           <button onClick={onClose} className="button-close">
             Close
           </button>
