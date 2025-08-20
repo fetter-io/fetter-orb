@@ -24,13 +24,16 @@ export const authOptions: NextAuthOptions = {
           email?: string;
           name?: string;
         };
+        // TODO: add github Profile id to User state
+        // console.log(githubProfile.id);
+
         // NOTE: must explicitly add headers as we are not using NEXT_PUBLIC_ORB_MODEL
         const res = await fetch(onLoginEndpoint, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "x-orb-internal": `${TENANT_SECRET}`,
-            "x-orb-login": githubProfile.login,
+            "x-orb-github-id": githubProfile.id,
           },
           body: JSON.stringify({
             login: githubProfile.login,
