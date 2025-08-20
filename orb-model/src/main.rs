@@ -11,7 +11,7 @@ use axum::{
     routing::{get, post},
     Json, Router,
 };
-
+// use chrono::Local;
 use orb_model::db_context::DBContext;
 use orb_model::db_context::Tenant;
 use orb_model::db_context::User;
@@ -422,18 +422,18 @@ impl FromRef<AppState> for Arc<String> {
 }
 
 pub async fn require_internal_header(
-    State(_secret): State<Arc<String>>,
+    State(secret): State<Arc<String>>,
     req: Request<Body>,
     next: Next,
 ) -> Result<Response, StatusCode> {
-    Ok(next.run(req).await)
-    // TEMP: do not valduate header for now
-    // if let Some(value) = req.headers().get("x-orb-internal") {
-    //     if value == secret.as_str() {
-    //         return Ok(next.run(req).await);
-    //     }
-    // }
-    // Err(StatusCode::UNAUTHORIZED)
+    // Ok(next.run(req).await)
+    if let Some(value) = req.headers().get("x-orb-internal") {
+        // println!("{:?} {:?}", value, secret);
+        if value == secret.as_str() {
+            return Ok(next.run(req).await);
+        }
+    }
+    Err(StatusCode::UNAUTHORIZED)
 }
 
 //------------------------------------------------------------------------------
@@ -459,7 +459,13 @@ async fn main() {
         .allow_methods(Any)
         .allow_headers(Any);
 
-    let protected_routes = Router::new()
+    let route_protected = Router::new()
+        .route("/audit", get(get_audit))
+        .route("/dep_manifest", post(post_dep_manifest))
+        .route("/on_login", post(post_on_login))
+        .route("/package_versions", get(get_package_versions))
+        .route("/package_counts", get(get_package_counts))
+        .route("/system_tag_pings", get(get_system_tag_pings))
         .route("/tenant", get(get_tenant).post(set_tenant))
         .route("/tenant_count", get(get_tenant_count))
         .route("/tenant_limit", get(get_tenant_limit))
@@ -467,31 +473,41 @@ async fn main() {
             "/user_tenant_last",
             get(get_user_tenant_last).post(set_user_tenant_last),
         )
+        .route("/user", get(get_user))
+        .route("/user_delete", post(post_delete_user))
         .route(
             "/user_terms",
             get(get_user_term_accept).post(set_user_term_accept),
         )
-        .route("/user", get(get_user))
-        .route("/system_tag_pings", get(get_system_tag_pings))
-        .route("/package_versions", get(get_package_versions))
-        .route("/package_counts", get(get_package_counts))
-        .route("/audit", get(get_audit))
         .route("/validate", get(get_validate))
-        .route("/dep_manifest", post(post_dep_manifest))
-        .route("/user_delete", post(post_delete_user))
         .with_state(app_state.clone())
         .layer(from_fn_with_state(
             app_state.clone(),
             require_internal_header,
         ));
 
-    let unprotected_routes = Router::new()
-        .route("/monitor_scan", post(post_monitor_scan)) // TODO: can move to protected
-        .route("/health", get(get_health))
-        .route("/on_login", post(post_on_login));
+    let route_monitor_scan = {
+        let is_local = match env::var("NEXTAUTH_URL") {
+            Ok(url) => url.starts_with("http://localhost"),
+            Err(_) => false,
+        };
+        let r = Router::new().route("/monitor_scan", post(post_monitor_scan));
+        if is_local {
+            println!("/monitor_scan unprotected");
+            r
+        } else {
+            r.layer(from_fn_with_state(
+                app_state.clone(),
+                require_internal_header,
+            ))
+        }
+    };
 
-    let app = unprotected_routes
-        .merge(protected_routes)
+    let route_unprotected = Router::new().route("/health", get(get_health));
+
+    let app = route_unprotected
+        .merge(route_protected)
+        .merge(route_monitor_scan)
         .layer(cors)
         .with_state(app_state);
 

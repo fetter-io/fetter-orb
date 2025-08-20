@@ -2,6 +2,8 @@ import NextAuth from "next-auth";
 import GitHubProvider from "next-auth/providers/github";
 import type { NextAuthOptions } from "next-auth";
 
+const TENANT_SECRET = process.env.TENANT_SECRET!;
+
 export const authOptions: NextAuthOptions = {
   providers: [
     GitHubProvider({
@@ -13,8 +15,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, profile, account }) {
       const onLoginEndpoint = `${process.env.PRIVATE_ORB_MODEL}/on_login`;
-      // using this causes the auth to get stuck
-      // const onLoginEndpoint = `${process.env.NEXT_PUBLIC_ORB_MODEL}/on_login`;
+      // using `${process.env.NEXT_PUBLIC_ORB_MODEL}/on_login` causes the auth to get stuck
 
       if (account && profile && account.provider === "github") {
         const githubProfile = profile as {
@@ -23,9 +24,14 @@ export const authOptions: NextAuthOptions = {
           email?: string;
           name?: string;
         };
+        // NOTE: must explicitly add headers as we are not using NEXT_PUBLIC_ORB_MODEL
         const res = await fetch(onLoginEndpoint, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "x-orb-internal": `${TENANT_SECRET}`,
+            "x-orb-login": githubProfile.login,
+          },
           body: JSON.stringify({
             login: githubProfile.login,
             email: githubProfile.email,
