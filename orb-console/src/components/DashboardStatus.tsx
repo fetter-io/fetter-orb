@@ -15,7 +15,7 @@ export function DashboardStatus({ label, state }: DashboardStatusProps) {
 
   return (
     <div className="relative">
-      <div className="flex flex-col items-start sm:items-end gap-1">
+      <div className="flex flex-col items-end gap-1">
         <button
           onClick={refresh}
           disabled={loading}
@@ -34,7 +34,7 @@ export function DashboardStatus({ label, state }: DashboardStatusProps) {
           />
         </button>
 
-        <div className="text-xs text-gray-500">
+        <div className="text-xs text-gray-600">
           {lastFetched
             ? `Last updated at ${lastFetched.toLocaleTimeString()}`
             : ""}

@@ -37,6 +37,7 @@ pub async fn post_monitor_scan(
     State(db): State<Arc<DBContext>>,
     body: String,
 ) -> Result<StatusCode, (StatusCode, String)> {
+    // println!("monitor_scan: {:?}", body);
     match db.monitor_scan_load_from_json(&body).await {
         Ok(_) => Ok(StatusCode::NO_CONTENT),
         Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),

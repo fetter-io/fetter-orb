@@ -16,7 +16,7 @@ export function SystemTagSelector({
   vulnCount,
 }: SystemTagSelectorProps) {
   return (
-    <div className="flex flex-col items-start sm:items-end gap-1">
+    <div className="flex flex-col items-start gap-1">
       <select
         value={selectedId ?? ""}
         onChange={(e) => {
@@ -33,7 +33,7 @@ export function SystemTagSelector({
         ))}
       </select>
 
-      <p className="text-xs text-gray-500">
+      <p className="text-xs text-gray-600">
         {packageCount} {packageCount === 1 ? "package" : "packages"},{" "}
         {vulnCount} {vulnCount === 1 ? "vulnerability" : "vulnerabilities"}
       </p>

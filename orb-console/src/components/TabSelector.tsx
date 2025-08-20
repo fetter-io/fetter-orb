@@ -9,8 +9,8 @@ export function TabSelector({ activeTab, onTabChange }: TabSelectorProps) {
   const tabs: { id: Tab; label: string; tooltip: string }[] = [
     { id: "packages", label: "📦", tooltip: "Packages" },
     { id: "vulns", label: "⚠️", tooltip: "Vulnerabilities" },
-    { id: "systems", label: "🖥️", tooltip: "Systems" },
     { id: "allow", label: "🔓", tooltip: "Allow List" },
+    { id: "systems", label: "🖥️", tooltip: "Systems" },
     { id: "tenant", label: "🏢", tooltip: "Tenants" },
     { id: "account", label: "👤", tooltip: "Account" },
   ];

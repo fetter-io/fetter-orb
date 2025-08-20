@@ -401,19 +401,24 @@ export default function Dashboard() {
       </header>
 
       {/* Main scrollable content */}
-      <main className="flex-1 overflow-y-auto px-6 py-8">
-        <div className="max-w-4xl mx-auto flex flex-col gap-6">
+      <main className="flex-1 overflow-y-auto px-6 py-4">
+        <div className="max-w-4xl mx-auto flex flex-col gap-4">
           {activeTab === "packages" && (
             <>
-              <DashboardStatus label="packages" state={packagesState} />
-
-              <SystemTagSelector
-                selectedId={selectedSystemId}
-                onChange={setSelectedSystemId}
-                systemTags={systemTagsState.data ?? undefined}
-                packageCount={packagesState.data?.length ?? 0}
-                vulnCount={auditState.data?.length ?? 0}
-              />
+              <div className="flex items-center items-end justify-between">
+                <div className="flex">
+                  <SystemTagSelector
+                    selectedId={selectedSystemId}
+                    onChange={setSelectedSystemId}
+                    systemTags={systemTagsState.data ?? undefined}
+                    packageCount={packagesState.data?.length ?? 0}
+                    vulnCount={auditState.data?.length ?? 0}
+                  />
+                </div>
+                <div className="flex">
+                  <DashboardStatus label="packages" state={packagesState} />
+                </div>
+              </div>
 
               {packageCountsState.data &&
                 packageCountsState.data.length > 0 && (
@@ -436,15 +441,20 @@ export default function Dashboard() {
 
           {activeTab === "allow" && selectedTenantId !== null && (
             <>
-              <DashboardStatus label="validation" state={validationState} />
-
-              <SystemTagSelector
-                selectedId={selectedSystemId}
-                onChange={setSelectedSystemId}
-                systemTags={systemTagsState.data ?? undefined}
-                packageCount={packagesState.data?.length ?? 0}
-                vulnCount={auditState.data?.length ?? 0}
-              />
+              <div className="flex items-center items-end justify-between">
+                <div className="flex">
+                  <SystemTagSelector
+                    selectedId={selectedSystemId}
+                    onChange={setSelectedSystemId}
+                    systemTags={systemTagsState.data ?? undefined}
+                    packageCount={packagesState.data?.length ?? 0}
+                    vulnCount={auditState.data?.length ?? 0}
+                  />
+                </div>
+                <div className="flex">
+                  <DashboardStatus label="validation" state={validationState} />
+                </div>
+              </div>
 
               <AllowListEditor
                 key={selectedTenantId} // not sure if this does what we want
@@ -473,15 +483,20 @@ export default function Dashboard() {
 
           {activeTab === "vulns" && (
             <>
-              <DashboardStatus label="vulnerabilities" state={auditState} />
-
-              <SystemTagSelector
-                selectedId={selectedSystemId}
-                onChange={setSelectedSystemId}
-                systemTags={systemTagsState.data ?? undefined}
-                packageCount={packagesState.data?.length ?? 0}
-                vulnCount={auditState.data?.length ?? 0}
-              />
+              <div className="flex items-center items-end justify-between">
+                <div className="flex">
+                  <SystemTagSelector
+                    selectedId={selectedSystemId}
+                    onChange={setSelectedSystemId}
+                    systemTags={systemTagsState.data ?? undefined}
+                    packageCount={packagesState.data?.length ?? 0}
+                    vulnCount={auditState.data?.length ?? 0}
+                  />
+                </div>
+                <div className="flex">
+                  <DashboardStatus label="vulnerabilities" state={auditState} />
+                </div>
+              </div>
 
               <div className="flex flex-col gap-4">
                 {auditState.data?.map((entry) => (
