@@ -94,7 +94,7 @@ impl Tenant {
 
 #[derive(Debug, Serialize)]
 pub struct User {
-    pub id: i32,
+    pub id: Uuid,
     pub login: String,
     pub email: Option<String>,
     pub name: Option<String>,
@@ -1532,7 +1532,6 @@ impl DBContext {
     }
 
     /// Check if a user exists; if not, add that user. Also check that user has a default "Self" tenant and that that tenant is mapped to this User
-
     pub async fn user_tenant_init(
         &self,
         login: &str,
@@ -1600,7 +1599,8 @@ impl DBContext {
         Ok(user_id)
     }
 
-    pub async fn user_id_from_login(&self, login: &str) -> Result<Option<i32>, sqlx::Error> {
+    // TODO: this should be github_id, not login
+    pub async fn user_id_from_login(&self, login: &str) -> Result<Option<Uuid>, sqlx::Error> {
         let user_table = self.get_table("users");
         let query = format!("SELECT id FROM {user_table} WHERE login = $1");
 
