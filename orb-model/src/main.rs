@@ -23,13 +23,13 @@ use serde_json::json;
 use serde_json::Value;
 use sqlx::postgres::{PgConnectOptions, PgPoolOptions, PgSslMode};
 use sqlx::PgPool;
-use uuid::Uuid;
 use std::env;
 use std::net::SocketAddr;
 use std::str::FromStr;
 use std::sync::Arc;
 use tokio::net::TcpListener;
 use tower_http::cors::{Any, CorsLayer};
+use uuid::Uuid;
 
 //------------------------------------------------------------------------------
 // endpoint implementations
