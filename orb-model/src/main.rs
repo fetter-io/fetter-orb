@@ -234,7 +234,7 @@ pub async fn post_on_login(
         .user_tenant_init(&payload.login, &payload.email, &payload.name)
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-
+    println!("post_on_login: user_id: {:?}", user_id);
     Ok(Json(json!({ "user_id": user_id })))
 }
 
@@ -284,6 +284,7 @@ pub async fn get_user_term_accept(
     State(db): State<Arc<DBContext>>,
     Query(params): Query<UserParams>,
 ) -> Result<Json<Value>, (StatusCode, String)> {
+    println!("calling get_user_term_accept");
     db.user_term_accepted(params.user_id)
         .await
         .map(|accepted| Json(json!({ "term_accepted": accepted })))

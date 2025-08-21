@@ -18,6 +18,9 @@ export default function Terms({
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
 
+  console.log("in Terms");
+  console.log(`${session?.user?.user_id}`);
+
   const acceptTerms = async () => {
     if (!session?.user?.user_id) return;
     setLoading(true);

@@ -19,12 +19,12 @@ export const authOptions: NextAuthOptions = {
 
       if (account && profile && account.provider === "github") {
         const githubProfile = profile as {
-          login: string;
-          id: number;
+          login: string; // github_login
+          id: number; // github_id
           email?: string;
           name?: string;
         };
-        // TODO: add github Profile id to User state
+        // TODO: add github_id to User state
         // console.log(githubProfile.id);
 
         // NOTE: must explicitly add headers as we are not using NEXT_PUBLIC_ORB_MODEL
@@ -33,7 +33,7 @@ export const authOptions: NextAuthOptions = {
           headers: {
             "Content-Type": "application/json",
             "x-orb-internal": `${TENANT_SECRET}`,
-            "x-orb-github-id": githubProfile.id,
+            // "x-orb-github-id": String(githubProfile.id),
           },
           body: JSON.stringify({
             login: githubProfile.login,
@@ -42,13 +42,13 @@ export const authOptions: NextAuthOptions = {
           }),
         });
         const data = await res.json();
-        token.user_id = data.user_id;
+        token.user_id = data.user_id; // UUID
         token.login = githubProfile.login;
       }
       return token;
     },
     async session({ session, token }) {
-      if (typeof token.user_id === "number") {
+      if (typeof token.user_id === "string") {
         session.user.user_id = token.user_id;
       }
       if (typeof token.login === "string") {

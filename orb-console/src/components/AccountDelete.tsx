@@ -27,7 +27,6 @@ export function AccountDelete() {
           body: JSON.stringify({ user_id: session.user.user_id }),
         },
       );
-
       if (!res.ok) {
         const err = await res.text();
         throw new Error(err);
