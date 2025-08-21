@@ -23,6 +23,7 @@ use serde_json::json;
 use serde_json::Value;
 use sqlx::postgres::{PgConnectOptions, PgPoolOptions, PgSslMode};
 use sqlx::PgPool;
+use uuid::Uuid;
 use std::env;
 use std::net::SocketAddr;
 use std::str::FromStr;
@@ -58,7 +59,7 @@ pub async fn post_dep_manifest(
 
 #[derive(Deserialize, Debug)]
 pub struct TenantQueryParams {
-    pub user_id: Option<i32>,
+    pub user_id: Option<Uuid>,
 }
 
 pub async fn get_tenant(
@@ -241,7 +242,7 @@ pub async fn post_on_login(
 #[derive(Deserialize)]
 pub struct TenantSetParams {
     name: String,
-    user_id: i32,
+    user_id: Uuid,
 }
 
 // This is used to create a new Tenant, given the tenant's name and the user_id. NOTE: this does not automatically set thew tenant as the tenant last.
@@ -276,7 +277,7 @@ pub async fn set_tenant(
 
 #[derive(Deserialize)]
 pub struct UserParams {
-    pub user_id: i32,
+    pub user_id: Uuid,
 }
 
 pub async fn get_user_term_accept(
@@ -360,7 +361,7 @@ pub async fn get_user_tenant_last(
 
 #[derive(Deserialize)]
 pub struct UserTenantParams {
-    pub user_id: i32,
+    pub user_id: Uuid,
     pub tenant_id: i32,
 }
 

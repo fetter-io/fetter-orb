@@ -78,11 +78,11 @@ pub struct Tenant {
     pub key: String,
     pub name: String,
     pub ping_limit: i32,
-    pub created_by: i32,
+    pub created_by: Uuid,
 }
 
 impl Tenant {
-    pub fn from_key(key: &str, created_by: i32) -> Self {
+    pub fn from_key(key: &str, created_by: Uuid) -> Self {
         Tenant {
             key: key.to_string(),
             name: key.to_string(),
