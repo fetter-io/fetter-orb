@@ -1630,7 +1630,7 @@ impl DBContext {
             .bind(user_id)
             .fetch_optional(&self.pool)
             .await?;
-        println!("user_term_accepted result: {:?}", result);
+        // println!("user_term_accepted result: {:?}", result);
         Ok(result.unwrap_or(false))
     }
 
