@@ -53,7 +53,9 @@ export function UserMenuDropdown() {
               <div className="text-slate-300 font-medium truncate">{name}</div>
             )}
             {github_login && (
-              <div className="text-slate-300 font-medium truncate">{github_login}</div>
+              <div className="text-slate-300 font-medium truncate">
+                {github_login}
+              </div>
             )}
           </div>
           <button

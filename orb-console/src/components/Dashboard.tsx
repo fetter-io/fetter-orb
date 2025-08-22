@@ -66,7 +66,12 @@ export default function Dashboard() {
       );
       if (!res.ok) {
         const txt = await res.text().catch(() => "");
-        console.error("Failed to fetch user info", res.status, res.statusText, txt);
+        console.error(
+          "Failed to fetch user info",
+          res.status,
+          res.statusText,
+          txt,
+        );
         return;
       }
       const data = await res.json();

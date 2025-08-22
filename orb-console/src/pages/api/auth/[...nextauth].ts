@@ -41,7 +41,8 @@ export const authOptions: NextAuthOptions = {
             name: gh.name,
           }),
         });
-        if (!res.ok) throw new Error(`on_login failed: ${res.status} ${res.statusText}`);
+        if (!res.ok)
+          throw new Error(`on_login failed: ${res.status} ${res.statusText}`);
 
         const data = await res.json();
         token.user_id = data.user_id; // UUID

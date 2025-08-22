@@ -75,7 +75,10 @@ export async function GET(req: Request, ctx: unknown) {
   const path = await extractPath(ctx);
   const github_login = gate.session.user?.github_login;
   if (!github_login) {
-    return NextResponse.json({ error: "missing github_login" }, { status: 401 });
+    return NextResponse.json(
+      { error: "missing github_login" },
+      { status: 401 },
+    );
   }
   return forward(req, "GET", path, github_login);
 }
@@ -86,7 +89,10 @@ export async function POST(req: Request, ctx: unknown) {
   const path = await extractPath(ctx);
   const github_login = gate.session.user?.github_login;
   if (!github_login) {
-    return NextResponse.json({ error: "missing github_login" }, { status: 401 });
+    return NextResponse.json(
+      { error: "missing github_login" },
+      { status: 401 },
+    );
   }
   return forward(req, "POST", path, github_login);
 }

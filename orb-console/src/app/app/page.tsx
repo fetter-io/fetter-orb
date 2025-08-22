@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Dashboard from "@/components/Dashboard";
 import { useEffect } from "react";
