@@ -15,7 +15,7 @@ export function TabAccount({ userInfo }: { userInfo: UserRecord | null }) {
         <div className="divide-y divide-slate-700 border border-slate-700 rounded overflow-hidden">
           <div className="grid grid-cols-2 gap-2 px-4 py-2 bg-slate-800">
             <span className="font-medium text-slate-400">Login</span>
-            <span>{userInfo.login}</span>
+            <span>{userInfo.github_login}</span>
           </div>
           <div className="grid grid-cols-2 gap-2 px-4 py-2 bg-slate-800">
             <span className="font-medium text-slate-400">Email</span>

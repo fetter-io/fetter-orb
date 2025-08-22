@@ -5,27 +5,27 @@ import { UUID } from "@/types";
 declare module "next-auth" {
   interface Session {
     user: DefaultSession["user"] & {
-      login: string;
+      github_login: string;
       user_id: UUID;
     };
   }
 
   interface User extends DefaultUser {
-    login?: string; // Optional to match GitHub response safely
+    github_login?: string;
     user_id?: UUID;
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT {
-    login?: string;
+    github_login?: string;
     user_id?: UUID;
   }
 }
 
 declare module "next-auth/providers" {
   interface Profile {
-    login?: string;
+    github_login?: string;
     id?: number; // GitHub user ID
   }
 }

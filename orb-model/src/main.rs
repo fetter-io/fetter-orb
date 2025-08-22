@@ -221,7 +221,7 @@ pub async fn get_audit(
 #[derive(Deserialize, Debug)]
 pub struct OnLoginParams {
     // pub github_id: i64,
-    pub login: String,
+    pub github_login: String,
     pub email: String,
     pub name: String,
 }
@@ -231,7 +231,7 @@ pub async fn post_on_login(
     Json(payload): Json<OnLoginParams>,
 ) -> Result<Json<serde_json::Value>, (StatusCode, String)> {
     let user_id = db
-        .user_tenant_init(&payload.login, &payload.email, &payload.name)
+        .user_tenant_init(&payload.github_login, &payload.email, &payload.name)
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
     println!("post_on_login: user_id: {:?}", user_id);

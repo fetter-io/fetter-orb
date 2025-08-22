@@ -500,7 +500,7 @@ async fn test_user_tenant_init_a() {
 
     let u = ctx.user_from_user_id(uid).await.unwrap();
     // assert_eq!(u.id, 1);
-    assert_eq!(u.login, "foo");
+    assert_eq!(u.github_login, "foo");
     assert_eq!(u.email, Some("foo@foo.com".to_string()));
     assert_eq!(u.term_accepted, false);
 

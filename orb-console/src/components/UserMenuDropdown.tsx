@@ -24,7 +24,7 @@ export function UserMenuDropdown() {
 
   if (status !== "authenticated" || !session?.user) return null;
 
-  const { login, name, image } = session.user;
+  const { github_login, name, image } = session.user;
 
   return (
     <div
@@ -52,8 +52,8 @@ export function UserMenuDropdown() {
             {name && (
               <div className="text-slate-300 font-medium truncate">{name}</div>
             )}
-            {login && (
-              <div className="text-slate-300 font-medium truncate">{login}</div>
+            {github_login && (
+              <div className="text-slate-300 font-medium truncate">{github_login}</div>
             )}
           </div>
           <button

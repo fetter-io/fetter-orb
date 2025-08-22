@@ -95,7 +95,7 @@ impl Tenant {
 #[derive(Debug, Serialize)]
 pub struct User {
     pub id: Uuid,
-    pub login: String,
+    pub github_login: String,
     pub email: Option<String>,
     pub name: Option<String>,
     pub tenant_limit: i32,
@@ -165,7 +165,7 @@ impl DBContext {
             r#"
             CREATE TABLE {if_clause} {user_table} (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                login TEXT NOT NULL,
+                github_login TEXT NOT NULL,
                 email TEXT,
                 name TEXT,
                 tenant_limit INTEGER NOT NULL,
@@ -1392,7 +1392,7 @@ impl DBContext {
 
         let query = format!(
             r#"
-            SELECT id, login, email, name, tenant_limit, term_accepted, created_at
+            SELECT id, github_login, email, name, tenant_limit, term_accepted, created_at
             FROM {user_table}
             WHERE id = $1
             "#
@@ -1403,7 +1403,7 @@ impl DBContext {
             .map(|row: sqlx::postgres::PgRow| {
                 Ok(User {
                     id: row.get("id"),
-                    login: row.get("login"),
+                    github_login: row.get("github_login"),
                     email: row.get("email"),
                     name: row.get("name"),
                     tenant_limit: row.get("tenant_limit"),
@@ -1534,7 +1534,7 @@ impl DBContext {
     /// Check if a user exists; if not, add that user. Also check that user has a default "Self" tenant and that that tenant is mapped to this User
     pub async fn user_tenant_init(
         &self,
-        login: &str,
+        github_login: &str,
         email: &str,
         name: &str,
     ) -> Result<Uuid, sqlx::Error> {
@@ -1543,21 +1543,21 @@ impl DBContext {
         let user_to_tenant_table = self.get_table("user_to_tenant");
 
         // Step 1: ensure user exists; grab UUID id
-        let select_user = format!("SELECT id FROM {user_table} WHERE login = $1");
+        let select_user = format!("SELECT id FROM {user_table} WHERE github_login = $1");
         let user_id: Uuid = if let Some(id) = sqlx::query_scalar::<_, Uuid>(&select_user)
-            .bind(login)
+            .bind(github_login)
             .fetch_optional(&self.pool)
             .await?
         {
             id
         } else {
             let insert_user = format!(
-                "INSERT INTO {user_table} (login, email, name, tenant_limit)
+                "INSERT INTO {user_table} (github_login, email, name, tenant_limit)
              VALUES ($1, $2, $3, $4)
              RETURNING id"
             );
             sqlx::query_scalar::<_, Uuid>(&insert_user)
-                .bind(login)
+                .bind(github_login)
                 .bind(email)
                 .bind(name)
                 .bind(self.default_tenant_limit)
@@ -1599,13 +1599,16 @@ impl DBContext {
         Ok(user_id)
     }
 
-    // TODO: this should be github_id, not login
-    pub async fn user_id_from_login(&self, login: &str) -> Result<Option<Uuid>, sqlx::Error> {
+    // TODO: this should be github_id, not github_login
+    pub async fn user_id_from_login(
+        &self,
+        github_login: &str,
+    ) -> Result<Option<Uuid>, sqlx::Error> {
         let user_table = self.get_table("users");
-        let query = format!("SELECT id FROM {user_table} WHERE login = $1");
+        let query = format!("SELECT id FROM {user_table} WHERE github_login = $1");
 
         let row = sqlx::query(&query)
-            .bind(login)
+            .bind(github_login)
             .fetch_optional(&self.pool)
             .await?;
 

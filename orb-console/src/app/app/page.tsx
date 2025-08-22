@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Dashboard from "@/components/Dashboard";
 import { useEffect } from "react";
@@ -34,6 +34,7 @@ export default function AppPage() {
   }, [status, session?.user?.user_id]);
 
   if (status === "loading" || acceptedTerms === null) {
+    // signOut({ callbackUrl: "/" })
     return <Loading message="Loading..." />;
   }
 

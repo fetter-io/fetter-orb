@@ -65,7 +65,8 @@ export default function Dashboard() {
         `${process.env.NEXT_PUBLIC_ORB_MODEL}/user?user_id=${session.user.user_id}`,
       );
       if (!res.ok) {
-        console.error("Failed to fetch user info");
+        const txt = await res.text().catch(() => "");
+        console.error("Failed to fetch user info", res.status, res.statusText, txt);
         return;
       }
       const data = await res.json();
