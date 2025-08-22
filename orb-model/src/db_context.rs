@@ -1556,7 +1556,7 @@ impl DBContext {
         } else {
             let insert_user = format!(
                 "INSERT INTO {user_table} (github_login, github_id, email, name, tenant_limit)
-             VALUES ($1, $2, $3, $4)
+             VALUES ($1, $2, $3, $4, $5)
              RETURNING id"
             );
             sqlx::query_scalar::<_, Uuid>(&insert_user)
