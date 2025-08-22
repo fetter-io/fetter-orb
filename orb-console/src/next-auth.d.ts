@@ -23,9 +23,9 @@ declare module "next-auth/jwt" {
   }
 }
 
-declare module "next-auth/providers" {
-  interface Profile {
-    github_login?: string;
-    id?: number; // GitHub user ID
-  }
-}
+// declare module "next-auth/providers" {
+//   interface Profile {
+//     github_login?: string;
+//     id?: number; // GitHub user ID
+//   }
+// }
