@@ -445,7 +445,7 @@ async fn main() {
     let dbx = DBContext::new(pool, None);
 
     // TODO: only if testing
-    dbx.tables_drop().await.expect("failed to drop tables");
+    // dbx.tables_drop().await.expect("failed to drop tables");
     dbx.tables_create(true)
         .await
         .expect("failed to create tables");
