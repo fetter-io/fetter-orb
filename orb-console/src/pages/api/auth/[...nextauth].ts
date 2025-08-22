@@ -34,6 +34,7 @@ export const authOptions: NextAuthOptions = {
           },
           body: JSON.stringify({
             github_login: gh.login,
+            github_id: gh.id,
             email: gh.email,
             name: gh.name,
           }),

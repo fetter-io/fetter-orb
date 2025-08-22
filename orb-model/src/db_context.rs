@@ -96,6 +96,7 @@ impl Tenant {
 pub struct User {
     pub id: Uuid,
     pub github_login: String,
+    pub github_id: i32,
     pub email: Option<String>,
     pub name: Option<String>,
     pub tenant_limit: i32,
@@ -166,6 +167,7 @@ impl DBContext {
             CREATE TABLE {if_clause} {user_table} (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 github_login TEXT NOT NULL,
+                github_id INTEGER NOT NULL,
                 email TEXT,
                 name TEXT,
                 tenant_limit INTEGER NOT NULL,
@@ -1392,7 +1394,7 @@ impl DBContext {
 
         let query = format!(
             r#"
-            SELECT id, github_login, email, name, tenant_limit, term_accepted, created_at
+            SELECT id, github_login, github_id, email, name, tenant_limit, term_accepted, created_at
             FROM {user_table}
             WHERE id = $1
             "#
@@ -1404,6 +1406,7 @@ impl DBContext {
                 Ok(User {
                     id: row.get("id"),
                     github_login: row.get("github_login"),
+                    github_id: row.get("github_id"),
                     email: row.get("email"),
                     name: row.get("name"),
                     tenant_limit: row.get("tenant_limit"),
@@ -1415,7 +1418,6 @@ impl DBContext {
             })
             .fetch_one(&self.pool)
             .await?;
-
         row
     }
 
@@ -1535,6 +1537,7 @@ impl DBContext {
     pub async fn user_tenant_init(
         &self,
         github_login: &str,
+        github_id: i32,
         email: &str,
         name: &str,
     ) -> Result<Uuid, sqlx::Error> {
@@ -1552,12 +1555,13 @@ impl DBContext {
             id
         } else {
             let insert_user = format!(
-                "INSERT INTO {user_table} (github_login, email, name, tenant_limit)
+                "INSERT INTO {user_table} (github_login, github_id, email, name, tenant_limit)
              VALUES ($1, $2, $3, $4)
              RETURNING id"
             );
             sqlx::query_scalar::<_, Uuid>(&insert_user)
                 .bind(github_login)
+                .bind(github_id)
                 .bind(email)
                 .bind(name)
                 .bind(self.default_tenant_limit)

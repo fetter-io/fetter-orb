@@ -18,7 +18,7 @@ async fn test_tenant_a() {
     ctx.tables_create(false).await.unwrap();
 
     let user_id = ctx
-        .user_tenant_init("foo", "foo@foo.com", "Foo")
+        .user_tenant_init("foo", 0, "foo@foo.com", "Foo")
         .await
         .unwrap();
     let t = Tenant {
@@ -40,7 +40,7 @@ async fn test_get_tenants_a() {
     ctx.tables_create(false).await.unwrap();
 
     let user_id = ctx
-        .user_tenant_init("foo", "foo@foo.com", "Foo")
+        .user_tenant_init("foo", 0, "foo@foo.com", "Foo")
         .await
         .unwrap();
 
@@ -175,7 +175,7 @@ async fn test_load_system_tag_a() {
     ctx.tables_create(false).await.unwrap();
 
     let user_id = ctx
-        .user_tenant_init("foo", "foo@foo.com", "Foo")
+        .user_tenant_init("foo", 0, "foo@foo.com", "Foo")
         .await
         .unwrap();
 
@@ -207,7 +207,7 @@ async fn test_system_tag_pings_a() {
     let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
 
     let user_id = ctx
-        .user_tenant_init("foo", "foo@foo.com", "Foo")
+        .user_tenant_init("foo", 0, "foo@foo.com", "Foo")
         .await
         .unwrap();
     let t = Tenant::from_key("team-a", user_id);
@@ -236,7 +236,7 @@ async fn test_user_delete_a() {
     let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
 
     let user_id = ctx
-        .user_tenant_init("foo", "foo@foo.com", "Foo")
+        .user_tenant_init("foo", 0, "foo@foo.com", "Foo")
         .await
         .unwrap();
     let t = Tenant::from_key("team-a", user_id);
@@ -275,7 +275,7 @@ async fn test_package_counts_a() {
     ctx.tables_create(false).await.unwrap();
 
     let user_id = ctx
-        .user_tenant_init("foo", "foo@foo.com", "Foo")
+        .user_tenant_init("foo", 0, "foo@foo.com", "Foo")
         .await
         .unwrap();
     let t = Tenant::from_key("team-a", user_id);
@@ -324,7 +324,7 @@ async fn test_package_counts_b() {
     ctx.tables_create(false).await.unwrap();
 
     let user_id = ctx
-        .user_tenant_init("foo", "foo@foo.com", "Foo")
+        .user_tenant_init("foo", 0, "foo@foo.com", "Foo")
         .await
         .unwrap();
     let t = Tenant::from_key("team-a", user_id);
@@ -382,7 +382,7 @@ async fn test_dep_manifest_load_a() {
     ctx.tables_create(false).await.unwrap();
 
     let user_id = ctx
-        .user_tenant_init("foo", "foo@foo.com", "Foo")
+        .user_tenant_init("foo", 0, "foo@foo.com", "Foo")
         .await
         .unwrap();
     let t = Tenant::from_key("team-a", user_id);
@@ -427,7 +427,7 @@ async fn test_latest_packages_to_sites_a() {
     ctx.tables_create(false).await.unwrap();
 
     let user_id = ctx
-        .user_tenant_init("foo", "foo@foo.com", "Foo")
+        .user_tenant_init("foo", 0, "foo@foo.com", "Foo")
         .await
         .unwrap();
     let t = Tenant::from_key("team-a", user_id);
@@ -489,7 +489,7 @@ async fn test_user_tenant_init_a() {
     ctx.tables_create(false).await.unwrap();
 
     let uid = ctx
-        .user_tenant_init("foo", "foo@foo.com", "Foo")
+        .user_tenant_init("foo", 0, "foo@foo.com", "Foo")
         .await
         .unwrap();
 
@@ -517,7 +517,7 @@ async fn test_user_tenant_last_a() {
     ctx.tables_create(false).await.unwrap();
 
     let user_id = ctx
-        .user_tenant_init("foo", "foo@foo.com", "Foo")
+        .user_tenant_init("foo", 0, "foo@foo.com", "Foo")
         .await
         .unwrap();
 
