@@ -24,16 +24,13 @@ export const authOptions: NextAuthOptions = {
           email?: string;
           name?: string;
         };
-        // TODO: add github_id to User state
-        // console.log(gh.id);
-
-        // NOTE: must explicitly add headers as we are not using NEXT_PUBLIC_ORB_MODEL
+        // NOTE: must add headers as we are not using NEXT_PUBLIC_ORB_MODEL
         const res = await fetch(onLoginEndpoint, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "x-orb-internal": `${TENANT_SECRET}`,
-            // "x-orb-github-id": String(gh.id),
+            "x-orb-github-id": String(gh.id),
           },
           body: JSON.stringify({
             github_login: gh.login,
@@ -47,6 +44,7 @@ export const authOptions: NextAuthOptions = {
         const data = await res.json();
         token.user_id = data.user_id; // UUID
         token.github_login = gh.login;
+        token.github_id = gh.id;
       }
       return token;
     },
@@ -57,6 +55,10 @@ export const authOptions: NextAuthOptions = {
       if (typeof token.github_login === "string") {
         session.user.github_login = token.github_login;
       }
+      if (typeof token.github_id === "number") {
+        session.user.github_id = token.github_id;
+      }
+
       return session;
     },
   },

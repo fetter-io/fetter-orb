@@ -28,7 +28,7 @@ async function forward(
   req: Request,
   method: string,
   path: string[],
-  github_login: string,
+  github_id: string,
 ) {
   const url = new URL(req.url);
   const backendUrl = `${PRIVATE_ORB_MODEL}/${joinPath(path)}${url.search}`;
@@ -41,7 +41,7 @@ async function forward(
   if (ct) headers.set("content-type", ct);
 
   headers.set("x-orb-internal", TENANT_SECRET);
-  headers.set("x-orb-login", github_login);
+  headers.set("x-orb-github-id", github_id);
 
   const r = await fetch(backendUrl, {
     method,
@@ -73,26 +73,26 @@ export async function GET(req: Request, ctx: unknown) {
   const gate = await ensureSession();
   if (!gate.ok) return gate.res;
   const path = await extractPath(ctx);
-  const github_login = gate.session.user?.github_login;
-  if (!github_login) {
+  const github_id = gate.session.user?.github_id;
+  if (!github_id) {
     return NextResponse.json(
-      { error: "missing github_login" },
+      { error: "missing github_id" },
       { status: 401 },
     );
   }
-  return forward(req, "GET", path, github_login);
+  return forward(req, "GET", path, github_id);
 }
 
 export async function POST(req: Request, ctx: unknown) {
   const gate = await ensureSession();
   if (!gate.ok) return gate.res;
   const path = await extractPath(ctx);
-  const github_login = gate.session.user?.github_login;
-  if (!github_login) {
+  const github_id = gate.session.user?.github_id;
+  if (!github_id) {
     return NextResponse.json(
-      { error: "missing github_login" },
+      { error: "missing github_id" },
       { status: 401 },
     );
   }
-  return forward(req, "POST", path, github_login);
+  return forward(req, "POST", path, github_id);
 }
