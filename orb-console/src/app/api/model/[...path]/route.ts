@@ -43,7 +43,10 @@ async function forward(
   headers.set("x-orb-internal", TENANT_SECRET);
   headers.set("x-orb-github-id", github_id.toString());
 
-  const fetchOptions: RequestInit & { next?: { revalidate: number } } = {
+  const fetchOptions: RequestInit & {
+    next?: { revalidate: number };
+    duplex?: "half";
+  } = {
     method,
     headers,
     next: { revalidate: 0 },

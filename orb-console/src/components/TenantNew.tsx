@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { UUID } from "@/types";
 
 type NewTenantDialogProps = {
   onClose: () => void;
   onSuccess: () => void;
-  userId: number;
+  userId: UUID;
 };
 
 type CountResponse = { count: number }; // used by both /tenant_count and /tenant_limit
