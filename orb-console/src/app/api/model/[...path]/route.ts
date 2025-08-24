@@ -28,6 +28,7 @@ async function forward(
   req: Request,
   method: string,
   path: string[],
+  user_id: number,
   github_id: number,
 ) {
   const url = new URL(req.url);
@@ -67,7 +68,7 @@ async function forward(
   return new NextResponse(r.body, { status: r.status, headers: outHeaders });
 }
 
-/** Narrow `ctx` without `any` and satisfy Next’s “await params” rule */
+/** Narrow `ctx` without `any` and satisfy Next's "await params" rule */
 type RouteContext = { params: Promise<{ path?: string[] }> };
 async function extractPath(ctx: unknown): Promise<string[]> {
   const { params } = ctx as RouteContext; // narrow once
@@ -75,24 +76,29 @@ async function extractPath(ctx: unknown): Promise<string[]> {
   return path;
 }
 
-export async function GET(req: Request, ctx: unknown) {
+async function handleRequest(req: Request, ctx: unknown, method: string) {
   const gate = await ensureSession();
   if (!gate.ok) return gate.res;
+
   const path = await extractPath(ctx);
+
   const github_id = gate.session.user?.github_id;
   if (!github_id) {
     return NextResponse.json({ error: "missing github_id" }, { status: 401 });
   }
-  return forward(req, "GET", path, github_id);
+
+  const user_id = gate.session.user?.user_id;
+  if (!user_id) {
+    return NextResponse.json({ error: "missing user_id" }, { status: 401 });
+  }
+
+  return forward(req, method, path, user_id, github_id);
+}
+
+export async function GET(req: Request, ctx: unknown) {
+  return handleRequest(req, ctx, "GET");
 }
 
 export async function POST(req: Request, ctx: unknown) {
-  const gate = await ensureSession();
-  if (!gate.ok) return gate.res;
-  const path = await extractPath(ctx);
-  const github_id = gate.session.user?.github_id;
-  if (!github_id) {
-    return NextResponse.json({ error: "missing github_id" }, { status: 401 });
-  }
-  return forward(req, "POST", path, github_id);
+  return handleRequest(req, ctx, "POST");
 }
