@@ -237,7 +237,8 @@ pub async fn post_on_login(
             &payload.github_login,
             payload.github_id,
             &payload.email,
-            &payload.name)
+            &payload.name,
+        )
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
     Ok(Json(json!({ "user_id": user_id })))
@@ -517,7 +518,7 @@ async fn main() {
         .layer(
             ServiceBuilder::new()
                 .layer(CatchPanicLayer::new())
-                .layer(cors)
+                .layer(cors),
         )
         .with_state(app_state);
 
