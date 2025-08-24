@@ -90,6 +90,7 @@ export type AuditEntry = {
 export type UserRecord = {
   id: UUID;
   github_login: string;
+  github_id: number;
   email: string | null;
   name: string | null;
   tenant_limit: number;

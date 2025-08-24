@@ -28,7 +28,7 @@ async function forward(
   req: Request,
   method: string,
   path: string[],
-  github_id: string,
+  github_id: number,
 ) {
   const url = new URL(req.url);
   const backendUrl = `${PRIVATE_ORB_MODEL}/${joinPath(path)}${url.search}`;
@@ -41,17 +41,20 @@ async function forward(
   if (ct) headers.set("content-type", ct);
 
   headers.set("x-orb-internal", TENANT_SECRET);
-  headers.set("x-orb-github-id", github_id);
+  headers.set("x-orb-github-id", github_id.toString());
 
-  const r = await fetch(backendUrl, {
+  const fetchOptions: RequestInit & { next?: { revalidate: number } } = {
     method,
     headers,
-    body: method === "GET" || method === "HEAD" ? undefined : req.body,
-    ...(method === "GET" || method === "HEAD"
-      ? {}
-      : { duplex: "half" as const }),
     next: { revalidate: 0 },
-  });
+  };
+
+  if (method !== "GET" && method !== "HEAD") {
+    fetchOptions.body = req.body;
+    fetchOptions.duplex = "half" as const;
+  }
+
+  const r = await fetch(backendUrl, fetchOptions);
 
   const outHeaders = new Headers();
   const rct = r.headers.get("content-type");
@@ -75,10 +78,7 @@ export async function GET(req: Request, ctx: unknown) {
   const path = await extractPath(ctx);
   const github_id = gate.session.user?.github_id;
   if (!github_id) {
-    return NextResponse.json(
-      { error: "missing github_id" },
-      { status: 401 },
-    );
+    return NextResponse.json({ error: "missing github_id" }, { status: 401 });
   }
   return forward(req, "GET", path, github_id);
 }
@@ -89,10 +89,7 @@ export async function POST(req: Request, ctx: unknown) {
   const path = await extractPath(ctx);
   const github_id = gate.session.user?.github_id;
   if (!github_id) {
-    return NextResponse.json(
-      { error: "missing github_id" },
-      { status: 401 },
-    );
+    return NextResponse.json({ error: "missing github_id" }, { status: 401 });
   }
   return forward(req, "POST", path, github_id);
 }

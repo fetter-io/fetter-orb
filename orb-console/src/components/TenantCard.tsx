@@ -28,7 +28,7 @@ export function TenantCard({ tenant, selected, scrollIntoViewNow }: Props) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy: ', err);
+      console.error("Failed to copy: ", err);
     }
   };
 
@@ -39,9 +39,7 @@ export function TenantCard({ tenant, selected, scrollIntoViewNow }: Props) {
         selected ? "border-blue-500" : "border-slate-600"
       }`}
     >
-      <div className="text-xl font-semibold text-zinc-400">
-        {tenant.name}
-      </div>
+      <div className="text-xl font-semibold text-zinc-400">{tenant.name}</div>
 
       <div className="text-sm">
         <span className="text-zinc-300">Updates per day: </span>
