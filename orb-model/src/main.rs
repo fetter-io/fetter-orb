@@ -28,6 +28,8 @@ use std::net::SocketAddr;
 use std::str::FromStr;
 use std::sync::Arc;
 use tokio::net::TcpListener;
+use tower::ServiceBuilder;
+use tower_http::catch_panic::CatchPanicLayer;
 use tower_http::cors::{Any, CorsLayer};
 use uuid::Uuid;
 
@@ -512,7 +514,11 @@ async fn main() {
     let app = route_unprotected
         .merge(route_protected)
         .merge(route_monitor_scan)
-        .layer(cors)
+        .layer(
+            ServiceBuilder::new()
+                .layer(CatchPanicLayer::new())
+                .layer(cors)
+        )
         .with_state(app_state);
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 3001));
