@@ -14,7 +14,8 @@ type Props = {
 
 export function TenantCard({ tenant, selected, scrollIntoViewNow }: Props) {
   const ref = useRef<HTMLDivElement>(null);
-  const [copied, setCopied] = useState(false);
+  const [copiedKey, setCopiedKey] = useState(false);
+  const [copiedCommand, setCopiedCommand] = useState(false);
 
   useEffect(() => {
     if (scrollIntoViewNow && ref.current) {
@@ -22,11 +23,22 @@ export function TenantCard({ tenant, selected, scrollIntoViewNow }: Props) {
     }
   }, [scrollIntoViewNow]);
 
-  const copyToClipboard = async () => {
+  const copyKeyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(tenant.key);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      setCopiedKey(true);
+      setTimeout(() => setCopiedKey(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy: ", err);
+    }
+  };
+
+  const copyCommandToClipboard = async () => {
+    const command = `fetter monitor-scan --url https://fetter.io/monitor_scan --tenant ${tenant.key}`;
+    try {
+      await navigator.clipboard.writeText(command);
+      setCopiedCommand(true);
+      setTimeout(() => setCopiedCommand(false), 2000);
     } catch (err) {
       console.error("Failed to copy: ", err);
     }
@@ -50,8 +62,8 @@ export function TenantCard({ tenant, selected, scrollIntoViewNow }: Props) {
         <span className="text-zinc-300">Key: </span>
         <code
           className="text-zinc-400 break-all cursor-pointer hover:text-zinc-200 transition-colors"
-          onClick={copyToClipboard}
-          title={copied ? "Copied!" : "Copy to Clipboard"}
+          onClick={copyKeyToClipboard}
+          title={copiedKey ? "Copied!" : "Copy to Clipboard"}
         >
           {tenant.key}
         </code>
@@ -71,7 +83,11 @@ export function TenantCard({ tenant, selected, scrollIntoViewNow }: Props) {
           CLI
         </h2>
 
-        <code className="text-zinc-400 text-xs break-all">
+        <code
+          className="text-zinc-400 text-xs break-all cursor-pointer hover:text-zinc-200 transition-colors leading-tight"
+          onClick={copyCommandToClipboard}
+          title={copiedCommand ? "Copied!" : "Copy to clipboard"}
+        >
           fetter monitor-scan --url https://fetter.io/monitor_scan --tenant{" "}
           {tenant.key}
         </code>
