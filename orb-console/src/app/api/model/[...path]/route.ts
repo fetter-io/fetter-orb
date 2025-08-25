@@ -28,10 +28,21 @@ async function forward(
   req: Request,
   method: string,
   path: string[],
-  user_id: number,
+  user_id: string,
   github_id: number,
 ) {
   const url = new URL(req.url);
+
+  // Validate user_id parameter if present
+  const urlUserId = url.searchParams.get("user_id");
+  if (urlUserId && urlUserId !== user_id) {
+    return new NextResponse(
+      JSON.stringify({
+        error: "user_id parameter does not match authenticated user",
+      }),
+      { status: 403, headers: { "content-type": "application/json" } },
+    );
+  }
   const backendUrl = `${PRIVATE_ORB_MODEL}/${joinPath(path)}${url.search}`;
 
   const headers = new Headers();
