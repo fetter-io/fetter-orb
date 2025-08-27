@@ -1509,11 +1509,7 @@ impl DBContext {
         Ok(())
     }
 
-    pub async fn get_next_tenant_key(
-        &self,
-        user_id: Uuid,
-        email: &str,
-    ) -> Result<String, sqlx::Error> {
+    pub async fn get_next_tenant_key(&self, user_id: Uuid) -> Result<String, sqlx::Error> {
         let tenant_table = self.get_table("tenant");
 
         let query = format!(
@@ -1528,7 +1524,11 @@ impl DBContext {
             .fetch_one(&self.pool)
             .await?;
 
-        let tenant_key = strings_to_hash(vec![&self.salt, email, &tenant_count.to_string()]);
+        let tenant_key = strings_to_hash(vec![
+            &self.salt,
+            &user_id.to_string(),
+            &tenant_count.to_string(),
+        ]);
 
         Ok(tenant_key)
     }
@@ -1546,9 +1546,9 @@ impl DBContext {
         let user_to_tenant_table = self.get_table("user_to_tenant");
 
         // Step 1: ensure user exists; grab UUID id
-        let select_user = format!("SELECT id FROM {user_table} WHERE github_login = $1");
+        let select_user = format!("SELECT id FROM {user_table} WHERE github_id = $1");
         let user_id: Uuid = if let Some(id) = sqlx::query_scalar::<_, Uuid>(&select_user)
-            .bind(github_login)
+            .bind(github_id)
             .fetch_optional(&self.pool)
             .await?
         {
@@ -1571,7 +1571,7 @@ impl DBContext {
 
         // Step 2: if user has no tenant, create one and map it
         if self.tenant_count(user_id).await? == 0 {
-            let tenant_key = self.get_next_tenant_key(user_id, email).await?;
+            let tenant_key = self.get_next_tenant_key(user_id).await?;
             let tenant_name = String::from("Self");
 
             let insert_tenant = format!(

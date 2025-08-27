@@ -251,13 +251,13 @@ pub struct TenantSetParams {
     user_id: Uuid,
 }
 
-// This is used to create a new Tenant, given the tenant's name and the user_id. NOTE: this does not automatically set thew tenant as the tenant last.
+// This is used to create a new Tenant, given the tenant's name and the user_id. NOTE: this does not automatically set the tenant as the tenant last.
 pub async fn set_tenant(
     State(db): State<Arc<DBContext>>,
     Json(input): Json<TenantSetParams>,
 ) -> Result<Json<i32>, (StatusCode, String)> {
     let tenant_key = db
-        .get_next_tenant_key(input.user_id, &input.name)
+        .get_next_tenant_key(input.user_id)
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
