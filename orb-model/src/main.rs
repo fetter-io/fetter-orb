@@ -28,7 +28,10 @@ use std::net::SocketAddr;
 use std::str::FromStr;
 use std::sync::Arc;
 use tokio::net::TcpListener;
+use tower::ServiceBuilder;
+use tower_http::catch_panic::CatchPanicLayer;
 use tower_http::cors::{Any, CorsLayer};
+use uuid::Uuid;
 
 //------------------------------------------------------------------------------
 // endpoint implementations
@@ -58,7 +61,7 @@ pub async fn post_dep_manifest(
 
 #[derive(Deserialize, Debug)]
 pub struct TenantQueryParams {
-    pub user_id: Option<i32>,
+    pub user_id: Option<Uuid>,
 }
 
 pub async fn get_tenant(
@@ -219,8 +222,8 @@ pub async fn get_audit(
 
 #[derive(Deserialize, Debug)]
 pub struct OnLoginParams {
-    // pub github_id: i64,
-    pub login: String,
+    pub github_login: String,
+    pub github_id: i32,
     pub email: String,
     pub name: String,
 }
@@ -230,10 +233,14 @@ pub async fn post_on_login(
     Json(payload): Json<OnLoginParams>,
 ) -> Result<Json<serde_json::Value>, (StatusCode, String)> {
     let user_id = db
-        .user_tenant_init(&payload.login, &payload.email, &payload.name)
+        .user_tenant_init(
+            &payload.github_login,
+            payload.github_id,
+            &payload.email,
+            &payload.name,
+        )
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-
     Ok(Json(json!({ "user_id": user_id })))
 }
 
@@ -241,16 +248,16 @@ pub async fn post_on_login(
 #[derive(Deserialize)]
 pub struct TenantSetParams {
     name: String,
-    user_id: i32,
+    user_id: Uuid,
 }
 
-// This is used to create a new Tenant, given the tenant's name and the user_id. NOTE: this does not automatically set thew tenant as the tenant last.
+// This is used to create a new Tenant, given the tenant's name and the user_id. NOTE: this does not automatically set the tenant as the tenant last.
 pub async fn set_tenant(
     State(db): State<Arc<DBContext>>,
     Json(input): Json<TenantSetParams>,
 ) -> Result<Json<i32>, (StatusCode, String)> {
     let tenant_key = db
-        .get_next_tenant_key(input.user_id, &input.name)
+        .get_next_tenant_key(input.user_id)
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
@@ -276,7 +283,7 @@ pub async fn set_tenant(
 
 #[derive(Deserialize)]
 pub struct UserParams {
-    pub user_id: i32,
+    pub user_id: Uuid,
 }
 
 pub async fn get_user_term_accept(
@@ -360,7 +367,7 @@ pub async fn get_user_tenant_last(
 
 #[derive(Deserialize)]
 pub struct UserTenantParams {
-    pub user_id: i32,
+    pub user_id: Uuid,
     pub tenant_id: i32,
 }
 
@@ -508,7 +515,11 @@ async fn main() {
     let app = route_unprotected
         .merge(route_protected)
         .merge(route_monitor_scan)
-        .layer(cors)
+        .layer(
+            ServiceBuilder::new()
+                .layer(CatchPanicLayer::new())
+                .layer(cors),
+        )
         .with_state(app_state);
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 3001));

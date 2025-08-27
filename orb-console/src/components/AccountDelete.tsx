@@ -27,7 +27,6 @@ export function AccountDelete() {
           body: JSON.stringify({ user_id: session.user.user_id }),
         },
       );
-
       if (!res.ok) {
         const err = await res.text();
         throw new Error(err);
@@ -45,7 +44,7 @@ export function AccountDelete() {
 
   return (
     <>
-      <div className="space-y-2 border border-slate-600 rounded bg-gray-800 p-4">
+      <div className="space-y-2 border border-slate-600 rounded bg-gray-800 p-2">
         <button
           onClick={() => setShowModal(true)}
           disabled={loading}

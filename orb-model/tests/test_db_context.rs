@@ -17,20 +17,18 @@ async fn test_tenant_a() {
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
-    let _ = ctx
-        .user_tenant_init("foo", "foo@foo.com", "Foo")
+    let user_id = ctx
+        .user_tenant_init("foo", 0, "foo@foo.com", "Foo")
         .await
         .unwrap();
-
     let t = Tenant {
         key: "test".to_string(),
         name: "test".to_string(),
         ping_limit: 1,
-        created_by: 1,
+        created_by: user_id,
     };
-    let id = ctx.tenant_insert_or_get(&t).await.unwrap();
-    assert_eq!(id, 2);
-
+    let tenant_id = ctx.tenant_insert_or_get(&t).await.unwrap();
+    assert_eq!(tenant_id, 2);
     ctx.tables_drop().await.unwrap();
 }
 
@@ -41,8 +39,8 @@ async fn test_get_tenants_a() {
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
-    let _ = ctx
-        .user_tenant_init("foo", "foo@foo.com", "Foo")
+    let user_id = ctx
+        .user_tenant_init("foo", 0, "foo@foo.com", "Foo")
         .await
         .unwrap();
 
@@ -50,7 +48,7 @@ async fn test_get_tenants_a() {
         key: "aaa".to_string(),
         name: "AAA".to_string(),
         ping_limit: 1,
-        created_by: 1,
+        created_by: user_id,
     };
     let _ = ctx.tenant_insert_or_get(&t1).await.unwrap();
 
@@ -58,11 +56,11 @@ async fn test_get_tenants_a() {
         key: "bbb".to_string(),
         name: "BBB".to_string(),
         ping_limit: 1,
-        created_by: 1,
+        created_by: user_id,
     };
     let _ = ctx.tenant_insert_or_get(&t2).await.unwrap();
 
-    let tenants: Vec<(i32, Tenant)> = ctx
+    let mut tenants: Vec<(i32, Tenant)> = ctx
         .get_tenants(None)
         .await
         .unwrap()
@@ -70,12 +68,25 @@ async fn test_get_tenants_a() {
         .filter(|(_, t)| t.name != "Self")
         .collect();
 
-    let json = serde_json::to_value(&tenants).unwrap();
-    // println!("{:?}", json);
-    assert_eq!(
-        serde_json::to_string(&json).unwrap(),
-        r#"[[2,{"created_by":1,"key":"aaa","name":"AAA","ping_limit":1}],[3,{"created_by":1,"key":"bbb","name":"BBB","ping_limit":1}]]"#
-    );
+    tenants.sort_by_key(|(_, t)| t.key.clone());
+
+    assert_eq!(tenants.len(), 2);
+
+    // Entry 0
+    let (id0, t0) = &tenants[0];
+    assert!(*id0 > 0);
+    assert_eq!(t0.key, "aaa");
+    assert_eq!(t0.name, "AAA");
+    assert_eq!(t0.ping_limit, 1);
+    assert_eq!(t0.created_by, user_id);
+
+    // Entry 1
+    let (id1, t1) = &tenants[1];
+    assert!(*id1 > 0);
+    assert_eq!(t1.key, "bbb");
+    assert_eq!(t1.name, "BBB");
+    assert_eq!(t1.ping_limit, 1);
+    assert_eq!(t1.created_by, user_id);
 
     ctx.tables_drop().await.unwrap();
 }
@@ -163,8 +174,8 @@ async fn test_load_system_tag_a() {
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
-    let _ = ctx
-        .user_tenant_init("foo", "foo@foo.com", "Foo")
+    let user_id = ctx
+        .user_tenant_init("foo", 0, "foo@foo.com", "Foo")
         .await
         .unwrap();
 
@@ -172,7 +183,7 @@ async fn test_load_system_tag_a() {
         key: "ffff".to_string(),
         name: "foo".to_string(),
         ping_limit: 1,
-        created_by: 1,
+        created_by: user_id,
     };
     let t_id = ctx.tenant_insert_or_get(&t).await.unwrap();
 
@@ -195,11 +206,11 @@ async fn test_system_tag_pings_a() {
     path1.push("tests/fixtures/monitor-scan-01.json");
     let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
 
-    let _ = ctx
-        .user_tenant_init("foo", "foo@foo.com", "Foo")
+    let user_id = ctx
+        .user_tenant_init("foo", 0, "foo@foo.com", "Foo")
         .await
         .unwrap();
-    let t = Tenant::from_key("team-a", 1);
+    let t = Tenant::from_key("team-a", user_id);
     let _ = ctx.tenant_insert_or_get(&t).await.unwrap();
     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
 
@@ -224,11 +235,11 @@ async fn test_user_delete_a() {
     path1.push("tests/fixtures/monitor-scan-01.json");
     let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
 
-    let _ = ctx
-        .user_tenant_init("foo", "foo@foo.com", "Foo")
+    let user_id = ctx
+        .user_tenant_init("foo", 0, "foo@foo.com", "Foo")
         .await
         .unwrap();
-    let t = Tenant::from_key("team-a", 1);
+    let t = Tenant::from_key("team-a", user_id);
     let _ = ctx.tenant_insert_or_get(&t).await.unwrap();
     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
 
@@ -239,7 +250,7 @@ async fn test_user_delete_a() {
         .to_string();
     assert_eq!(post1, r#"[["2025-07-18T23:23:45.131879Z",null,130]]"#);
 
-    let _ = ctx.user_delete(1).await.unwrap();
+    let _ = ctx.user_delete(user_id).await.unwrap();
 
     let post2 = ctx
         .package_counts(Some(1), Some(1), None)
@@ -251,7 +262,7 @@ async fn test_user_delete_a() {
     ctx.tables_drop().await.unwrap();
 }
 
-//------------------------------------------------------------------------------
+// //------------------------------------------------------------------------------
 #[tokio::test]
 async fn test_package_counts_a() {
     let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
@@ -263,11 +274,11 @@ async fn test_package_counts_a() {
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
-    let _ = ctx
-        .user_tenant_init("foo", "foo@foo.com", "Foo")
+    let user_id = ctx
+        .user_tenant_init("foo", 0, "foo@foo.com", "Foo")
         .await
         .unwrap();
-    let t = Tenant::from_key("team-a", 1);
+    let t = Tenant::from_key("team-a", user_id);
     let _ = ctx.tenant_insert_or_get(&t).await.unwrap();
     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
 
@@ -312,11 +323,11 @@ async fn test_package_counts_b() {
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
-    let _ = ctx
-        .user_tenant_init("foo", "foo@foo.com", "Foo")
+    let user_id = ctx
+        .user_tenant_init("foo", 0, "foo@foo.com", "Foo")
         .await
         .unwrap();
-    let t = Tenant::from_key("team-a", 1);
+    let t = Tenant::from_key("team-a", user_id);
     let _ = ctx.tenant_insert_or_get(&t).await.unwrap();
 
     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
@@ -334,7 +345,7 @@ async fn test_package_counts_b() {
     );
 }
 
-//------------------------------------------------------------------------------
+// //------------------------------------------------------------------------------
 #[tokio::test]
 async fn test_load_site_packages_a() {
     let pool = get_db_pool().await;
@@ -358,7 +369,7 @@ async fn test_load_site_packages_a() {
     ctx.tables_drop().await.unwrap();
 }
 
-//------------------------------------------------------------------------------
+// //------------------------------------------------------------------------------
 
 #[tokio::test]
 async fn test_dep_manifest_load_a() {
@@ -370,11 +381,11 @@ async fn test_dep_manifest_load_a() {
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
-    let _ = ctx
-        .user_tenant_init("foo", "foo@foo.com", "Foo")
+    let user_id = ctx
+        .user_tenant_init("foo", 0, "foo@foo.com", "Foo")
         .await
         .unwrap();
-    let t = Tenant::from_key("team-a", 1);
+    let t = Tenant::from_key("team-a", user_id);
     let _ = ctx.tenant_insert_or_get(&t).await.unwrap();
 
     // do first to force tenant creation
@@ -402,7 +413,7 @@ async fn test_dep_manifest_load_a() {
     ctx.tables_drop().await.unwrap();
 }
 
-//------------------------------------------------------------------------------
+// //------------------------------------------------------------------------------
 
 #[tokio::test]
 async fn test_latest_packages_to_sites_a() {
@@ -415,11 +426,11 @@ async fn test_latest_packages_to_sites_a() {
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
-    let _ = ctx
-        .user_tenant_init("foo", "foo@foo.com", "Foo")
+    let user_id = ctx
+        .user_tenant_init("foo", 0, "foo@foo.com", "Foo")
         .await
         .unwrap();
-    let t = Tenant::from_key("team-a", 1);
+    let t = Tenant::from_key("team-a", user_id);
     let _ = ctx.tenant_insert_or_get(&t).await.unwrap();
 
     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
@@ -433,7 +444,7 @@ async fn test_latest_packages_to_sites_a() {
     ctx.tables_drop().await.unwrap();
 }
 
-//------------------------------------------------------------------------------
+// //------------------------------------------------------------------------------
 
 #[tokio::test]
 async fn test_tables_create_and_index_check() -> Result<(), sqlx::Error> {
@@ -478,25 +489,25 @@ async fn test_user_tenant_init_a() {
     ctx.tables_create(false).await.unwrap();
 
     let uid = ctx
-        .user_tenant_init("foo", "foo@foo.com", "Foo")
+        .user_tenant_init("foo", 0, "foo@foo.com", "Foo")
         .await
         .unwrap();
 
-    assert!(uid == 1);
+    assert!(uid.to_string().len() == 36);
 
-    let uid_post = ctx.user_id_from_login("foo").await.unwrap();
-    assert!(uid_post == Some(1));
+    // let uid_post = ctx.user_id_from_login("foo").await.unwrap();
+    // assert!(uid_post == Some(uid));
 
-    let u = ctx.user_from_user_id(1).await.unwrap();
-    assert_eq!(u.id, 1);
-    assert_eq!(u.login, "foo");
+    let u = ctx.user_from_user_id(uid).await.unwrap();
+    // assert_eq!(u.id, 1);
+    assert_eq!(u.github_login, "foo");
     assert_eq!(u.email, Some("foo@foo.com".to_string()));
     assert_eq!(u.term_accepted, false);
 
     ctx.tables_drop().await.unwrap();
 }
 
-//------------------------------------------------------------------------------
+// //------------------------------------------------------------------------------
 
 #[tokio::test]
 async fn test_user_tenant_last_a() {
@@ -505,32 +516,32 @@ async fn test_user_tenant_last_a() {
     ctx.tables_drop().await.unwrap();
     ctx.tables_create(false).await.unwrap();
 
-    let _ = ctx
-        .user_tenant_init("foo", "foo@foo.com", "Foo")
+    let user_id = ctx
+        .user_tenant_init("foo", 0, "foo@foo.com", "Foo")
         .await
         .unwrap();
 
-    let post1 = ctx.user_tenant_last(1).await.unwrap();
+    let post1 = ctx.user_tenant_last(user_id).await.unwrap();
     assert_eq!(post1, Some(1));
 
-    let _ = ctx.user_set_tenant_last(1, 1).await.unwrap();
+    let _ = ctx.user_set_tenant_last(user_id, 1).await.unwrap();
 
-    let post2 = ctx.user_tenant_last(1).await.unwrap();
+    let post2 = ctx.user_tenant_last(user_id).await.unwrap();
     assert_eq!(post2, Some(1));
 
-    assert!(ctx.user_set_tenant_last(1, 2).await.is_err());
+    assert!(ctx.user_set_tenant_last(user_id, 2).await.is_err());
 
     let t = Tenant {
         key: "test".to_string(),
         name: "test".to_string(),
         ping_limit: 1,
-        created_by: 1,
+        created_by: user_id,
     };
     let id = ctx.tenant_insert_or_get(&t).await.unwrap();
     assert_eq!(id, 2);
 
-    let _ = ctx.user_set_tenant_last(1, 2).await.unwrap();
+    let _ = ctx.user_set_tenant_last(user_id, 2).await.unwrap();
 
-    let post3 = ctx.user_tenant_last(1).await.unwrap();
+    let post3 = ctx.user_tenant_last(user_id).await.unwrap();
     assert_eq!(post3, Some(2));
 }

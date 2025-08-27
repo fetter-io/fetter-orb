@@ -34,6 +34,7 @@ export default function AppPage() {
   }, [status, session?.user?.user_id]);
 
   if (status === "loading" || acceptedTerms === null) {
+    // signOut({ callbackUrl: "/" })
     return <Loading message="Loading..." />;
   }
 

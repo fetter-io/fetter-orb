@@ -18,6 +18,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Duration;
 use std::time::UNIX_EPOCH;
+use uuid::Uuid;
 
 fn package_from_row(row: &PgRow) -> (i32, Package) {
     let id: i32 = row.get("id");
@@ -77,11 +78,11 @@ pub struct Tenant {
     pub key: String,
     pub name: String,
     pub ping_limit: i32,
-    pub created_by: i32,
+    pub created_by: Uuid,
 }
 
 impl Tenant {
-    pub fn from_key(key: &str, created_by: i32) -> Self {
+    pub fn from_key(key: &str, created_by: Uuid) -> Self {
         Tenant {
             key: key.to_string(),
             name: key.to_string(),
@@ -93,8 +94,9 @@ impl Tenant {
 
 #[derive(Debug, Serialize)]
 pub struct User {
-    pub id: i32,
-    pub login: String,
+    pub id: Uuid,
+    pub github_login: String,
+    pub github_id: i32,
     pub email: Option<String>,
     pub name: Option<String>,
     pub tenant_limit: i32,
@@ -158,11 +160,14 @@ impl DBContext {
 
         let if_clause = if if_not_exists { "IF NOT EXISTS " } else { "" };
 
+        let create_extensions = "CREATE EXTENSION IF NOT EXISTS pgcrypto;".to_string();
+
         let create_user = format!(
             r#"
             CREATE TABLE {if_clause} {user_table} (
-                id SERIAL PRIMARY KEY,
-                login TEXT NOT NULL,
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                github_login TEXT NOT NULL,
+                github_id INTEGER NOT NULL,
                 email TEXT,
                 name TEXT,
                 tenant_limit INTEGER NOT NULL,
@@ -179,7 +184,7 @@ impl DBContext {
                 key TEXT NOT NULL UNIQUE,
                 name TEXT NOT NULL,
                 ping_limit INTEGER NOT NULL,
-                created_by INTEGER NOT NULL REFERENCES {user_table}(id)
+                created_by UUID NOT NULL REFERENCES {user_table}(id)
             );
             "#
         );
@@ -187,7 +192,7 @@ impl DBContext {
         let create_user_to_tenant = format!(
             r#"
             CREATE TABLE {if_clause}{user_to_tenant_table} (
-                user_id INTEGER NOT NULL REFERENCES {user_table}(id) ON DELETE CASCADE,
+                user_id UUID NOT NULL REFERENCES {user_table}(id) ON DELETE CASCADE,
                 tenant_id INTEGER NOT NULL REFERENCES {tenant_table}(id) ON DELETE CASCADE,
                 PRIMARY KEY (user_id, tenant_id)
             );
@@ -197,7 +202,7 @@ impl DBContext {
         let create_user_tenant_last_table = format!(
             r#"
             CREATE TABLE {if_clause}{user_tenant_last_table} (
-                user_id INTEGER PRIMARY KEY REFERENCES {user_table}(id) ON DELETE CASCADE,
+                user_id UUID PRIMARY KEY REFERENCES {user_table}(id) ON DELETE CASCADE,
                 tenant_id INTEGER REFERENCES {tenant_table}(id) ON DELETE SET NULL
             );
             "#
@@ -272,7 +277,7 @@ impl DBContext {
             );
             "#
         );
-
+        self.pool.execute(&*create_extensions).await?;
         self.pool.execute(&*create_user).await?;
         self.pool.execute(&*create_tenant).await?;
         self.pool.execute(&*create_user_to_tenant).await?;
@@ -376,7 +381,7 @@ impl DBContext {
     /// Get all tenant this user has access too, not just those created by this user.
     pub async fn get_tenants(
         &self,
-        user_id: Option<i32>,
+        user_id: Option<Uuid>,
     ) -> Result<Vec<(i32, Tenant)>, sqlx::Error> {
         let tenant_table = self.get_table("tenant");
 
@@ -421,7 +426,7 @@ impl DBContext {
     }
 
     // Get the count of tenants created by the supplied user_id.
-    pub async fn tenant_count(&self, user_id: i32) -> Result<i64, sqlx::Error> {
+    pub async fn tenant_count(&self, user_id: Uuid) -> Result<i64, sqlx::Error> {
         let tenant_table = self.get_table("tenant");
 
         let query = format!("SELECT COUNT(*) FROM {tenant_table} WHERE created_by = $1");
@@ -435,7 +440,7 @@ impl DBContext {
     }
 
     // Get the tenant_limit for the supplied user.
-    pub async fn tenant_limit(&self, user_id: i32) -> Result<i32, sqlx::Error> {
+    pub async fn tenant_limit(&self, user_id: Uuid) -> Result<i32, sqlx::Error> {
         let user_table = self.get_table("users");
         let query = format!("SELECT tenant_limit FROM {user_table} WHERE id = $1");
         let limit: i32 = sqlx::query_scalar(&query)
@@ -448,7 +453,7 @@ impl DBContext {
     pub async fn tenant_assign_user(
         &self,
         tenant_id: i32,
-        user_id: i32,
+        user_id: Uuid,
     ) -> Result<(), sqlx::Error> {
         let user_to_tenant_table = self.get_table("user_to_tenant");
 
@@ -1384,12 +1389,12 @@ impl DBContext {
 
     //--------------------------------------------------------------------------
 
-    pub async fn user_from_user_id(&self, user_id: i32) -> Result<User, sqlx::Error> {
+    pub async fn user_from_user_id(&self, user_id: Uuid) -> Result<User, sqlx::Error> {
         let user_table = self.get_table("users");
 
         let query = format!(
             r#"
-            SELECT id, login, email, name, tenant_limit, term_accepted, created_at
+            SELECT id, github_login, github_id, email, name, tenant_limit, term_accepted, created_at
             FROM {user_table}
             WHERE id = $1
             "#
@@ -1400,7 +1405,8 @@ impl DBContext {
             .map(|row: sqlx::postgres::PgRow| {
                 Ok(User {
                     id: row.get("id"),
-                    login: row.get("login"),
+                    github_login: row.get("github_login"),
+                    github_id: row.get("github_id"),
                     email: row.get("email"),
                     name: row.get("name"),
                     tenant_limit: row.get("tenant_limit"),
@@ -1412,11 +1418,10 @@ impl DBContext {
             })
             .fetch_one(&self.pool)
             .await?;
-
         row
     }
 
-    pub async fn user_delete(&self, user_id: i32) -> Result<(), sqlx::Error> {
+    pub async fn user_delete(&self, user_id: Uuid) -> Result<(), sqlx::Error> {
         let tenant_table = self.get_table("tenant");
         let system_tag_table = self.get_table("system_tag");
         let ping_table = self.get_table("ping");
@@ -1504,11 +1509,7 @@ impl DBContext {
         Ok(())
     }
 
-    pub async fn get_next_tenant_key(
-        &self,
-        user_id: i32,
-        email: &str,
-    ) -> Result<String, sqlx::Error> {
+    pub async fn get_next_tenant_key(&self, user_id: Uuid) -> Result<String, sqlx::Error> {
         let tenant_table = self.get_table("tenant");
 
         let query = format!(
@@ -1523,7 +1524,11 @@ impl DBContext {
             .fetch_one(&self.pool)
             .await?;
 
-        let tenant_key = strings_to_hash(vec![&self.salt, email, &tenant_count.to_string()]);
+        let tenant_key = strings_to_hash(vec![
+            &self.salt,
+            &user_id.to_string(),
+            &tenant_count.to_string(),
+        ]);
 
         Ok(tenant_key)
     }
@@ -1531,54 +1536,61 @@ impl DBContext {
     /// Check if a user exists; if not, add that user. Also check that user has a default "Self" tenant and that that tenant is mapped to this User
     pub async fn user_tenant_init(
         &self,
-        login: &str,
+        github_login: &str,
+        github_id: i32,
         email: &str,
         name: &str,
-    ) -> Result<i32, sqlx::Error> {
+    ) -> Result<Uuid, sqlx::Error> {
         let user_table = self.get_table("users");
         let tenant_table = self.get_table("tenant");
         let user_to_tenant_table = self.get_table("user_to_tenant");
 
-        // Step 1: Check if user exists
-        let select_user = format!("SELECT id FROM {user_table} WHERE login = $1");
-        let user_id: i32 = if let Some(row) = sqlx::query(&select_user)
-            .bind(login)
+        // Step 1: ensure user exists; grab UUID id
+        let select_user = format!("SELECT id FROM {user_table} WHERE github_id = $1");
+        let user_id: Uuid = if let Some(id) = sqlx::query_scalar::<_, Uuid>(&select_user)
+            .bind(github_id)
             .fetch_optional(&self.pool)
             .await?
         {
-            row.get("id")
+            id
         } else {
             let insert_user = format!(
-                "INSERT INTO {user_table} (login, email, name, tenant_limit) VALUES ($1, $2, $3, $4) RETURNING id"
+                "INSERT INTO {user_table} (github_login, github_id, email, name, tenant_limit)
+             VALUES ($1, $2, $3, $4, $5)
+             RETURNING id"
             );
-            let row = sqlx::query(&insert_user)
-                .bind(login)
+            sqlx::query_scalar::<_, Uuid>(&insert_user)
+                .bind(github_login)
+                .bind(github_id)
                 .bind(email)
                 .bind(name)
                 .bind(self.default_tenant_limit)
                 .fetch_one(&self.pool)
-                .await?;
-            row.get("id")
+                .await?
         };
 
+        // Step 2: if user has no tenant, create one and map it
         if self.tenant_count(user_id).await? == 0 {
-            let tenant_key = self.get_next_tenant_key(user_id, email).await?;
-            let tenant_name = String::from("Self"); // could be Personal
+            let tenant_key = self.get_next_tenant_key(user_id).await?;
+            let tenant_name = String::from("Self");
 
             let insert_tenant = format!(
-                "INSERT INTO {tenant_table} (key, name, ping_limit, created_by) VALUES ($1, $2, $3, $4) RETURNING id"
+                "INSERT INTO {tenant_table} (key, name, ping_limit, created_by)
+             VALUES ($1, $2, $3, $4)
+             RETURNING id"
             );
-            let row = sqlx::query(&insert_tenant)
+            let tenant_id: i32 = sqlx::query_scalar::<_, i32>(&insert_tenant)
                 .bind(&tenant_key)
                 .bind(&tenant_name)
                 .bind(self.default_ping_limit)
                 .bind(user_id)
                 .fetch_one(&self.pool)
                 .await?;
-            let tenant_id: i32 = row.get("id");
 
             let insert_mapping = format!(
-                "INSERT INTO {user_to_tenant_table} (user_id, tenant_id) VALUES ($1, $2) ON CONFLICT DO NOTHING"
+                "INSERT INTO {user_to_tenant_table} (user_id, tenant_id)
+             VALUES ($1, $2)
+             ON CONFLICT DO NOTHING"
             );
             sqlx::query(&insert_mapping)
                 .bind(user_id)
@@ -1588,23 +1600,25 @@ impl DBContext {
 
             self.user_set_tenant_last(user_id, tenant_id).await?;
         }
-
         Ok(user_id)
     }
 
-    pub async fn user_id_from_login(&self, login: &str) -> Result<Option<i32>, sqlx::Error> {
-        let user_table = self.get_table("users");
-        let query = format!("SELECT id FROM {user_table} WHERE login = $1");
+    // pub async fn user_id_from_login(
+    //     &self,
+    //     github_login: &str,
+    // ) -> Result<Option<Uuid>, sqlx::Error> {
+    //     let user_table = self.get_table("users");
+    //     let query = format!("SELECT id FROM {user_table} WHERE github_login = $1");
 
-        let row = sqlx::query(&query)
-            .bind(login)
-            .fetch_optional(&self.pool)
-            .await?;
+    //     let row = sqlx::query(&query)
+    //         .bind(github_login)
+    //         .fetch_optional(&self.pool)
+    //         .await?;
 
-        Ok(row.map(|r| r.get("id")))
-    }
+    //     Ok(row.map(|r| r.get("id")))
+    // }
 
-    pub async fn user_term_accepted(&self, user_id: i32) -> Result<bool, sqlx::Error> {
+    pub async fn user_term_accepted(&self, user_id: Uuid) -> Result<bool, sqlx::Error> {
         let user_table = self.get_table("users");
 
         let query = format!(
@@ -1619,11 +1633,11 @@ impl DBContext {
             .bind(user_id)
             .fetch_optional(&self.pool)
             .await?;
-
+        // println!("user_term_accepted result: {:?}", result);
         Ok(result.unwrap_or(false))
     }
 
-    pub async fn user_set_term_accepted(&self, user_id: i32) -> Result<(), sqlx::Error> {
+    pub async fn user_set_term_accepted(&self, user_id: Uuid) -> Result<(), sqlx::Error> {
         let user_table = self.get_table("users");
 
         let query = format!(
@@ -1641,7 +1655,7 @@ impl DBContext {
         Ok(())
     }
 
-    pub async fn user_tenant_last(&self, user_id: i32) -> Result<Option<i32>, sqlx::Error> {
+    pub async fn user_tenant_last(&self, user_id: Uuid) -> Result<Option<i32>, sqlx::Error> {
         let user_tenant_last_table = self.get_table("user_tenant_last");
 
         let query = format!(
@@ -1662,7 +1676,7 @@ impl DBContext {
 
     pub async fn user_set_tenant_last(
         &self,
-        user_id: i32,
+        user_id: Uuid,
         tenant_id: i32,
     ) -> Result<(), sqlx::Error> {
         let user_tenant_last_table = self.get_table("user_tenant_last");

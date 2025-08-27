@@ -6,6 +6,8 @@ export type Tab =
   | "tenant"
   | "account";
 
+export type UUID = string;
+
 export type Package = {
   id: number;
   name: string;
@@ -86,8 +88,9 @@ export type AuditEntry = {
 };
 
 export type UserRecord = {
-  id: number;
-  login: string;
+  id: UUID;
+  github_login: string;
+  github_id: number;
   email: string | null;
   name: string | null;
   tenant_limit: number;
@@ -99,7 +102,7 @@ export type Tenant = {
   key: string;
   name: string;
   ping_limit: number;
-  created_by: number;
+  created_by: UUID;
 };
 
 export type ValidationEntry = [number, string | null];

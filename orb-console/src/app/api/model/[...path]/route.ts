@@ -28,9 +28,21 @@ async function forward(
   req: Request,
   method: string,
   path: string[],
-  login: string,
+  user_id: string,
+  github_id: number,
 ) {
   const url = new URL(req.url);
+
+  // Validate user_id parameter if present
+  const urlUserId = url.searchParams.get("user_id");
+  if (urlUserId && urlUserId !== user_id) {
+    return new NextResponse(
+      JSON.stringify({
+        error: "user_id parameter does not match authenticated user",
+      }),
+      { status: 403, headers: { "content-type": "application/json" } },
+    );
+  }
   const backendUrl = `${PRIVATE_ORB_MODEL}/${joinPath(path)}${url.search}`;
 
   const headers = new Headers();
@@ -41,17 +53,23 @@ async function forward(
   if (ct) headers.set("content-type", ct);
 
   headers.set("x-orb-internal", TENANT_SECRET);
-  headers.set("x-orb-login", login);
+  headers.set("x-orb-github-id", github_id.toString());
 
-  const r = await fetch(backendUrl, {
+  const fetchOptions: RequestInit & {
+    next?: { revalidate: number };
+    duplex?: "half";
+  } = {
     method,
     headers,
-    body: method === "GET" || method === "HEAD" ? undefined : req.body,
-    ...(method === "GET" || method === "HEAD"
-      ? {}
-      : { duplex: "half" as const }),
     next: { revalidate: 0 },
-  });
+  };
+
+  if (method !== "GET" && method !== "HEAD") {
+    fetchOptions.body = req.body;
+    fetchOptions.duplex = "half" as const;
+  }
+
+  const r = await fetch(backendUrl, fetchOptions);
 
   const outHeaders = new Headers();
   const rct = r.headers.get("content-type");
@@ -61,7 +79,7 @@ async function forward(
   return new NextResponse(r.body, { status: r.status, headers: outHeaders });
 }
 
-/** Narrow `ctx` without `any` and satisfy Next’s “await params” rule */
+/** Narrow `ctx` without `any` and satisfy Next's "await params" rule */
 type RouteContext = { params: Promise<{ path?: string[] }> };
 async function extractPath(ctx: unknown): Promise<string[]> {
   const { params } = ctx as RouteContext; // narrow once
@@ -69,24 +87,29 @@ async function extractPath(ctx: unknown): Promise<string[]> {
   return path;
 }
 
-export async function GET(req: Request, ctx: unknown) {
+async function handleRequest(req: Request, ctx: unknown, method: string) {
   const gate = await ensureSession();
   if (!gate.ok) return gate.res;
+
   const path = await extractPath(ctx);
-  const login = gate.session.user?.login;
-  if (!login) {
-    return NextResponse.json({ error: "missing login" }, { status: 401 });
+
+  const github_id = gate.session.user?.github_id;
+  if (!github_id) {
+    return NextResponse.json({ error: "missing github_id" }, { status: 401 });
   }
-  return forward(req, "GET", path, login);
+
+  const user_id = gate.session.user?.user_id;
+  if (!user_id) {
+    return NextResponse.json({ error: "missing user_id" }, { status: 401 });
+  }
+
+  return forward(req, method, path, user_id, github_id);
+}
+
+export async function GET(req: Request, ctx: unknown) {
+  return handleRequest(req, ctx, "GET");
 }
 
 export async function POST(req: Request, ctx: unknown) {
-  const gate = await ensureSession();
-  if (!gate.ok) return gate.res;
-  const path = await extractPath(ctx);
-  const login = gate.session.user?.login;
-  if (!login) {
-    return NextResponse.json({ error: "missing login" }, { status: 401 });
-  }
-  return forward(req, "POST", path, login);
+  return handleRequest(req, ctx, "POST");
 }

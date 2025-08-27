@@ -18,46 +18,52 @@ export const authOptions: NextAuthOptions = {
       // using `${process.env.NEXT_PUBLIC_ORB_MODEL}/on_login` causes the auth to get stuck
 
       if (account && profile && account.provider === "github") {
-        const githubProfile = profile as {
-          login: string;
-          id: number;
+        const gh = profile as {
+          login: string; // github_login
+          id: number; // github_id
           email?: string;
           name?: string;
         };
-        // TODO: add github Profile id to User state
-        // console.log(githubProfile.id);
-
-        // NOTE: must explicitly add headers as we are not using NEXT_PUBLIC_ORB_MODEL
+        // NOTE: must add headers as we are not using NEXT_PUBLIC_ORB_MODEL
         const res = await fetch(onLoginEndpoint, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "x-orb-internal": `${TENANT_SECRET}`,
-            "x-orb-github-id": githubProfile.id,
+            "x-orb-github-id": String(gh.id),
           },
           body: JSON.stringify({
-            login: githubProfile.login,
-            email: githubProfile.email,
-            name: githubProfile.name,
+            github_login: gh.login,
+            github_id: gh.id,
+            email: gh.email,
+            name: gh.name,
           }),
         });
+        if (!res.ok)
+          throw new Error(`on_login failed: ${res.status} ${res.statusText}`);
+
         const data = await res.json();
-        token.user_id = data.user_id;
-        token.login = githubProfile.login;
+        token.user_id = data.user_id; // UUID
+        token.github_login = gh.login;
+        token.github_id = gh.id;
       }
       return token;
     },
     async session({ session, token }) {
-      if (typeof token.user_id === "number") {
+      if (typeof token.user_id === "string") {
         session.user.user_id = token.user_id;
       }
-      if (typeof token.login === "string") {
-        session.user.login = token.login;
+      if (typeof token.github_login === "string") {
+        session.user.github_login = token.github_login;
       }
+      if (typeof token.github_id === "number") {
+        session.user.github_id = token.github_id;
+      }
+
       return session;
     },
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET!,
 };
 
 export default NextAuth(authOptions);
