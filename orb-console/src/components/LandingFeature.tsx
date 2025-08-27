@@ -24,13 +24,13 @@ export function LandingFeature({
         <p className="text-l text-zinc-500">{description}</p>
       </div>
       <div className="md:w-1/2 flex justify-center">
-        <div className="h-[700px] w-[400px] overflow-hidden rounded-lg shadow-xl outline outline-2 outline-blue-950">
+        <div className="h-[500px] w-[300px] overflow-hidden rounded-lg shadow-xl outline outline-2 outline-blue-950">
           <Image
             src={imageSrc}
             alt={title}
-            width={400}
-            height={400}
-            className="-translate-y-[63px]"
+            width={300}
+            height={300}
+            className="-translate-y-[50px]"
           />
         </div>
       </div>
