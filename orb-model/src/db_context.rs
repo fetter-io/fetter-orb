@@ -1603,21 +1603,20 @@ impl DBContext {
         Ok(user_id)
     }
 
-    // TODO: this should be github_id, not github_login
-    pub async fn user_id_from_login(
-        &self,
-        github_login: &str,
-    ) -> Result<Option<Uuid>, sqlx::Error> {
-        let user_table = self.get_table("users");
-        let query = format!("SELECT id FROM {user_table} WHERE github_login = $1");
+    // pub async fn user_id_from_login(
+    //     &self,
+    //     github_login: &str,
+    // ) -> Result<Option<Uuid>, sqlx::Error> {
+    //     let user_table = self.get_table("users");
+    //     let query = format!("SELECT id FROM {user_table} WHERE github_login = $1");
 
-        let row = sqlx::query(&query)
-            .bind(github_login)
-            .fetch_optional(&self.pool)
-            .await?;
+    //     let row = sqlx::query(&query)
+    //         .bind(github_login)
+    //         .fetch_optional(&self.pool)
+    //         .await?;
 
-        Ok(row.map(|r| r.get("id")))
-    }
+    //     Ok(row.map(|r| r.get("id")))
+    // }
 
     pub async fn user_term_accepted(&self, user_id: Uuid) -> Result<bool, sqlx::Error> {
         let user_table = self.get_table("users");

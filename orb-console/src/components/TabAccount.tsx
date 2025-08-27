@@ -18,10 +18,10 @@ export function TabAccount({ userInfo }: { userInfo: UserRecord | null }) {
             <span>{userInfo.github_login}</span>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 px-2 py-2 bg-slate-800">
+          {/* <div className="grid grid-cols-2 gap-2 px-2 py-2 bg-slate-800">
             <span className="font-medium text-slate-400">GitHub ID</span>
             <span>{userInfo.github_id}</span>
-          </div>
+          </div> */}
 
           <div className="grid grid-cols-2 gap-2 px-2 py-2 bg-slate-800">
             <span className="font-medium text-slate-400">Email</span>
@@ -38,10 +38,10 @@ export function TabAccount({ userInfo }: { userInfo: UserRecord | null }) {
             <span>{userInfo.tenant_limit ?? "—"}</span>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 px-2 py-2 bg-slate-800">
+          {/* <div className="grid grid-cols-2 gap-2 px-2 py-2 bg-slate-800">
             <span className="font-medium text-slate-400">Terms Accepted</span>
             <span>{userInfo.term_accepted ? "Yes" : "No"}</span>
-          </div>
+          </div> */}
 
           <div className="grid grid-cols-2 gap-2 px-2 py-2 bg-slate-800">
             <span className="font-medium text-slate-400">Created</span>
