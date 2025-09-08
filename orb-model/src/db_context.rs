@@ -5,8 +5,9 @@ use std::env;
 use fetter::{
     AuditReport, DepManifest, DirectURL, FlagCacheRefresh, FlagLog, LockFile, Package, PathShared,
     ResultDynError, ScanFS, SystemTag, UreqClientLive, ValidationExplain, ValidationFlags,
-    ValidationReport, VcsInfo, VersionSpec,
+    ValidationReport, VcsInfo, VersionSpec, CvssFilter
 };
+
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
@@ -1215,6 +1216,7 @@ impl DBContext {
         system_tag_id: Option<i32>,
         tenant_id: Option<i32>,
     ) -> Result<Value, sqlx::Error> {
+        // NOTE: we could use `packages` as cache key for in-memory caching
         let (packages, package_to_id) = self.get_latest_packages(system_tag_id, tenant_id).await?;
 
         if packages.is_empty() {
@@ -1223,8 +1225,14 @@ impl DBContext {
         }
 
         let client = Arc::new(UreqClientLive);
-        let audit =
-            AuditReport::from_packages(client, &packages, FlagCacheRefresh(false), FlagLog(false));
+        let cache_dur = Duration::from_secs(120);
+        let audit = AuditReport::from_packages(
+            client,
+            &packages,
+            FlagCacheRefresh(false),
+            cache_dur,
+            FlagLog(false),
+        );
         let mut records = audit.records;
 
         // Sort by key, then version
@@ -1287,7 +1295,7 @@ impl DBContext {
 
         let packages: Vec<_> = package_to_sites.keys().cloned().collect();
         // packages.sort();
-        let site_to_exe: HashMap<PathShared, PathBuf> = HashMap::new();
+        let site_to_exe: HashMap<PathShared, Vec<PathShared>> = HashMap::new();
 
         let vr = ValidationReport::from_components(
             &packages,
