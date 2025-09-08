@@ -1216,7 +1216,6 @@ impl DBContext {
         system_tag_id: Option<i32>,
         tenant_id: Option<i32>,
     ) -> Result<Value, sqlx::Error> {
-        // NOTE: we could use `packages` as cache key for in-memory caching
         let (packages, package_to_id) = self.get_latest_packages(system_tag_id, tenant_id).await?;
 
         if packages.is_empty() {
