@@ -81,7 +81,7 @@ export function PackageVersionsCard({
                       {isVulnerable && (
                         <button
                           title="Vulnerability details"
-                          className="border-b border-transparent hover:border-yellow-400 cursor-pointer"
+                          className="border-b border-transparent cursor-pointer"
                           onClick={() => onVulnClick?.(entry.package_id)}
                         >
                           <VulnScoreIcon score={vulnerabilityScore} />
