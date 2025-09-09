@@ -64,11 +64,19 @@ export type VulnSeverity = {
   score: string;
 };
 
+export type CvssDetail = {
+    version: string;
+    vector: string;
+    score: number;
+    severity: string;
+}
+
+
 export type VulnInfo = {
   id: string;
-  references: VulnReference[];
-  severity: VulnSeverity[] | null;
   summary: string | null;
+  references: VulnReference[];
+  cvss_details: CvssDetail[] | null;
 };
 
 export type VulnRecord = {
