@@ -1,41 +1,12 @@
 import { VulnRecord } from "@/types";
 import { VulnScoreIcon } from "@/components/VulnScoreIcon";
 
-// Helper function to calculate the highest CVSS score for a vulnerability record
-export const getPackageVulnerabilityScore = (record: VulnRecord) => {
-  const { vuln_ids, vuln_infos } = record;
-  let highestScore = 0;
-  let highestSeverity = "";
-
-  vuln_ids.forEach((id) => {
-    const vuln = vuln_infos[id];
-    if (!vuln?.cvss_details) return;
-
-    // Sort CVSS details by version (highest first) and take the first one
-    const sortedCvss = vuln.cvss_details.sort((a, b) => {
-      const getVersionNumber = (version: string) => {
-        const match = version.match(/V(\d+)_(\d+)/);
-        if (!match) return 0;
-        return parseFloat(`${match[1]}.${match[2]}`);
-      };
-      return getVersionNumber(b.version) - getVersionNumber(a.version);
-    });
-
-    const highestVersionCvss = sortedCvss[0];
-    if (highestVersionCvss && highestVersionCvss.score > highestScore) {
-      highestScore = highestVersionCvss.score;
-      highestSeverity = highestVersionCvss.severity;
-    }
-  });
-
-  return { score: highestScore, severity: highestSeverity };
-};
-
 type VulnCardProps = {
   record: VulnRecord;
   package_id: number;
   highlight?: boolean;
   onPackageClick?: (key: string) => void;
+  vulnerabilityScore: number;
 };
 
 export function VulnCard({
@@ -43,9 +14,9 @@ export function VulnCard({
   package_id,
   highlight,
   onPackageClick,
+  vulnerabilityScore,
 }: VulnCardProps) {
   const { package: pkg, vuln_ids, vuln_infos } = record;
-  const representativeVuln = getPackageVulnerabilityScore(record);
 
   return (
     <div
@@ -69,7 +40,7 @@ export function VulnCard({
             📦
           </button>
         </div>
-        <VulnScoreIcon score={representativeVuln.score} />
+        <VulnScoreIcon score={vulnerabilityScore} />
       </h3>
 
       {vuln_ids.map((id) => {

@@ -35,6 +35,38 @@ import { UserMenuDropdown } from "@/components/UserMenuDropdown";
 
 //------------------------------------------------------------------------------
 
+// Helper function to calculate the highest CVSS score for a vulnerability record
+const getPackageVulnerabilityScore = (record: any) => {
+  const { vuln_ids, vuln_infos } = record;
+  let highestScore = 0;
+  let highestSeverity = "";
+
+  vuln_ids.forEach((id: string) => {
+    const vuln = vuln_infos[id];
+    if (!vuln?.cvss_details) return;
+
+    // Sort CVSS details by version (highest first) and take the first one
+    const sortedCvss = vuln.cvss_details.sort((a: any, b: any) => {
+      const getVersionNumber = (version: string) => {
+        const match = version.match(/V(\d+)_(\d+)/);
+        if (!match) return 0;
+        return parseFloat(`${match[1]}.${match[2]}`);
+      };
+      return getVersionNumber(b.version) - getVersionNumber(a.version);
+    });
+
+    const highestVersionCvss = sortedCvss[0];
+    if (highestVersionCvss && highestVersionCvss.score > highestScore) {
+      highestScore = highestVersionCvss.score;
+      highestSeverity = highestVersionCvss.severity;
+    }
+  });
+
+  return { score: highestScore, severity: highestSeverity };
+};
+
+//------------------------------------------------------------------------------
+
 export default function Dashboard() {
   // NOTE: the dashboard is called after the /on_login endpoint is called and the session is created. Thus, the user has been created and they hae at least on tenant.
 
@@ -330,8 +362,15 @@ export default function Dashboard() {
   // Audit updates
 
   const vulnerablePackageIds = useMemo(() => {
-    if (!auditState.data) return new Set<number>();
-    return new Set(auditState.data.map((entry) => entry.package_id));
+    if (!auditState.data) return new Map<number, number>();
+    const scoreMap = new Map<number, number>();
+    
+    auditState.data.forEach((entry) => {
+      const vulnScore = getPackageVulnerabilityScore(entry.record);
+      scoreMap.set(entry.package_id, vulnScore.score);
+    });
+    
+    return scoreMap;
   }, [auditState.data]);
 
   //----------------------------------------------------------------------------
@@ -514,6 +553,7 @@ export default function Dashboard() {
                       `vuln-pkg-${entry.package_id}` === highlightedVulnId
                     }
                     onPackageClick={handlePackageClick}
+                    vulnerabilityScore={vulnerablePackageIds.get(entry.package_id) || 0}
                   />
                 ))}
               </div>
