@@ -1,5 +1,35 @@
 import { VulnRecord } from "@/types";
 
+// Helper function to calculate the highest CVSS score for a vulnerability record
+export const getPackageVulnerabilityScore = (record: VulnRecord) => {
+  const { vuln_ids, vuln_infos } = record;
+  let highestScore = 0;
+  let highestSeverity = "";
+
+  vuln_ids.forEach((id) => {
+    const vuln = vuln_infos[id];
+    if (!vuln?.cvss_details) return;
+
+    // Sort CVSS details by version (highest first) and take the first one
+    const sortedCvss = vuln.cvss_details.sort((a, b) => {
+      const getVersionNumber = (version: string) => {
+        const match = version.match(/V(\d+)_(\d+)/);
+        if (!match) return 0;
+        return parseFloat(`${match[1]}.${match[2]}`);
+      };
+      return getVersionNumber(b.version) - getVersionNumber(a.version);
+    });
+
+    const highestVersionCvss = sortedCvss[0];
+    if (highestVersionCvss && highestVersionCvss.score > highestScore) {
+      highestScore = highestVersionCvss.score;
+      highestSeverity = highestVersionCvss.severity;
+    }
+  });
+
+  return { score: highestScore, severity: highestSeverity };
+};
+
 type VulnCardProps = {
   record: VulnRecord;
   package_id: number;
@@ -14,6 +44,7 @@ export function VulnCard({
   onPackageClick,
 }: VulnCardProps) {
   const { package: pkg, vuln_ids, vuln_infos } = record;
+  const representativeVuln = getPackageVulnerabilityScore(record);
 
   return (
     <div
@@ -25,16 +56,31 @@ export function VulnCard({
             : "border-slate-600 bg-gray-800"
         }`}
     >
-      <h3 className="text-white font-semibold text-base flex items-center gap-2 pl-1">
-        {pkg.name}
-        <span className="text-gray-400 text-sm">{pkg.version}</span>
-        <button
-          title="Package details"
-          className="border-b border-transparent hover:border-blue-400 cursor-pointer"
-          onClick={() => onPackageClick?.(pkg.key)}
-        >
-          📦
-        </button>
+      <h3 className="text-white font-semibold text-base flex items-center justify-between pl-1">
+        <div className="flex items-center gap-2">
+          {pkg.name}
+          <span className="text-gray-400 text-sm">{pkg.version}</span>
+          <button
+            title="Package details"
+            className="border-b border-transparent hover:border-blue-400 cursor-pointer"
+            onClick={() => onPackageClick?.(pkg.key)}
+          >
+            📦
+          </button>
+        </div>
+        {representativeVuln.score > 0 && (
+          <div
+            className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold ${
+              representativeVuln.score >= 9.0 ? 'bg-red-600' :
+              representativeVuln.score >= 7.0 ? 'bg-orange-500' :
+              representativeVuln.score >= 4.0 ? 'bg-yellow-500' :
+              'bg-green-600'
+            }`}
+            title={`CVSS ${representativeVuln.score} (${representativeVuln.severity.charAt(0).toUpperCase() + representativeVuln.severity.slice(1).toLowerCase()})`}
+          >
+            {representativeVuln.score}
+          </div>
+        )}
       </h3>
 
       {vuln_ids.map((id) => {
@@ -59,31 +105,42 @@ export function VulnCard({
             {vuln.summary && <p className="text-gray-400">{vuln.summary}</p>}
 
             <div className="text-xs text-gray-400 space-y-1">
-              {vuln.severity && vuln.severity.length > 0 && (
+              {vuln.cvss_details && vuln.cvss_details.length > 0 && (
                 <div className="mt-1">
                   <span className="text-gray-500 text-sm font-semibold block mb-1">
-                    Severity
+                    CVSS Details
                   </span>
                   <div className="grid grid-cols-1 bg-slate-800 rounded-md overflow-hidden divide-y divide-slate-700">
-                    {vuln.severity.map((sev, i) => {
-                      const type = sev.type.toUpperCase(); // Normalize for consistency
+                    {vuln.cvss_details
+                      .sort((a, b) => {
+                        // Extract version numbers for sorting (V4_0 -> 4, V3_1 -> 3.1, etc.)
+                        const getVersionNumber = (version: string) => {
+                          const match = version.match(/V(\d+)_(\d+)/);
+                          if (!match) return 0;
+                          return parseFloat(`${match[1]}.${match[2]}`);
+                        };
+                        return getVersionNumber(b.version) - getVersionNumber(a.version);
+                      })
+                      .map((cvss, i) => {
+                      const version = cvss.version.toUpperCase(); // Normalize for consistency
                       let baseUrl = null;
 
-                      if (type === "CVSS_V4") {
+                      if (version === "V4_0") {
                         baseUrl = "https://www.first.org/cvss/calculator/4-0#";
-                      } else if (type === "CVSS_V3") {
+                      } else if (version === "V3_1" || version === "V3_0") {
                         baseUrl = "https://www.first.org/cvss/calculator/3-1#";
-                      } else if (type === "CVSS_V2") {
+                      } else if (version === "V2_0") {
                         baseUrl = "https://www.first.org/cvss/calculator/2-0#";
                       }
 
-                      const href = baseUrl ? `${baseUrl}${sev.score}` : null;
+                      const href = baseUrl ? `${baseUrl}${cvss.vector}` : null;
 
                       return (
                         <div
-                          key={`${id}-sev-${i}`}
-                          className="px-2 py-1 text-slate-400 text-sm"
+                          key={`${id}-cvss-${i}`}
+                          className="text-slate-400 hover:underline break-all px-2 py-1 text-sm"
                         >
+                          CVSS {cvss.score} ({cvss.severity.charAt(0).toUpperCase() + cvss.severity.slice(1).toLowerCase()}): {" "}
                           {href ? (
                             <a
                               href={href}
@@ -91,10 +148,10 @@ export function VulnCard({
                               rel="noopener noreferrer"
                               className="text-slate-400 hover:underline break-all"
                             >
-                              {sev.score}
+                              {cvss.vector}
                             </a>
                           ) : (
-                            sev.score
+                            cvss.vector
                           )}
                         </div>
                       );

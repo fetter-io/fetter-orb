@@ -60,12 +60,11 @@ export type VulnReference = {
 };
 
 export type CvssDetail = {
-    version: string;
-    vector: string;
-    score: number;
-    severity: string;
-}
-
+  version: string;
+  vector: string;
+  score: number;
+  severity: string;
+};
 
 export type VulnInfo = {
   id: string;
