@@ -139,7 +139,8 @@ export function VulnCard({
                   <span className="text-gray-500 text-sm font-semibold block mb-1">
                     References
                   </span>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 bg-slate-800 rounded-md overflow-hidden divide-y divide-slate-700">
+                  {/* NOTE: want to use use this, but cannot get last row always full width: divide-y divide-slate-700 */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 bg-slate-800 rounded-md overflow-hidden">
                     {vuln.references.map((ref, i) => {
                       let hostname = "";
                       try {
