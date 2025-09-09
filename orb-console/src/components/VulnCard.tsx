@@ -1,5 +1,65 @@
-import { VulnRecord } from "@/types";
+import { VulnRecord, CvssDetail } from "@/types";
 import { VulnScoreIcon } from "@/components/VulnScoreIcon";
+
+// Given CVSS details, return a div with a formatted link.
+const processCvssDetails = (cvssDetails: CvssDetail[], vulnId: string) => {
+  return cvssDetails
+    .sort((a, b) => {
+      // Extract version numbers for sorting (V4_0 -> 4, V3_1 -> 3.1, etc.)
+      const getVersionNumber = (version: string) => {
+        const match = version.match(/V(\d+)_(\d+)/);
+        if (!match) return 0;
+        return parseFloat(`${match[1]}.${match[2]}`);
+      };
+      return (
+        getVersionNumber(b.version) -
+        getVersionNumber(a.version)
+      );
+    })
+    .map((cvss, i) => {
+      const version = cvss.version.toUpperCase(); // Normalize for consistency
+      let baseUrl = null;
+
+      if (version === "V4_0") {
+        baseUrl =
+          "https://www.first.org/cvss/calculator/4-0#";
+      } else if (version === "V3_1" || version === "V3_0") {
+        baseUrl =
+          "https://www.first.org/cvss/calculator/3-1#";
+      } else if (version === "V2_0") {
+        baseUrl =
+          "https://www.first.org/cvss/calculator/2-0#";
+      }
+
+      const href = baseUrl
+        ? `${baseUrl}${cvss.vector}`
+        : null;
+
+      return (
+        <div
+          key={`${vulnId}-cvss-${i}`}
+          className="text-slate-400 hover:underline break-all px-2 py-1 text-sm"
+        >
+          CVSS {cvss.score} (
+          {cvss.severity.charAt(0).toUpperCase() +
+            cvss.severity.slice(1).toLowerCase()}
+          ):{" "}
+          {href ? (
+            <a
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-slate-400 hover:underline break-all"
+            >
+              {cvss.vector}
+            </a>
+          ) : (
+            cvss.vector
+          )}
+        </div>
+      );
+    });
+};
 
 type VulnCardProps = {
   record: VulnRecord;
@@ -49,9 +109,7 @@ export function VulnCard({
 
         return (
           <div key={id} className="border-t border-slate-700 pt-2 space-y-2">
-            {/* <p className="font-semibold text-red-300">{vuln.id}</p> */}
-
-            <p className="font-semibold text-red-300">
+            <p className="font-semibold text-slate-400">
               <a
                 href={`https://osv.dev/vulnerability/${vuln.id}`}
                 target="_blank"
@@ -71,62 +129,7 @@ export function VulnCard({
                     CVSS Details
                   </span>
                   <div className="grid grid-cols-1 bg-slate-800 rounded-md overflow-hidden divide-y divide-slate-700">
-                    {vuln.cvss_details
-                      .sort((a, b) => {
-                        // Extract version numbers for sorting (V4_0 -> 4, V3_1 -> 3.1, etc.)
-                        const getVersionNumber = (version: string) => {
-                          const match = version.match(/V(\d+)_(\d+)/);
-                          if (!match) return 0;
-                          return parseFloat(`${match[1]}.${match[2]}`);
-                        };
-                        return (
-                          getVersionNumber(b.version) -
-                          getVersionNumber(a.version)
-                        );
-                      })
-                      .map((cvss, i) => {
-                        const version = cvss.version.toUpperCase(); // Normalize for consistency
-                        let baseUrl = null;
-
-                        if (version === "V4_0") {
-                          baseUrl =
-                            "https://www.first.org/cvss/calculator/4-0#";
-                        } else if (version === "V3_1" || version === "V3_0") {
-                          baseUrl =
-                            "https://www.first.org/cvss/calculator/3-1#";
-                        } else if (version === "V2_0") {
-                          baseUrl =
-                            "https://www.first.org/cvss/calculator/2-0#";
-                        }
-
-                        const href = baseUrl
-                          ? `${baseUrl}${cvss.vector}`
-                          : null;
-
-                        return (
-                          <div
-                            key={`${id}-cvss-${i}`}
-                            className="text-slate-400 hover:underline break-all px-2 py-1 text-sm"
-                          >
-                            CVSS {cvss.score} (
-                            {cvss.severity.charAt(0).toUpperCase() +
-                              cvss.severity.slice(1).toLowerCase()}
-                            ):{" "}
-                            {href ? (
-                              <a
-                                href={href}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-slate-400 hover:underline break-all"
-                              >
-                                {cvss.vector}
-                              </a>
-                            ) : (
-                              cvss.vector
-                            )}
-                          </div>
-                        );
-                      })}
+                    {processCvssDetails(vuln.cvss_details, id)}
                   </div>
                 </div>
               )}
