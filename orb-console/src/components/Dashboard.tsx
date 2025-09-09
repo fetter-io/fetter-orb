@@ -19,6 +19,7 @@ import {
   UserRecord,
   ValidationResult,
   ValidationEntry,
+  VulnRecord,
 } from "@/types";
 import { PackageVersionsCard } from "@/components/PackageVersionsCard";
 import { SystemTagSelector } from "@/components/SystemTagSelector";
@@ -36,17 +37,17 @@ import { UserMenuDropdown } from "@/components/UserMenuDropdown";
 //------------------------------------------------------------------------------
 
 // Helper function to calculate the highest CVSS score for a vulnerability record
-const getPackageVulnerabilityScore = (record: any) => {
+const getPackageVulnerabilityScore = (record: VulnRecord) => {
   const { vuln_ids, vuln_infos } = record;
   let highestScore = 0;
   let highestSeverity = "";
 
-  vuln_ids.forEach((id: string) => {
+  vuln_ids.forEach((id) => {
     const vuln = vuln_infos[id];
     if (!vuln?.cvss_details) return;
 
     // Sort CVSS details by version (highest first) and take the first one
-    const sortedCvss = vuln.cvss_details.sort((a: any, b: any) => {
+    const sortedCvss = vuln.cvss_details.sort((a, b) => {
       const getVersionNumber = (version: string) => {
         const match = version.match(/V(\d+)_(\d+)/);
         if (!match) return 0;
@@ -364,12 +365,12 @@ export default function Dashboard() {
   const vulnerablePackageIds = useMemo(() => {
     if (!auditState.data) return new Map<number, number>();
     const scoreMap = new Map<number, number>();
-    
+
     auditState.data.forEach((entry) => {
       const vulnScore = getPackageVulnerabilityScore(entry.record);
       scoreMap.set(entry.package_id, vulnScore.score);
     });
-    
+
     return scoreMap;
   }, [auditState.data]);
 
@@ -553,7 +554,9 @@ export default function Dashboard() {
                       `vuln-pkg-${entry.package_id}` === highlightedVulnId
                     }
                     onPackageClick={handlePackageClick}
-                    vulnerabilityScore={vulnerablePackageIds.get(entry.package_id) || 0}
+                    vulnerabilityScore={
+                      vulnerablePackageIds.get(entry.package_id) || 0
+                    }
                   />
                 ))}
               </div>

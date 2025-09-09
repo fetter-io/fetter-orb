@@ -57,7 +57,8 @@ export function PackageVersionsCard({
           </thead>
           <tbody>
             {pkg.data.map((entry, index) => {
-              const vulnerabilityScore = vulnerablePackageIds?.get(entry.package_id) ?? 0;
+              const vulnerabilityScore =
+                vulnerablePackageIds?.get(entry.package_id) ?? 0;
               const isVulnerable = vulnerabilityScore > 0;
 
               return (

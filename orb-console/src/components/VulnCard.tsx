@@ -79,43 +79,54 @@ export function VulnCard({
                           if (!match) return 0;
                           return parseFloat(`${match[1]}.${match[2]}`);
                         };
-                        return getVersionNumber(b.version) - getVersionNumber(a.version);
+                        return (
+                          getVersionNumber(b.version) -
+                          getVersionNumber(a.version)
+                        );
                       })
                       .map((cvss, i) => {
-                      const version = cvss.version.toUpperCase(); // Normalize for consistency
-                      let baseUrl = null;
+                        const version = cvss.version.toUpperCase(); // Normalize for consistency
+                        let baseUrl = null;
 
-                      if (version === "V4_0") {
-                        baseUrl = "https://www.first.org/cvss/calculator/4-0#";
-                      } else if (version === "V3_1" || version === "V3_0") {
-                        baseUrl = "https://www.first.org/cvss/calculator/3-1#";
-                      } else if (version === "V2_0") {
-                        baseUrl = "https://www.first.org/cvss/calculator/2-0#";
-                      }
+                        if (version === "V4_0") {
+                          baseUrl =
+                            "https://www.first.org/cvss/calculator/4-0#";
+                        } else if (version === "V3_1" || version === "V3_0") {
+                          baseUrl =
+                            "https://www.first.org/cvss/calculator/3-1#";
+                        } else if (version === "V2_0") {
+                          baseUrl =
+                            "https://www.first.org/cvss/calculator/2-0#";
+                        }
 
-                      const href = baseUrl ? `${baseUrl}${cvss.vector}` : null;
+                        const href = baseUrl
+                          ? `${baseUrl}${cvss.vector}`
+                          : null;
 
-                      return (
-                        <div
-                          key={`${id}-cvss-${i}`}
-                          className="text-slate-400 hover:underline break-all px-2 py-1 text-sm"
-                        >
-                          CVSS {cvss.score} ({cvss.severity.charAt(0).toUpperCase() + cvss.severity.slice(1).toLowerCase()}): {" "}
-                          {href ? (
-                            <a
-                              href={href}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-slate-400 hover:underline break-all"
-                            >
-                              {cvss.vector}
-                            </a>
-                          ) : (
-                            cvss.vector
-                          )}
-                        </div>
-                      );
-                    })}
+                        return (
+                          <div
+                            key={`${id}-cvss-${i}`}
+                            className="text-slate-400 hover:underline break-all px-2 py-1 text-sm"
+                          >
+                            CVSS {cvss.score} (
+                            {cvss.severity.charAt(0).toUpperCase() +
+                              cvss.severity.slice(1).toLowerCase()}
+                            ):{" "}
+                            {href ? (
+                              <a
+                                href={href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-slate-400 hover:underline break-all"
+                              >
+                                {cvss.vector}
+                              </a>
+                            ) : (
+                              cvss.vector
+                            )}
+                          </div>
+                        );
+                      })}
                   </div>
                 </div>
               )}
