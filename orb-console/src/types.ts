@@ -59,11 +59,6 @@ export type VulnReference = {
   url: string;
 };
 
-export type VulnSeverity = {
-  type: string;
-  score: string;
-};
-
 export type CvssDetail = {
     version: string;
     vector: string;
