@@ -3,9 +3,9 @@ use chrono::{DateTime, Utc};
 use std::env;
 
 use fetter::{
-    AuditReport, DepManifest, DirectURL, FlagCacheRefresh, FlagLog, LockFile, Package, PathShared,
-    ResultDynError, ScanFS, SystemTag, UreqClientLive, ValidationExplain, ValidationFlags,
-    ValidationReport, VcsInfo, VersionSpec, CvssFilter,
+    AuditReport, CvssFilter, DepManifest, DirectURL, FlagCacheRefresh, FlagLog, LockFile, Package,
+    PathShared, ResultDynError, ScanFS, SystemTag, UreqClientLive, ValidationExplain,
+    ValidationFlags, ValidationReport, VcsInfo, VersionSpec,
 };
 
 use serde::{Deserialize, Serialize};
