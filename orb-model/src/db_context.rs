@@ -5,7 +5,7 @@ use std::env;
 use fetter::{
     AuditReport, DepManifest, DirectURL, FlagCacheRefresh, FlagLog, LockFile, Package, PathShared,
     ResultDynError, ScanFS, SystemTag, UreqClientLive, ValidationExplain, ValidationFlags,
-    ValidationReport, VcsInfo, VersionSpec, CvssFilter
+    ValidationReport, VcsInfo, VersionSpec, CvssFilter,
 };
 
 use serde::{Deserialize, Serialize};
@@ -1231,6 +1231,7 @@ impl DBContext {
             FlagCacheRefresh(false),
             cache_dur,
             FlagLog(false),
+            CvssFilter::All,
         );
         let mut records = audit.records;
 
