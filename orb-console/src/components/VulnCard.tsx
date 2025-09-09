@@ -1,4 +1,5 @@
 import { VulnRecord } from "@/types";
+import { VulnScoreIcon } from "@/components/VulnScoreIcon";
 
 // Helper function to calculate the highest CVSS score for a vulnerability record
 export const getPackageVulnerabilityScore = (record: VulnRecord) => {
@@ -68,19 +69,7 @@ export function VulnCard({
             📦
           </button>
         </div>
-        {representativeVuln.score > 0 && (
-          <div
-            className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold ${
-              representativeVuln.score >= 9.0 ? 'bg-red-600' :
-              representativeVuln.score >= 7.0 ? 'bg-orange-500' :
-              representativeVuln.score >= 4.0 ? 'bg-yellow-500' :
-              'bg-green-600'
-            }`}
-            title={`CVSS ${representativeVuln.score} (${representativeVuln.severity.charAt(0).toUpperCase() + representativeVuln.severity.slice(1).toLowerCase()})`}
-          >
-            {representativeVuln.score}
-          </div>
-        )}
+        <VulnScoreIcon score={representativeVuln.score} />
       </h3>
 
       {vuln_ids.map((id) => {
