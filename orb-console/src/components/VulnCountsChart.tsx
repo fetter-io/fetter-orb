@@ -57,14 +57,6 @@ export function VulnCountsChart({
     range: `${i}-${i + 1}`,
     rangeLabel: `${i}.0-${i}.9`,
     count: 0,
-    color:
-      i >= 9
-        ? colors.red[500] // Critical (9.0+)
-        : i >= 7
-          ? colors.orange[500] // High (7.0-8.9)
-          : i >= 4
-            ? colors.yellow[500] // Medium (4.0-6.9)
-            : colors.green[500], // Low (0-3.9)
   }));
 
   // Count vulnerabilities in each bin using pre-computed scores
