@@ -143,7 +143,7 @@ export function VulnCountsChart({
             boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
           }}
         >
-          <p style={{ color: colors.slate[100], fontSize: 12, margin: 0 }}>
+          <p style={{ color: colors.slate[100], fontSize: 10, margin: 0 }}>
             CVSS {label}: {payload[0].value} packages
           </p>
           {onFilterChange && (
@@ -200,7 +200,7 @@ export function VulnCountsChart({
                 key={`cell-${index}`}
                 fill={
                   isBinSelected(entry.binIndex)
-                    ? colors.blue[800]
+                    ? colors.blue[900]
                     : colors.slate[800]
                 }
               />

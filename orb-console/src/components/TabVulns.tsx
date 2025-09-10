@@ -109,7 +109,7 @@ export function TabVulns({
 
       {/* Vulnerability Distribution Chart */}
       {auditState.data && auditState.data.length > 0 && (
-        <>
+        <div className="flex flex-col gap-1 pb-2">
           <VulnCountsChart
             data={auditState.data}
             minVulnScore={minVulnScore}
@@ -123,8 +123,7 @@ export function TabVulns({
           {/* Filter Status and Reset */}
           <div className="flex items-center justify-between py-0">
             <span className="text-xs text-gray-600">
-              Showing {filteredAuditData.length} of{" "}
-              {auditState.data?.length ?? 0} vulnerable packages
+              Selected {filteredAuditData.length} vulnerable packages
             </span>
             {(minVulnScore > 0 || maxVulnScore < 10) && (
               <button
@@ -138,7 +137,7 @@ export function TabVulns({
               </button>
             )}
           </div>
-        </>
+        </div>
       )}
 
       <div className="flex flex-col gap-4">
