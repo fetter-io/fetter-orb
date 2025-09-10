@@ -13,7 +13,7 @@ export function VulnScoreIcon({ score }: VulnScoreIconProps) {
           : score >= 7.0
             ? "bg-orange-500"
             : score >= 4.0
-              ? "bg-yellow-500"
+              ? "bg-yellow-600"
               : "bg-green-600"
       }`}
       title={`CVSS ${score}`}

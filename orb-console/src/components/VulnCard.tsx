@@ -125,7 +125,7 @@ export function VulnCard({
             <div className="text-xs text-gray-400 space-y-1">
               {vuln.cvss_details && vuln.cvss_details.length > 0 && (
                 <div className="mt-1">
-                  <span className="text-gray-500 text-sm font-semibold block mb-1">
+                  <span className="text-gray-400 text-sm font-semibold block mb-1">
                     CVSS Details
                   </span>
                   <div className="grid grid-cols-1 bg-slate-800 rounded-md overflow-hidden divide-y divide-slate-700">
@@ -136,7 +136,7 @@ export function VulnCard({
 
               {vuln.references.length > 0 && (
                 <div className="mt-1">
-                  <span className="text-gray-500 text-sm font-semibold block mb-1">
+                  <span className="text-gray-400 text-sm font-semibold block mb-1">
                     References
                   </span>
                   {/* NOTE: want to use use this, but cannot get last row always full width: divide-y divide-slate-700 */}
