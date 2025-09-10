@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { AuditEntry } from "@/types";
+import { useState, useEffect } from "react";
+import { AuditEntry, VulnRecord } from "@/types";
 import {
   BarChart,
   Bar,
@@ -12,7 +12,7 @@ import {
 import colors from "tailwindcss/colors";
 
 // Helper function to calculate the highest CVSS score for a vulnerability record
-const getPackageVulnerabilityScore = (record: any) => {
+const getPackageVulnerabilityScore = (record: VulnRecord) => {
   const { vuln_ids, vuln_infos } = record;
   let highestScore = 0;
 
@@ -21,7 +21,7 @@ const getPackageVulnerabilityScore = (record: any) => {
     if (!vuln?.cvss_details) return;
 
     // Sort CVSS details by version (highest first) and take the first one
-    const sortedCvss = vuln.cvss_details.sort((a: any, b: any) => {
+    const sortedCvss = vuln.cvss_details.sort((a, b) => {
       const getVersionNumber = (version: string) => {
         const match = version.match(/V(\d+)_(\d+)/);
         if (!match) return 0;
@@ -98,7 +98,10 @@ export function VulnCountsChart({
     const score = getPackageVulnerabilityScore(entry.record);
     if (score > 0) {
       const binIndex = Math.min(Math.floor(score), 9); // Cap at 9 for 9.x scores
-      bins[binIndex].count++;
+      const bin = bins[binIndex];
+      if (bin) {
+        bin.count++;
+      }
     }
   });
 
@@ -106,7 +109,7 @@ export function VulnCountsChart({
   const chartData = bins.filter((bin) => bin.count > 0);
 
   // Handle bar click to set filter range
-  const handleBarClick = (data: any) => {
+  const handleBarClick = (data: { binIndex?: number }) => {
     if (onFilterChange && data && data.binIndex !== undefined) {
       const binIndex = data.binIndex;
 
@@ -131,7 +134,15 @@ export function VulnCountsChart({
     );
   };
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({
+    active,
+    payload,
+    label,
+  }: {
+    active?: boolean;
+    payload?: Array<{ value: number }>;
+    label?: string;
+  }) => {
     if (active && payload && payload.length) {
       return (
         <div
@@ -144,7 +155,7 @@ export function VulnCountsChart({
           }}
         >
           <p style={{ color: colors.slate[100], fontSize: 10, margin: 0 }}>
-            CVSS {label}: {payload[0].value} packages
+            CVSS {label}: {payload[0]?.value} packages
           </p>
           {onFilterChange && (
             <p
