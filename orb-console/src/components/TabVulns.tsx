@@ -102,36 +102,6 @@ export function TabVulns({
             vulnCount={auditState.data?.length ?? 0}
           />
 
-          {/* Vulnerability Score Filter */}
-          <div className="flex items-end gap-2">
-            <div className="flex flex-col">
-              <label className="text-xs text-gray-400 mb-1">Min CVSS</label>
-              <input
-                type="number"
-                min="0"
-                max="10"
-                step="0.1"
-                value={minVulnScore}
-                onChange={(e) => setMinVulnScore(parseFloat(e.target.value) || 0)}
-                className="w-16 px-2 py-1 bg-gray-800 border border-gray-600 rounded text-sm text-white"
-              />
-            </div>
-            <div className="flex flex-col">
-              <label className="text-xs text-gray-400 mb-1">Max CVSS</label>
-              <input
-                type="number"
-                min="0"
-                max="10"
-                step="0.1"
-                value={maxVulnScore}
-                onChange={(e) => setMaxVulnScore(parseFloat(e.target.value) || 10)}
-                className="w-16 px-2 py-1 bg-gray-800 border border-gray-600 rounded text-sm text-white"
-              />
-            </div>
-            <span className="text-xs text-gray-400 pb-1">
-              Showing {filteredAuditData.length} of {auditState.data?.length ?? 0}
-            </span>
-          </div>
         </div>
         <div className="flex">
           <DashboardStatus label="vulnerabilities" state={auditState} />
@@ -140,7 +110,35 @@ export function TabVulns({
 
       {/* Vulnerability Distribution Chart */}
       {auditState.data && auditState.data.length > 0 && (
-        <VulnCountsChart data={auditState.data} />
+        <>
+          <VulnCountsChart
+            data={auditState.data}
+            minVulnScore={minVulnScore}
+            maxVulnScore={maxVulnScore}
+            onFilterChange={(min, max) => {
+              setMinVulnScore(min);
+              setMaxVulnScore(max);
+            }}
+          />
+
+          {/* Filter Status and Reset */}
+          <div className="flex items-center justify-between py-0">
+            <span className="text-xs text-gray-600">
+              Showing {filteredAuditData.length} of {auditState.data?.length ?? 0} vulnerable packages
+            </span>
+            {(minVulnScore > 0 || maxVulnScore < 10) && (
+              <button
+                onClick={() => {
+                  setMinVulnScore(0);
+                  setMaxVulnScore(10);
+                }}
+                className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+              >
+                Show All
+              </button>
+            )}
+          </div>
+        </>
       )}
 
       <div className="flex flex-col gap-4">
