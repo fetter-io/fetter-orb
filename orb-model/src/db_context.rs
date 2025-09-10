@@ -1224,12 +1224,12 @@ impl DBContext {
         }
 
         let client = Arc::new(UreqClientLive);
-        // NOTE: we might remove this cache if we have client-based caching
-        let cache_dur = Duration::from_secs(120);
+        // NOTE: as we defer updating audit data unless (a) user explicitly asks for it or (b) shouldAuditUpdate is true (packages change / duration limit passed), we may not need to use cache_dur here, which will use file-based caching on the back-end
+        let cache_dur = Duration::from_secs(0);
         let audit = AuditReport::from_packages(
             client,
             &packages,
-            FlagCacheRefresh(false),
+            FlagCacheRefresh(false), // keep vuln-level caches
             cache_dur,
             FlagLog(false),
             CvssFilter::All,

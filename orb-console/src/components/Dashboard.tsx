@@ -60,6 +60,12 @@ export default function Dashboard() {
   //----------------------------------------------------------------------------
   const [userInfo, setUserInfo] = useState<UserRecord | null>(null);
 
+  // Audit optimization state
+  const [lastAuditTime, setLastAuditTime] = useState<number | null>(null);
+  const [lastPackageDataHash, setLastPackageDataHash] = useState<string | null>(
+    null,
+  );
+
   useEffect(() => {
     const fetchUser = async () => {
       if (!session?.user?.user_id || userInfo) return;
@@ -246,16 +252,50 @@ export default function Dashboard() {
     pollInterval: 0,
   });
 
+  //----------------------------------------------------------------------------
+  // auditState
+
+  // Create a hash of package data to detect changes
+  const currentPackageDataHash = useMemo(() => {
+    if (!packagesState.data) return null;
+    return JSON.stringify(
+      packagesState.data.map((pkg) => ({
+        key: pkg.key,
+        versions: pkg.data.map((entry) => entry.version).sort(),
+      })),
+    );
+  }, [packagesState.data]);
+
+  // Check if audit should run based on data changes or time elapsed
+  const shouldAuditUpdate = useMemo(() => {
+    if (lastAuditTime === null) return true;
+    const now = Date.now();
+    const fiveMinutes = 5 * 60 * 1000; // 5 minutes
+    if (now - lastAuditTime >= fiveMinutes) return true;
+    if (currentPackageDataHash !== lastPackageDataHash) return true;
+    return false;
+  }, [currentPackageDataHash, lastPackageDataHash, lastAuditTime]);
+
   const shouldAudit =
     selectedTenantId !== null &&
     tenantsState.loading === false &&
     systemTagsState.loading === false &&
-    packagesState.loading === false;
+    packagesState.loading === false &&
+    shouldAuditUpdate;
 
   const auditState = useDashboardData(fetchAudit, {
     active: activeTab === "vulns" && shouldAudit,
     pollInterval: 0,
   });
+
+  // Update tracking state when audit completes
+  useEffect(() => {
+    if (auditState.data && !auditState.loading) {
+      setLastAuditTime(Date.now());
+      setLastPackageDataHash(currentPackageDataHash);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auditState.data]);
 
   //----------------------------------------------------------------------------
   // Tenant state and related routines
