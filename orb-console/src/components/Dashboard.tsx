@@ -24,11 +24,11 @@ import {
 import { PackageVersionsCard } from "@/components/PackageVersionsCard";
 import { SystemTagSelector } from "@/components/SystemTagSelector";
 import { PackageCountsChart } from "@/components/PackageCountsChart";
-import { VulnCard } from "@/components/VulnCard";
 import { TenantSelector } from "@/components/TenantSelector";
 import { TabTenant } from "@/components/TabTenant";
 import { TabAccount } from "@/components/TabAccount";
 import { AllowListEditor } from "@/components/AllowListEditor";
+import { TabVulns } from "@/components/TabVulns";
 import { Weave } from "@/components/Weave";
 import colors from "tailwindcss/colors";
 import { ValidationPanel } from "@/components/ValidationPanel";
@@ -89,6 +89,7 @@ export default function Dashboard() {
 
   //----------------------------------------------------------------------------
   const [userInfo, setUserInfo] = useState<UserRecord | null>(null);
+
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -528,39 +529,15 @@ export default function Dashboard() {
           )}
 
           {activeTab === "vulns" && (
-            <>
-              <div className="flex items-center items-end justify-between">
-                <div className="flex">
-                  <SystemTagSelector
-                    selectedId={selectedSystemId}
-                    onChange={setSelectedSystemId}
-                    systemTags={systemTagsState.data ?? undefined}
-                    packageCount={packagesState.data?.length ?? 0}
-                    vulnCount={auditState.data?.length ?? 0}
-                  />
-                </div>
-                <div className="flex">
-                  <DashboardStatus label="vulnerabilities" state={auditState} />
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-4">
-                {auditState.data?.map((entry) => (
-                  <VulnCard
-                    key={`vuln-pkg-${entry.package_id}`}
-                    record={entry.record}
-                    package_id={entry.package_id}
-                    highlight={
-                      `vuln-pkg-${entry.package_id}` === highlightedVulnId
-                    }
-                    onPackageClick={handlePackageClick}
-                    vulnerabilityScore={
-                      vulnerablePackageIds.get(entry.package_id) || 0
-                    }
-                  />
-                ))}
-              </div>
-            </>
+            <TabVulns
+              auditState={auditState}
+              selectedSystemId={selectedSystemId}
+              setSelectedSystemId={setSelectedSystemId}
+              systemTagsState={systemTagsState}
+              packagesState={packagesState}
+              highlightedVulnId={highlightedVulnId}
+              onPackageClick={handlePackageClick}
+            />
           )}
 
           {activeTab === "systems" && (
