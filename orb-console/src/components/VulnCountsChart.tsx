@@ -52,12 +52,15 @@ export function VulnCountsChart({
     };
   }, []);
   // Create bins for CVSS scores (0-1, 1-2, 2-3, ..., 9-10)
-  const bins = Array.from({ length: 10 }, (_, i) => ({
-    binIndex: i,
-    range: `${i}-${i + 1}`,
-    rangeLabel: `${i}.0-${i}.9`,
-    count: 0,
-  }));
+  const bins = Array.from({ length: 10 }, (_, i) => {
+    const isLast = i === 9;
+    return {
+      binIndex: i,
+      range: `${i}-${i + 1}`,
+      rangeLabel: isLast ? `${i}.0-10` : `${i}-${i}.9`,
+      count: 0,
+    };
+  });
 
   // Count vulnerabilities in each bin using pre-computed scores
   data.forEach((entry) => {
@@ -132,7 +135,7 @@ export function VulnCountsChart({
                 fontStyle: "italic",
               }}
             >
-              Click to filter • Shift+click to select range
+              Click to filter, shift+click to select range
             </p>
           )}
         </div>
