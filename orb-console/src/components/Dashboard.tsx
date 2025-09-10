@@ -268,13 +268,17 @@ export default function Dashboard() {
 
   // Check if audit should run based on data changes or time elapsed
   const shouldAuditUpdate = useMemo(() => {
+    if (activeTab !== "vulns") return false;
+
     if (lastAuditTime === null) return true;
     const now = Date.now();
     const fiveMinutes = 5 * 60 * 1000; // 5 minutes
-    if (now - lastAuditTime >= fiveMinutes) return true;
+    const timeSinceLastAudit = now - lastAuditTime;
+
+    if (timeSinceLastAudit >= fiveMinutes) return true;
     if (currentPackageDataHash !== lastPackageDataHash) return true;
     return false;
-  }, [currentPackageDataHash, lastPackageDataHash, lastAuditTime]);
+  }, [activeTab, currentPackageDataHash, lastPackageDataHash, lastAuditTime]);
 
   const shouldAudit =
     selectedTenantId !== null &&
