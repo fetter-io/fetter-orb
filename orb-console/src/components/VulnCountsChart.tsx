@@ -165,7 +165,7 @@ export function VulnCountsChart({
   };
 
   return (
-    <div className="h-48 bg-slate-900 rounded-md pt-2 border border-slate-700">
+    <div className="h-50 bg-slate-900 rounded-md pt-2 border border-slate-700">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={chartData}
