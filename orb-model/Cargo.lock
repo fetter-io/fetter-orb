@@ -440,6 +440,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "cvss"
+version = "2.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f4f643e062e9a8e26edea270945e05011c441ca6a56e9d9d4464c6b0be1352bd"
+
+[[package]]
 name = "der"
 version = "0.7.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -564,12 +570,13 @@ checksum = "37909eebbb50d72f9059c3b6d82c0463f2ff062c9e95845c43a6c9c0355411be"
 
 [[package]]
 name = "fetter"
-version = "1.22.0"
+version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9c32446e7ba3718958d6a9eb0bae42437cdcd2d82b33112a7048feed3aef064c"
+checksum = "50be6faca39f9a0e1903486868de8679a7ac1d7f8094224c6e621267a098a0a8"
 dependencies = [
  "clap",
  "crossterm",
+ "cvss",
  "pest",
  "pest_derive",
  "rayon",

@@ -23,15 +23,18 @@ import {
 import { PackageVersionsCard } from "@/components/PackageVersionsCard";
 import { SystemTagSelector } from "@/components/SystemTagSelector";
 import { PackageCountsChart } from "@/components/PackageCountsChart";
-import { VulnCard } from "@/components/VulnCard";
 import { TenantSelector } from "@/components/TenantSelector";
 import { TabTenant } from "@/components/TabTenant";
 import { TabAccount } from "@/components/TabAccount";
 import { AllowListEditor } from "@/components/AllowListEditor";
+import { TabVulns } from "@/components/TabVulns";
 import { Weave } from "@/components/Weave";
 import colors from "tailwindcss/colors";
 import { ValidationPanel } from "@/components/ValidationPanel";
 import { UserMenuDropdown } from "@/components/UserMenuDropdown";
+import { getPackageVulnerabilityScore } from "@/utils/vulnerabilityScore";
+
+//------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
 
@@ -56,6 +59,12 @@ export default function Dashboard() {
 
   //----------------------------------------------------------------------------
   const [userInfo, setUserInfo] = useState<UserRecord | null>(null);
+
+  // Audit optimization state
+  const [lastAuditTime, setLastAuditTime] = useState<number | null>(null);
+  const [lastPackageDataHash, setLastPackageDataHash] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -243,16 +252,54 @@ export default function Dashboard() {
     pollInterval: 0,
   });
 
+  //----------------------------------------------------------------------------
+  // auditState
+
+  // Create a hash of package data to detect changes
+  const currentPackageDataHash = useMemo(() => {
+    if (!packagesState.data) return null;
+    return JSON.stringify(
+      packagesState.data.map((pkg) => ({
+        key: pkg.key,
+        versions: pkg.data.map((entry) => entry.version).sort(),
+      })),
+    );
+  }, [packagesState.data]);
+
+  // Check if audit should run based on data changes or time elapsed
+  const shouldAuditUpdate = useMemo(() => {
+    if (activeTab !== "vulns") return false;
+
+    if (lastAuditTime === null) return true;
+    const now = Date.now();
+    const fiveMinutes = 5 * 60 * 1000; // 5 minutes
+    const timeSinceLastAudit = now - lastAuditTime;
+
+    if (timeSinceLastAudit >= fiveMinutes) return true;
+    if (currentPackageDataHash !== lastPackageDataHash) return true;
+    return false;
+  }, [activeTab, currentPackageDataHash, lastPackageDataHash, lastAuditTime]);
+
   const shouldAudit =
     selectedTenantId !== null &&
     tenantsState.loading === false &&
     systemTagsState.loading === false &&
-    packagesState.loading === false;
+    packagesState.loading === false &&
+    shouldAuditUpdate;
 
   const auditState = useDashboardData(fetchAudit, {
     active: activeTab === "vulns" && shouldAudit,
     pollInterval: 0,
   });
+
+  // Update tracking state when audit completes
+  useEffect(() => {
+    if (auditState.data && !auditState.loading) {
+      setLastAuditTime(Date.now());
+      setLastPackageDataHash(currentPackageDataHash);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auditState.data]);
 
   //----------------------------------------------------------------------------
   // Tenant state and related routines
@@ -330,8 +377,15 @@ export default function Dashboard() {
   // Audit updates
 
   const vulnerablePackageIds = useMemo(() => {
-    if (!auditState.data) return new Set<number>();
-    return new Set(auditState.data.map((entry) => entry.package_id));
+    if (!auditState.data) return new Map<number, number>();
+    const scoreMap = new Map<number, number>();
+
+    auditState.data.forEach((entry) => {
+      const { score } = getPackageVulnerabilityScore(entry.record);
+      scoreMap.set(entry.package_id, score);
+    });
+
+    return scoreMap;
   }, [auditState.data]);
 
   //----------------------------------------------------------------------------
@@ -488,36 +542,15 @@ export default function Dashboard() {
           )}
 
           {activeTab === "vulns" && (
-            <>
-              <div className="flex items-center items-end justify-between">
-                <div className="flex">
-                  <SystemTagSelector
-                    selectedId={selectedSystemId}
-                    onChange={setSelectedSystemId}
-                    systemTags={systemTagsState.data ?? undefined}
-                    packageCount={packagesState.data?.length ?? 0}
-                    vulnCount={auditState.data?.length ?? 0}
-                  />
-                </div>
-                <div className="flex">
-                  <DashboardStatus label="vulnerabilities" state={auditState} />
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-4">
-                {auditState.data?.map((entry) => (
-                  <VulnCard
-                    key={`vuln-pkg-${entry.package_id}`}
-                    record={entry.record}
-                    package_id={entry.package_id}
-                    highlight={
-                      `vuln-pkg-${entry.package_id}` === highlightedVulnId
-                    }
-                    onPackageClick={handlePackageClick}
-                  />
-                ))}
-              </div>
-            </>
+            <TabVulns
+              auditState={auditState}
+              selectedSystemId={selectedSystemId}
+              setSelectedSystemId={setSelectedSystemId}
+              systemTagsState={systemTagsState}
+              packagesState={packagesState}
+              highlightedVulnId={highlightedVulnId}
+              onPackageClick={handlePackageClick}
+            />
           )}
 
           {activeTab === "systems" && (

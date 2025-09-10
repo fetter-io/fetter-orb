@@ -3,10 +3,11 @@ use chrono::{DateTime, Utc};
 use std::env;
 
 use fetter::{
-    AuditReport, DepManifest, DirectURL, FlagCacheRefresh, FlagLog, LockFile, Package, PathShared,
-    ResultDynError, ScanFS, SystemTag, UreqClientLive, ValidationExplain, ValidationFlags,
-    ValidationReport, VcsInfo, VersionSpec,
+    AuditReport, CvssFilter, DepManifest, DirectURL, FlagCacheRefresh, FlagLog, LockFile, Package,
+    PathShared, ResultDynError, ScanFS, SystemTag, UreqClientLive, ValidationExplain,
+    ValidationFlags, ValidationReport, VcsInfo, VersionSpec,
 };
+
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
@@ -1223,8 +1224,16 @@ impl DBContext {
         }
 
         let client = Arc::new(UreqClientLive);
-        let audit =
-            AuditReport::from_packages(client, &packages, FlagCacheRefresh(false), FlagLog(false));
+        // NOTE: as we defer updating audit data unless (a) user explicitly asks for it or (b) shouldAuditUpdate is true (packages change / duration limit passed), we may not need to use cache_dur here, which will use file-based caching on the back-end
+        let cache_dur = Duration::from_secs(0);
+        let audit = AuditReport::from_packages(
+            client,
+            &packages,
+            FlagCacheRefresh(false), // keep vuln-level caches
+            cache_dur,
+            FlagLog(false),
+            CvssFilter::All,
+        );
         let mut records = audit.records;
 
         // Sort by key, then version
@@ -1287,7 +1296,7 @@ impl DBContext {
 
         let packages: Vec<_> = package_to_sites.keys().cloned().collect();
         // packages.sort();
-        let site_to_exe: HashMap<PathShared, PathBuf> = HashMap::new();
+        let site_to_exe: HashMap<PathShared, Vec<PathShared>> = HashMap::new();
 
         let vr = ValidationReport::from_components(
             &packages,

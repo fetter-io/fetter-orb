@@ -1,11 +1,12 @@
 import { PackageVersions } from "@/types";
+import { VulnScoreIcon } from "@/components/VulnScoreIcon";
 
 type PackageVersionsCardProps = {
   pkg: PackageVersions;
   onTagClick?: (systemTagId: number) => void;
   onVulnClick?: (packageId: number) => void;
   highlight?: boolean;
-  vulnerablePackageIds?: Set<number>;
+  vulnerablePackageIds?: Map<number, number>;
 };
 // ...
 export function PackageVersionsCard({
@@ -56,8 +57,9 @@ export function PackageVersionsCard({
           </thead>
           <tbody>
             {pkg.data.map((entry, index) => {
-              const isVulnerable =
-                vulnerablePackageIds?.has(entry.package_id) ?? false;
+              const vulnerabilityScore =
+                vulnerablePackageIds?.get(entry.package_id) ?? 0;
+              const isVulnerable = vulnerabilityScore > 0;
 
               return (
                 <tr
@@ -80,10 +82,10 @@ export function PackageVersionsCard({
                       {isVulnerable && (
                         <button
                           title="Vulnerability details"
-                          className="border-b border-transparent hover:border-yellow-400 cursor-pointer"
+                          className="border-b border-transparent cursor-pointer"
                           onClick={() => onVulnClick?.(entry.package_id)}
                         >
-                          ⚠️
+                          <VulnScoreIcon score={vulnerabilityScore} />
                         </button>
                       )}
                     </span>
