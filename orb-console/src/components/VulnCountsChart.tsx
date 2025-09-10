@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { AuditEntry, VulnRecord } from "@/types";
+import { AuditEntry } from "@/types";
+import { getPackageVulnerabilityScore } from "@/utils/vulnerabilityScore";
 import {
   BarChart,
   Bar,
@@ -11,33 +12,6 @@ import {
 } from "recharts";
 import colors from "tailwindcss/colors";
 
-// Helper function to calculate the highest CVSS score for a vulnerability record
-const getPackageVulnerabilityScore = (record: VulnRecord) => {
-  const { vuln_ids, vuln_infos } = record;
-  let highestScore = 0;
-
-  vuln_ids.forEach((id: string) => {
-    const vuln = vuln_infos[id];
-    if (!vuln?.cvss_details) return;
-
-    // Sort CVSS details by version (highest first) and take the first one
-    const sortedCvss = vuln.cvss_details.sort((a, b) => {
-      const getVersionNumber = (version: string) => {
-        const match = version.match(/V(\d+)_(\d+)/);
-        if (!match) return 0;
-        return parseFloat(`${match[1]}.${match[2]}`);
-      };
-      return getVersionNumber(b.version) - getVersionNumber(a.version);
-    });
-
-    const highestVersionCvss = sortedCvss[0];
-    if (highestVersionCvss && highestVersionCvss.score > highestScore) {
-      highestScore = highestVersionCvss.score;
-    }
-  });
-
-  return highestScore;
-};
 
 type VulnCountsChartProps = {
   data: AuditEntry[];
@@ -95,7 +69,7 @@ export function VulnCountsChart({
 
   // Count vulnerabilities in each bin
   data.forEach((entry) => {
-    const score = getPackageVulnerabilityScore(entry.record);
+    const { score } = getPackageVulnerabilityScore(entry.record);
     if (score > 0) {
       const binIndex = Math.min(Math.floor(score), 9); // Cap at 9 for 9.x scores
       const bin = bins[binIndex];

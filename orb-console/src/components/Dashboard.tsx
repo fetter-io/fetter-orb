@@ -19,7 +19,6 @@ import {
   UserRecord,
   ValidationResult,
   ValidationEntry,
-  VulnRecord,
 } from "@/types";
 import { PackageVersionsCard } from "@/components/PackageVersionsCard";
 import { SystemTagSelector } from "@/components/SystemTagSelector";
@@ -33,38 +32,9 @@ import { Weave } from "@/components/Weave";
 import colors from "tailwindcss/colors";
 import { ValidationPanel } from "@/components/ValidationPanel";
 import { UserMenuDropdown } from "@/components/UserMenuDropdown";
+import { getPackageVulnerabilityScore } from "@/utils/vulnerabilityScore";
 
 //------------------------------------------------------------------------------
-
-// Helper function to calculate the highest CVSS score for a vulnerability record
-const getPackageVulnerabilityScore = (record: VulnRecord) => {
-  const { vuln_ids, vuln_infos } = record;
-  let highestScore = 0;
-  let highestSeverity = "";
-
-  vuln_ids.forEach((id) => {
-    const vuln = vuln_infos[id];
-    if (!vuln?.cvss_details) return;
-
-    // Sort CVSS details by version (highest first) and take the first one
-    const sortedCvss = vuln.cvss_details.sort((a, b) => {
-      const getVersionNumber = (version: string) => {
-        const match = version.match(/V(\d+)_(\d+)/);
-        if (!match) return 0;
-        return parseFloat(`${match[1]}.${match[2]}`);
-      };
-      return getVersionNumber(b.version) - getVersionNumber(a.version);
-    });
-
-    const highestVersionCvss = sortedCvss[0];
-    if (highestVersionCvss && highestVersionCvss.score > highestScore) {
-      highestScore = highestVersionCvss.score;
-      highestSeverity = highestVersionCvss.severity;
-    }
-  });
-
-  return { score: highestScore, severity: highestSeverity };
-};
 
 //------------------------------------------------------------------------------
 
@@ -367,8 +337,8 @@ export default function Dashboard() {
     const scoreMap = new Map<number, number>();
 
     auditState.data.forEach((entry) => {
-      const vulnScore = getPackageVulnerabilityScore(entry.record);
-      scoreMap.set(entry.package_id, vulnScore.score);
+      const { score } = getPackageVulnerabilityScore(entry.record);
+      scoreMap.set(entry.package_id, score);
     });
 
     return scoreMap;
