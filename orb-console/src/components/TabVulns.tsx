@@ -86,9 +86,12 @@ export function TabVulns({
             vulnerablePackageIds={vulnerablePackageIds}
             minVulnScore={minVulnScore}
             maxVulnScore={maxVulnScore}
-            onFilterChange={(min, max) => {
-              setMinVulnScore(min);
-              setMaxVulnScore(max);
+            onFilterChange={(minBin, maxBin) => {
+              // Convert bin indices to scores, handling the special case for bin 9
+              const minScore = minBin;
+              const maxScore = maxBin >= 9 ? maxBin + 1.0 : maxBin + 0.99;
+              setMinVulnScore(minScore);
+              setMaxVulnScore(maxScore);
             }}
           />
 

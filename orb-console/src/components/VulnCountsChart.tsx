@@ -16,7 +16,7 @@ type VulnCountsChartProps = {
   vulnerablePackageIds: Map<number, number>;
   minVulnScore?: number;
   maxVulnScore?: number;
-  onFilterChange?: (minScore: number, maxScore: number) => void;
+  onFilterChange?: (minBin: number, maxBin: number) => void;
 };
 
 export function VulnCountsChart({
@@ -86,10 +86,10 @@ export function VulnCountsChart({
         // Shift-click: select range from lastClickedBin to current binIndex
         const startBin = Math.min(lastClickedBin, binIndex);
         const endBin = Math.max(lastClickedBin, binIndex);
-        onFilterChange(startBin, endBin >= 9 ? endBin + 1.0 : endBin + 0.99);
+        onFilterChange(startBin, endBin);
       } else {
         // Regular click: select single bin
-        onFilterChange(binIndex, binIndex >= 9 ? binIndex + 1.0 : binIndex + 0.99);
+        onFilterChange(binIndex, binIndex);
         setLastClickedBin(binIndex);
       }
     }
