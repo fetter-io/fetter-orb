@@ -90,7 +90,6 @@ export default function Dashboard() {
   //----------------------------------------------------------------------------
   const [userInfo, setUserInfo] = useState<UserRecord | null>(null);
 
-
   useEffect(() => {
     const fetchUser = async () => {
       if (!session?.user?.user_id || userInfo) return;

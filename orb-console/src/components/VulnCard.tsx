@@ -11,29 +11,21 @@ const processCvssDetails = (cvssDetails: CvssDetail[], vulnId: string) => {
         if (!match) return 0;
         return parseFloat(`${match[1]}.${match[2]}`);
       };
-      return (
-        getVersionNumber(b.version) -
-        getVersionNumber(a.version)
-      );
+      return getVersionNumber(b.version) - getVersionNumber(a.version);
     })
     .map((cvss, i) => {
       const version = cvss.version.toUpperCase(); // Normalize for consistency
       let baseUrl = null;
 
       if (version === "V4_0") {
-        baseUrl =
-          "https://www.first.org/cvss/calculator/4-0#";
+        baseUrl = "https://www.first.org/cvss/calculator/4-0#";
       } else if (version === "V3_1" || version === "V3_0") {
-        baseUrl =
-          "https://www.first.org/cvss/calculator/3-1#";
+        baseUrl = "https://www.first.org/cvss/calculator/3-1#";
       } else if (version === "V2_0") {
-        baseUrl =
-          "https://www.first.org/cvss/calculator/2-0#";
+        baseUrl = "https://www.first.org/cvss/calculator/2-0#";
       }
 
-      const href = baseUrl
-        ? `${baseUrl}${cvss.vector}`
-        : null;
+      const href = baseUrl ? `${baseUrl}${cvss.vector}` : null;
 
       return (
         <div

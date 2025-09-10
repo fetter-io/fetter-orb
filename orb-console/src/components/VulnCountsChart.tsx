@@ -50,7 +50,7 @@ export function VulnCountsChart({
   data,
   minVulnScore = 0,
   maxVulnScore = 10,
-  onFilterChange
+  onFilterChange,
 }: VulnCountsChartProps) {
   const [lastClickedBin, setLastClickedBin] = useState<number | null>(null);
   const [isShiftPressed, setIsShiftPressed] = useState(false);
@@ -58,23 +58,23 @@ export function VulnCountsChart({
   // Track shift key state
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Shift') {
+      if (event.key === "Shift") {
         setIsShiftPressed(true);
       }
     };
 
     const handleKeyUp = (event: KeyboardEvent) => {
-      if (event.key === 'Shift') {
+      if (event.key === "Shift") {
         setIsShiftPressed(false);
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
 
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
     };
   }, []);
   // Create bins for CVSS scores (0-1, 1-2, 2-3, ..., 9-10)
@@ -83,10 +83,14 @@ export function VulnCountsChart({
     range: `${i}-${i + 1}`,
     rangeLabel: `${i}.0-${i}.9`,
     count: 0,
-    color: i >= 9 ? colors.red[500] : // Critical (9.0+)
-           i >= 7 ? colors.orange[500] : // High (7.0-8.9)
-           i >= 4 ? colors.yellow[500] : // Medium (4.0-6.9)
-           colors.green[500] // Low (0-3.9)
+    color:
+      i >= 9
+        ? colors.red[500] // Critical (9.0+)
+        : i >= 7
+          ? colors.orange[500] // High (7.0-8.9)
+          : i >= 4
+            ? colors.yellow[500] // Medium (4.0-6.9)
+            : colors.green[500], // Low (0-3.9)
   }));
 
   // Count vulnerabilities in each bin
@@ -99,7 +103,7 @@ export function VulnCountsChart({
   });
 
   // Filter out empty bins for cleaner display
-  const chartData = bins.filter(bin => bin.count > 0);
+  const chartData = bins.filter((bin) => bin.count > 0);
 
   // Handle bar click to set filter range
   const handleBarClick = (data: any) => {
@@ -121,7 +125,10 @@ export function VulnCountsChart({
 
   // Check if a bin is currently selected (handles both single bins and ranges)
   const isBinSelected = (binIndex: number) => {
-    return binIndex >= Math.floor(minVulnScore) && binIndex <= Math.floor(maxVulnScore);
+    return (
+      binIndex >= Math.floor(minVulnScore) &&
+      binIndex <= Math.floor(maxVulnScore)
+    );
   };
 
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -131,16 +138,23 @@ export function VulnCountsChart({
           style={{
             backgroundColor: colors.slate[800],
             border: `1px solid ${colors.slate[600]}`,
-            padding: '8px',
-            borderRadius: '4px',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+            padding: "8px",
+            borderRadius: "4px",
+            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
           }}
         >
           <p style={{ color: colors.slate[100], fontSize: 12, margin: 0 }}>
             CVSS {label}: {payload[0].value} packages
           </p>
           {onFilterChange && (
-            <p style={{ color: colors.slate[400], fontSize: 10, margin: 0, fontStyle: 'italic' }}>
+            <p
+              style={{
+                color: colors.slate[400],
+                fontSize: 10,
+                margin: 0,
+                fontStyle: "italic",
+              }}
+            >
               Click to filter • Shift+click to select range
             </p>
           )}
@@ -153,7 +167,10 @@ export function VulnCountsChart({
   return (
     <div className="h-48 bg-slate-900 rounded-md pt-2 border border-slate-700">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+        <BarChart
+          data={chartData}
+          margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
+        >
           <XAxis
             dataKey="rangeLabel"
             tick={{ fill: colors.slate[400], fontSize: 10 }}
@@ -164,24 +181,28 @@ export function VulnCountsChart({
             tick={{ fill: colors.slate[400], fontSize: 10 }}
             axisLine={{ stroke: colors.slate[600] }}
             tickLine={{ stroke: colors.slate[600] }}
-            domain={[0, 'dataMax']}
+            domain={[0, "dataMax"]}
           />
           <Tooltip
             content={<CustomTooltip />}
-            wrapperStyle={{ outline: 'none' }}
-            cursor={{ fill: 'transparent' }}
+            wrapperStyle={{ outline: "none" }}
+            cursor={{ fill: "transparent" }}
           />
           <Bar
             dataKey="count"
             stroke={colors.slate[600]}
             strokeWidth={1}
             onClick={handleBarClick}
-            style={{ cursor: onFilterChange ? 'pointer' : 'default' }}
+            style={{ cursor: onFilterChange ? "pointer" : "default" }}
           >
             {chartData.map((entry, index) => (
               <Cell
                 key={`cell-${index}`}
-                fill={isBinSelected(entry.binIndex) ? colors.blue[800] : colors.slate[800]}
+                fill={
+                  isBinSelected(entry.binIndex)
+                    ? colors.blue[800]
+                    : colors.slate[800]
+                }
               />
             ))}
           </Bar>

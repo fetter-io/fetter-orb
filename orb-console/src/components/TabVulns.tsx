@@ -101,7 +101,6 @@ export function TabVulns({
             packageCount={packagesState.data?.length ?? 0}
             vulnCount={auditState.data?.length ?? 0}
           />
-
         </div>
         <div className="flex">
           <DashboardStatus label="vulnerabilities" state={auditState} />
@@ -124,7 +123,8 @@ export function TabVulns({
           {/* Filter Status and Reset */}
           <div className="flex items-center justify-between py-0">
             <span className="text-xs text-gray-600">
-              Showing {filteredAuditData.length} of {auditState.data?.length ?? 0} vulnerable packages
+              Showing {filteredAuditData.length} of{" "}
+              {auditState.data?.length ?? 0} vulnerable packages
             </span>
             {(minVulnScore > 0 || maxVulnScore < 10) && (
               <button
@@ -147,13 +147,9 @@ export function TabVulns({
             key={`vuln-pkg-${entry.package_id}`}
             record={entry.record}
             package_id={entry.package_id}
-            highlight={
-              `vuln-pkg-${entry.package_id}` === highlightedVulnId
-            }
+            highlight={`vuln-pkg-${entry.package_id}` === highlightedVulnId}
             onPackageClick={onPackageClick}
-            vulnerabilityScore={
-              vulnerablePackageIds.get(entry.package_id) || 0
-            }
+            vulnerabilityScore={vulnerablePackageIds.get(entry.package_id) || 0}
           />
         ))}
       </div>
