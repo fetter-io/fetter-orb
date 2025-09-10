@@ -56,8 +56,8 @@ export function VulnCountsChart({
     const isLast = i === 9;
     return {
       binIndex: i,
-      range: `${i}-${i + 1}`,
-      rangeLabel: isLast ? `${i}.0-10` : `${i}-${i}.9`,
+      // range: `${i}-${i + 1}`,
+      rangeLabel: isLast ? `${i}-10` : `${i}-${i}.9`,
       count: 0,
     };
   });
@@ -86,10 +86,10 @@ export function VulnCountsChart({
         // Shift-click: select range from lastClickedBin to current binIndex
         const startBin = Math.min(lastClickedBin, binIndex);
         const endBin = Math.max(lastClickedBin, binIndex);
-        onFilterChange(startBin, endBin + 0.99);
+        onFilterChange(startBin, endBin >= 9 ? endBin + 1.0 : endBin + 0.99);
       } else {
         // Regular click: select single bin
-        onFilterChange(binIndex, binIndex + 0.99);
+        onFilterChange(binIndex, binIndex >= 9 ? binIndex + 1.0 : binIndex + 0.99);
         setLastClickedBin(binIndex);
       }
     }

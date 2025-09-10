@@ -1224,6 +1224,7 @@ impl DBContext {
         }
 
         let client = Arc::new(UreqClientLive);
+        // NOTE: we might remove this cache if we have client-based caching
         let cache_dur = Duration::from_secs(120);
         let audit = AuditReport::from_packages(
             client,
