@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { AuditEntry } from "@/types";
-import { getPackageVulnerabilityScore } from "@/utils/vulnerabilityScore";
 import {
   BarChart,
   Bar,
@@ -12,9 +11,9 @@ import {
 } from "recharts";
 import colors from "tailwindcss/colors";
 
-
 type VulnCountsChartProps = {
   data: AuditEntry[];
+  vulnerablePackageIds: Map<number, number>;
   minVulnScore?: number;
   maxVulnScore?: number;
   onFilterChange?: (minScore: number, maxScore: number) => void;
@@ -22,6 +21,7 @@ type VulnCountsChartProps = {
 
 export function VulnCountsChart({
   data,
+  vulnerablePackageIds,
   minVulnScore = 0,
   maxVulnScore = 10,
   onFilterChange,
@@ -67,9 +67,9 @@ export function VulnCountsChart({
             : colors.green[500], // Low (0-3.9)
   }));
 
-  // Count vulnerabilities in each bin
+  // Count vulnerabilities in each bin using pre-computed scores
   data.forEach((entry) => {
-    const { score } = getPackageVulnerabilityScore(entry.record);
+    const score = vulnerablePackageIds.get(entry.package_id) || 0;
     if (score > 0) {
       const binIndex = Math.min(Math.floor(score), 9); // Cap at 9 for 9.x scores
       const bin = bins[binIndex];

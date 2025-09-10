@@ -8,7 +8,6 @@ import { VulnCountsChart } from "@/components/VulnCountsChart";
 import { AuditEntry, SystemTag, PackageVersions } from "@/types";
 import { getPackageVulnerabilityScore } from "@/utils/vulnerabilityScore";
 
-
 interface DataState<T> {
   data: T | null;
   loading: boolean;
@@ -84,6 +83,7 @@ export function TabVulns({
         <div className="flex flex-col gap-1 pb-2">
           <VulnCountsChart
             data={auditState.data}
+            vulnerablePackageIds={vulnerablePackageIds}
             minVulnScore={minVulnScore}
             maxVulnScore={maxVulnScore}
             onFilterChange={(min, max) => {
