@@ -80,7 +80,7 @@ export function VulnCard({
             : "border-slate-600 bg-gray-800"
         }`}
     >
-      <h3 className="text-white font-semibold text-base flex items-center justify-between pl-1">
+      <h3 className="text-white font-semibold text-base flex items-center justify-between px-1">
         <div className="flex items-center gap-2">
           {pkg.name}
           <span className="text-gray-400 text-sm">{pkg.version}</span>
