@@ -77,7 +77,7 @@ export function PackageCountsChart({ data }: PackageCountsChartProps) {
               color: colors.slate[100],
               fontSize: 10,
             }}
-            cursor={{ fill: colors.slate[800] }}
+            cursor={{ fill: "transparent" }}
           />
           <Bar dataKey="count" fill={colors.gray[600]} />
           <Brush
