@@ -13,7 +13,12 @@ type Props = {
   currentUserId?: string;
 };
 
-export function TenantCard({ tenant, selected, scrollIntoViewNow, currentUserId }: Props) {
+export function TenantCard({
+  tenant,
+  selected,
+  scrollIntoViewNow,
+  currentUserId,
+}: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const [copiedKey, setCopiedKey] = useState(false);
   const [copiedCommand, setCopiedCommand] = useState(false);
@@ -60,14 +65,9 @@ export function TenantCard({ tenant, selected, scrollIntoViewNow, currentUserId 
       }`}
     >
       <div className="flex items-center justify-between">
-        <div className="text-xl font-semibold text-zinc-400">
-          {tenant.name}
-        </div>
+        <div className="text-xl font-semibold text-zinc-400">{tenant.name}</div>
         {canRename && (
-          <button
-            onClick={handleRename}
-            className="button-entry"
-          >
+          <button onClick={handleRename} className="button-entry">
             Rename
           </button>
         )}
