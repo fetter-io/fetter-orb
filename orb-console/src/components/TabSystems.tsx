@@ -3,14 +3,7 @@
 import { DashboardStatus } from "@/components/DashboardStatus";
 import { SystemTagCard } from "@/components/SystemTagCard";
 import { SystemTag, Tab } from "@/types";
-
-interface DataState<T> {
-  data: T | null;
-  loading: boolean;
-  error: Error | null;
-  lastFetched: Date | null;
-  refresh: () => void;
-}
+import { DataState } from "@/hooks/useDashboardData";
 
 interface TabSystemsProps {
   systemTagsState: DataState<SystemTag[]>;

@@ -12,14 +12,7 @@ import {
   ValidationResult,
   ValidationEntry,
 } from "@/types";
-
-interface DataState<T> {
-  data: T | null;
-  loading: boolean;
-  error: Error | null;
-  lastFetched: Date | null;
-  refresh: () => void;
-}
+import { DataState } from "@/hooks/useDashboardData";
 
 interface TabAllowProps {
   validationState: DataState<ValidationResult>;

@@ -3,13 +3,21 @@ import { useEffect, useState, useCallback } from "react";
 
 type Fetcher<T> = () => Promise<T>;
 
+export interface DataState<T> {
+  data: T | null;
+  loading: boolean;
+  error: Error | null;
+  lastFetched: Date | null;
+  refresh: () => void;
+}
+
 export function useDashboardData<T>(
   fetcher: Fetcher<T>,
   options?: {
     active?: boolean; // control if data should load based on tab
     pollInterval?: number; // polling in ms, if desired
   },
-) {
+): DataState<T> {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(false);
   const [lastFetched, setLastFetched] = useState<Date | null>(null);

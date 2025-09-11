@@ -7,14 +7,7 @@ import { DashboardStatus } from "@/components/DashboardStatus";
 import { VulnCountsChart } from "@/components/VulnCountsChart";
 import { AuditEntry, SystemTag, PackageVersions } from "@/types";
 import { getPackageVulnerabilityScore } from "@/utils/vulnerabilityScore";
-
-interface DataState<T> {
-  data: T | null;
-  loading: boolean;
-  error: Error | null;
-  lastFetched: Date | null;
-  refresh: () => void;
-}
+import { DataState } from "@/hooks/useDashboardData";
 
 interface TabVulnsProps {
   auditState: DataState<AuditEntry[]>;
