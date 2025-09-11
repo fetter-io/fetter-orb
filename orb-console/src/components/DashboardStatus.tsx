@@ -1,13 +1,9 @@
 import { Spinner } from "@/components/Spinner";
+import { DataState } from "@/hooks/useDashboardData";
 
-type DashboardStatusProps = {
+type DashboardStatusProps<T = unknown> = {
   label: string;
-  state: {
-    refresh: () => void;
-    lastFetched: Date | null;
-    loading: boolean;
-    error: Error | null;
-  };
+  state: DataState<T>;
 };
 
 export function DashboardStatus({ label, state }: DashboardStatusProps) {

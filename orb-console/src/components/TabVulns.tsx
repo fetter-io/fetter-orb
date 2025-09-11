@@ -7,14 +7,7 @@ import { DashboardStatus } from "@/components/DashboardStatus";
 import { VulnCountsChart } from "@/components/VulnCountsChart";
 import { AuditEntry, SystemTag, PackageVersions } from "@/types";
 import { getPackageVulnerabilityScore } from "@/utils/vulnerabilityScore";
-
-interface DataState<T> {
-  data: T | null;
-  loading: boolean;
-  error: Error | null;
-  lastFetched: Date | null;
-  refresh: () => void;
-}
+import { DataState } from "@/hooks/useDashboardData";
 
 interface TabVulnsProps {
   auditState: DataState<AuditEntry[]>;
@@ -96,7 +89,7 @@ export function TabVulns({
           />
 
           {/* Filter Status and Reset */}
-          <div className="flex items-center justify-between py-0">
+          <div className="flex items-center justify-between py-0 px-1">
             <span className="text-xs text-gray-600">
               Selected {filteredAuditData.length} vulnerable packages
             </span>

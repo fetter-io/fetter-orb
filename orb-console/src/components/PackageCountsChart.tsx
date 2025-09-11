@@ -33,7 +33,10 @@ export function PackageCountsChart({ data }: PackageCountsChartProps) {
   return (
     <div className="h-50 bg-slate-900 rounded-md p-2 border border-slate-700">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={chartData}>
+        <BarChart
+          data={chartData}
+          margin={{ top: 5, right: 10, left: 0, bottom: 10 }}
+        >
           <XAxis
             dataKey="time"
             tick={({ x, y, payload }) => {
@@ -74,7 +77,7 @@ export function PackageCountsChart({ data }: PackageCountsChartProps) {
               color: colors.slate[100],
               fontSize: 10,
             }}
-            cursor={{ fill: colors.slate[800] }}
+            cursor={{ fill: "transparent" }}
           />
           <Bar dataKey="count" fill={colors.gray[600]} />
           <Brush
