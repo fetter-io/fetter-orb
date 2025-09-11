@@ -149,7 +149,7 @@ export function VulnCountsChart({
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={chartData}
-          margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
+          margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
         >
           <XAxis
             dataKey="rangeLabel"
