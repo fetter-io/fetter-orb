@@ -89,7 +89,7 @@ export function TabVulns({
           />
 
           {/* Filter Status and Reset */}
-          <div className="flex items-center justify-between py-0">
+          <div className="flex items-center justify-between py-0 px-1">
             <span className="text-xs text-gray-600">
               Selected {filteredAuditData.length} vulnerable packages
             </span>

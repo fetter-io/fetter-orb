@@ -81,7 +81,7 @@ export function TabPackages({
           className="px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-md text-slate-400 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-800"
         />
 
-        <div className="flex items-center justify-between py-0">
+        <div className="flex items-center justify-between py-0 px-1">
           <span className="text-xs text-gray-600">
             Showing {packagesFiltered.length} of{" "}
             {packagesState.data?.length || 0} packages
