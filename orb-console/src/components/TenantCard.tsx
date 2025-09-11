@@ -4,30 +4,35 @@ import { useEffect, useRef, useState } from "react";
 
 import { IconLinux } from "@/components/IconLinux";
 import { IconApple } from "@/components/IconApple";
+import { TenantRename } from "@/components/TenantRename";
 import { Tenant } from "@/types";
 
 type Props = {
   tenant: Tenant;
+  tenantId: number;
   selected: boolean;
   scrollIntoViewNow: boolean;
   currentUserId?: string | undefined;
+  onRename?: () => void;
 };
 
 export function TenantCard({
   tenant,
+  tenantId,
   selected,
   scrollIntoViewNow,
   currentUserId,
+  onRename,
 }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const [copiedKey, setCopiedKey] = useState(false);
   const [copiedCommand, setCopiedCommand] = useState(false);
+  const [showRenameDialog, setShowRenameDialog] = useState(false);
 
   const canRename = currentUserId && tenant.created_by === currentUserId;
 
   const handleRename = () => {
-    // TODO: Implement rename functionality
-    console.log("Rename tenant:", tenant.name);
+    setShowRenameDialog(true);
   };
 
   useEffect(() => {
@@ -130,6 +135,21 @@ export function TenantCard({
           </button>
         </div>
       </div>
+
+      {showRenameDialog && currentUserId && (
+        <TenantRename
+          tenantId={tenantId}
+          currentName={tenant.name}
+          userId={currentUserId}
+          onClose={() => setShowRenameDialog(false)}
+          onSuccess={() => {
+            setShowRenameDialog(false);
+            if (onRename) {
+              onRename();
+            }
+          }}
+        />
+      )}
     </div>
   );
 }
