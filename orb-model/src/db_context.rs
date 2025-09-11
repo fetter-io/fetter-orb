@@ -498,9 +498,7 @@ impl DBContext {
 
         // If user_id is provided, verify ownership
         if let Some(user_id) = user_id {
-            let check_query = format!(
-                "SELECT created_by FROM {table_name} WHERE id = $1"
-            );
+            let check_query = format!("SELECT created_by FROM {table_name} WHERE id = $1");
 
             if let Some(row) = sqlx::query(&check_query)
                 .bind(tenant_id)
@@ -517,9 +515,7 @@ impl DBContext {
         }
 
         // Update the tenant name
-        let update_query = format!(
-            "UPDATE {table_name} SET name = $1 WHERE id = $2"
-        );
+        let update_query = format!("UPDATE {table_name} SET name = $1 WHERE id = $2");
 
         let result = sqlx::query(&update_query)
             .bind(name)
