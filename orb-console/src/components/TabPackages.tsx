@@ -40,7 +40,7 @@ export function TabPackages({
 }: TabPackagesProps) {
   const [searchTerm, setSearchTerm] = useState("");
 
-  const filteredPackages = useMemo(() => {
+  const packagesFiltered = useMemo(() => {
     if (!packagesState.data || !searchTerm.trim()) {
       return packagesState.data || [];
     }
@@ -83,7 +83,7 @@ export function TabPackages({
 
         <div className="flex items-center justify-between py-0">
           <span className="text-xs text-gray-600">
-            Showing {filteredPackages.length} of{" "}
+            Showing {packagesFiltered.length} of{" "}
             {packagesState.data?.length || 0} packages
           </span>
           {searchTerm && (
@@ -98,7 +98,7 @@ export function TabPackages({
       </div>
 
       <div className="flex flex-col gap-4">
-        {filteredPackages.map((pkg) => (
+        {packagesFiltered.map((pkg) => (
           <PackageVersionsCard
             key={pkg.key}
             pkg={pkg}
