@@ -10,7 +10,7 @@ type Props = {
   tenant: Tenant;
   selected: boolean;
   scrollIntoViewNow: boolean;
-  currentUserId?: string;
+  currentUserId?: string | undefined;
 };
 
 export function TenantCard({
