@@ -36,10 +36,11 @@ export function TabTenant({ selectedTenantId, tenantsState }: TabTenantProps) {
           tenant={tenant}
           selected={isSelected}
           scrollIntoViewNow={scrollIntoViewNow}
+          currentUserId={session?.user?.user_id}
         />
       );
     });
-  }, [tenantsState.data, selectedTenantId]);
+  }, [tenantsState.data, selectedTenantId, session?.user?.user_id]);
 
   if (!tenantsState.data) {
     return <div className="text-gray-400 p-4">Loading tenants…</div>;

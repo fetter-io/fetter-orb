@@ -10,12 +10,20 @@ type Props = {
   tenant: Tenant;
   selected: boolean;
   scrollIntoViewNow: boolean;
+  currentUserId?: string;
 };
 
-export function TenantCard({ tenant, selected, scrollIntoViewNow }: Props) {
+export function TenantCard({ tenant, selected, scrollIntoViewNow, currentUserId }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const [copiedKey, setCopiedKey] = useState(false);
   const [copiedCommand, setCopiedCommand] = useState(false);
+
+  const canRename = currentUserId && tenant.created_by === currentUserId;
+
+  const handleRename = () => {
+    // TODO: Implement rename functionality
+    console.log("Rename tenant:", tenant.name);
+  };
 
   useEffect(() => {
     if (scrollIntoViewNow && ref.current) {
@@ -51,7 +59,19 @@ export function TenantCard({ tenant, selected, scrollIntoViewNow }: Props) {
         selected ? "border-blue-500" : "border-slate-600"
       }`}
     >
-      <div className="text-xl font-semibold text-zinc-400">{tenant.name}</div>
+      <div className="flex items-center justify-between">
+        <div className="text-xl font-semibold text-zinc-400">
+          {tenant.name}
+        </div>
+        {canRename && (
+          <button
+            onClick={handleRename}
+            className="button-entry"
+          >
+            Rename
+          </button>
+        )}
+      </div>
 
       <div className="text-sm">
         <span className="text-zinc-300">Updates per day: </span>
