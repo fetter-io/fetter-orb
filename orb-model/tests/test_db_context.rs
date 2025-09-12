@@ -392,7 +392,7 @@ async fn test_dep_manifest_load_a() {
     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
 
     let msg = format!(
-        r#"{{"user_id": "{}", "tenant_id": 2, "content": "numpy==2.0.0\nstatic-frame==2.0.0\n"}}"#,
+        r#"{{"user_id": "{}", "tenant_id": 2, "content": "numpy==2.0.0\nstatic-frame==2.0.0\n", "superset": true, "subset": false}}"#,
         user_id
     );
     let result = ctx.dep_manifest_load_from_json(&msg).await.unwrap();
@@ -402,7 +402,9 @@ async fn test_dep_manifest_load_a() {
     );
 
     let dm = ctx.dep_manifest_from_tenant_id(2).await.unwrap().unwrap();
-    assert_eq!(dm, "numpy==2.0.0\nstatic-frame==2.0.0\n");
+    assert_eq!(dm.content, "numpy==2.0.0\nstatic-frame==2.0.0\n");
+    assert_eq!(dm.superset, true);
+    assert_eq!(dm.subset, false);
 
     let json_obj = ctx.validate(Some(1), Some(2)).await.unwrap();
     let obj = json_obj.as_object().expect("Expected JSON object");

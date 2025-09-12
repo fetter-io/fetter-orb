@@ -110,6 +110,15 @@ struct DepManifestRequest {
     user_id: String,
     tenant_id: i32,
     content: String,
+    superset: bool,
+    subset: bool,
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
+pub struct DepManifestData {
+    pub content: String,
+    pub superset: bool,
+    pub subset: bool,
 }
 
 //------------------------------------------------------------------------------
@@ -220,7 +229,9 @@ impl DBContext {
             r#"
             CREATE TABLE {if_clause}{dep_manifest_table} (
                 tenant_id INTEGER PRIMARY KEY REFERENCES {tenant_table}(id) ON DELETE RESTRICT,
-                content TEXT NOT NULL
+                content TEXT NOT NULL,
+                superset BOOLEAN NOT NULL DEFAULT FALSE,
+                subset BOOLEAN NOT NULL DEFAULT FALSE
             );
             "#
         );
@@ -1322,21 +1333,20 @@ impl DBContext {
             }));
         }
 
-        let dm_content = match tenant_id {
+        let (dm_content, permit_superset, permit_subset) = match tenant_id {
             Some(t_id) => match self.dep_manifest_from_tenant_id(t_id).await? {
-                Some(text) => text,
-                None => "".to_string(),
+                Some(data) => (data.content, data.superset, data.subset),
+                None => ("".to_string(), false, false),
             },
-            None => "".to_string(),
+            None => ("".to_string(), false, false),
         };
 
         let lf = LockFile::new(dm_content.clone());
         let deps = lf.get_dependencies(None)?; // can provide Vec<String> of options
         let dm = DepManifest::try_from_iter(deps.iter())?;
-        // these need to come from the ui
         let vf = ValidationFlags {
-            permit_superset: false,
-            permit_subset: false,
+            permit_superset,
+            permit_subset,
         };
 
         let packages: Vec<_> = package_to_sites.keys().cloned().collect();
@@ -1392,12 +1402,12 @@ impl DBContext {
     pub async fn dep_manifest_from_tenant_id(
         &self,
         tenant_id: i32,
-    ) -> Result<Option<String>, sqlx::Error> {
+    ) -> Result<Option<DepManifestData>, sqlx::Error> {
         let table_name = self.get_table("dep_manifest");
 
         let query = format!(
             r#"
-            SELECT content
+            SELECT content, superset, subset
             FROM {table_name}
             WHERE tenant_id = $1
             "#
@@ -1409,8 +1419,14 @@ impl DBContext {
             .await?
         {
             let content: String = row.get("content");
-            // println!("dep_manifest_from_tenant_id: {:?} {:?}", tenant_id, content);
-            Ok(Some(content))
+            let superset: bool = row.get("superset");
+            let subset: bool = row.get("subset");
+
+            Ok(Some(DepManifestData {
+                content,
+                superset,
+                subset,
+            }))
         } else {
             Ok(None)
         }
@@ -1845,6 +1861,8 @@ impl DBContext {
         tenant_id: i32,
         user_id: Option<Uuid>,
         content: &String,
+        superset: bool,
+        subset: bool,
     ) -> Result<bool, sqlx::Error> {
         // If user_id is provided, verify ownership
         if let Some(user_id) = user_id {
@@ -1868,16 +1886,18 @@ impl DBContext {
 
         let insert_query = format!(
             r#"
-            INSERT INTO {dep_manifest_table} (tenant_id, content)
-            VALUES ($1, $2)
+            INSERT INTO {dep_manifest_table} (tenant_id, content, superset, subset)
+            VALUES ($1, $2, $3, $4)
             ON CONFLICT (tenant_id)
-            DO UPDATE SET content = EXCLUDED.content
+            DO UPDATE SET content = EXCLUDED.content, superset = EXCLUDED.superset, subset = EXCLUDED.subset
             "#
         );
 
         sqlx::query(&insert_query)
             .bind(tenant_id)
             .bind(content)
+            .bind(superset)
+            .bind(subset)
             .execute(&self.pool)
             .await?;
 
@@ -1890,7 +1910,13 @@ impl DBContext {
 
         let user_id = Uuid::parse_str(&request.user_id).map_err(|_| sqlx::Error::RowNotFound)?;
 
-        self.dep_manifest_load(request.tenant_id, Some(user_id), &request.content)
-            .await
+        self.dep_manifest_load(
+            request.tenant_id,
+            Some(user_id),
+            &request.content,
+            request.superset,
+            request.subset,
+        )
+        .await
     }
 }

@@ -100,7 +100,11 @@ pub async fn get_dep_manifest(
             .await
             .map(|opt| {
                 Json(match opt {
-                    Some(text) => serde_json::json!({ "dep_manifest": text }),
+                    Some(data) => serde_json::json!({ 
+                        "dep_manifest": data.content,
+                        "superset": data.superset,
+                        "subset": data.subset
+                    }),
                     None => serde_json::json!(null),
                 })
             })
