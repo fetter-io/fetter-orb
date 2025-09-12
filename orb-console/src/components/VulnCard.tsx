@@ -80,9 +80,9 @@ export function VulnCard({
             : "border-slate-600 bg-gray-800"
         }`}
     >
-      <h3 className="text-white font-semibold text-base flex items-center justify-between px-1">
-        <div className="flex items-center gap-2">
-          {pkg.name}
+      <div className="flex items-center px-1">
+        <div className="flex items-center gap-2 w-5/6">
+          <h3 className="text-white font-semibold text-base truncate">{pkg.name}</h3>
           <span className="text-gray-400 text-sm">{pkg.version}</span>
           <button
             title="Package details"
@@ -92,8 +92,10 @@ export function VulnCard({
             📦
           </button>
         </div>
-        <VulnScoreIcon score={vulnerabilityScore} />
-      </h3>
+        <div className="w-1/6 flex justify-end">
+          <VulnScoreIcon score={vulnerabilityScore} />
+        </div>
+      </div>
 
       {vuln_ids.map((id) => {
         const vuln = vuln_infos[id];

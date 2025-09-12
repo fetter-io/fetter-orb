@@ -30,19 +30,21 @@ export function PackageVersionsCard({
       className={`p-2 border rounded-lg shadow-md text-sm w-full transition-colors duration-1000
       ${highlight ? "border-blue-500 bg-gray-800" : "border-slate-600 bg-gray-800"}`}
     >
-      <div className="flex  items-center justify-between pr-1">
-        <h3 className="font-bold text-white ml-1 mb-2 flex items-center gap-2">
+      <div className="flex items-center pr-1">
+        <h3 className="font-bold text-white ml-1 mb-2 flex items-center gap-2 w-5/6">
           <span className="truncate">{pkg.name}</span>
         </h3>
-        {hasAnyVuln && (
-          <span
-            title={`${vulnCount} vulnerable ${vulnCount === 1 ? "version" : "versions"}`}
-            aria-label="Vulnerable versions present"
-            className="inline-flex items-center text-yellow-400"
-          >
-            ⚠️
-          </span>
-        )}
+        <div className="w-1/6 flex justify-end">
+          {hasAnyVuln && (
+            <span
+              title={`${vulnCount} vulnerable ${vulnCount === 1 ? "version" : "versions"}`}
+              aria-label="Vulnerable versions present"
+              className="inline-flex items-center text-yellow-400"
+            >
+              ⚠️
+            </span>
+          )}
+        </div>
       </div>
       <div
         className="max-h-56 overflow-y-auto border-t border-slate-700"
