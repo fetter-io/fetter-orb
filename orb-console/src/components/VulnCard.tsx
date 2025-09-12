@@ -82,7 +82,9 @@ export function VulnCard({
     >
       <div className="flex items-center px-1">
         <div className="flex items-center gap-2 w-5/6">
-          <h3 className="text-white font-semibold text-base truncate">{pkg.name}</h3>
+          <h3 className="text-white font-semibold text-base truncate">
+            {pkg.name}
+          </h3>
           <span className="text-gray-400 text-sm">{pkg.version}</span>
           <button
             title="Package details"
