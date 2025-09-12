@@ -4,18 +4,36 @@ import { useEffect, useRef, useState } from "react";
 
 import { IconLinux } from "@/components/IconLinux";
 import { IconApple } from "@/components/IconApple";
+import { TenantRename } from "@/components/TenantRename";
 import { Tenant } from "@/types";
 
 type Props = {
   tenant: Tenant;
+  tenantId: number;
   selected: boolean;
   scrollIntoViewNow: boolean;
+  currentUserId?: string | undefined;
+  onRename?: () => void;
 };
 
-export function TenantCard({ tenant, selected, scrollIntoViewNow }: Props) {
+export function TenantCard({
+  tenant,
+  tenantId,
+  selected,
+  scrollIntoViewNow,
+  currentUserId,
+  onRename,
+}: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const [copiedKey, setCopiedKey] = useState(false);
   const [copiedCommand, setCopiedCommand] = useState(false);
+  const [showRenameDialog, setShowRenameDialog] = useState(false);
+
+  const canRename = currentUserId && tenant.created_by === currentUserId;
+
+  const handleRename = () => {
+    setShowRenameDialog(true);
+  };
 
   useEffect(() => {
     if (scrollIntoViewNow && ref.current) {
@@ -51,7 +69,14 @@ export function TenantCard({ tenant, selected, scrollIntoViewNow }: Props) {
         selected ? "border-blue-500" : "border-slate-600"
       }`}
     >
-      <div className="text-xl font-semibold text-zinc-400">{tenant.name}</div>
+      <div className="flex items-center justify-between">
+        <div className="text-xl font-semibold text-zinc-400">{tenant.name}</div>
+        {canRename && (
+          <button onClick={handleRename} className="button-entry">
+            Rename
+          </button>
+        )}
+      </div>
 
       <div className="text-sm">
         <span className="text-zinc-300">Updates per day: </span>
@@ -110,6 +135,21 @@ export function TenantCard({ tenant, selected, scrollIntoViewNow }: Props) {
           </button>
         </div>
       </div>
+
+      {showRenameDialog && currentUserId && (
+        <TenantRename
+          tenantId={tenantId}
+          currentName={tenant.name}
+          userId={currentUserId}
+          onClose={() => setShowRenameDialog(false)}
+          onSuccess={() => {
+            setShowRenameDialog(false);
+            if (onRename) {
+              onRename();
+            }
+          }}
+        />
+      )}
     </div>
   );
 }

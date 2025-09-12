@@ -138,6 +138,22 @@ export function TenantNew({
           onChange={(e) => setNewTenantName(e.target.value)}
           className="w-full px-3 py-2 text-sm rounded bg-slate-700 text-white border border-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-60"
           disabled={overLimit || loading}
+          autoFocus
+          onKeyDown={(e) => {
+            if (
+              e.key === "Enter" &&
+              !creating &&
+              nameValid &&
+              trimmedName &&
+              !overLimit &&
+              !loading
+            ) {
+              handleCreate();
+            }
+            if (e.key === "Escape") {
+              onClose();
+            }
+          }}
         />
         {errorMessage && (
           <p className="mt-1 text-sm text-red-400">{errorMessage}</p>

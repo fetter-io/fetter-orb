@@ -488,6 +488,44 @@ impl DBContext {
             .await
     }
 
+    pub async fn tenant_rename(
+        &self,
+        tenant_id: i32,
+        user_id: Option<Uuid>,
+        name: &str,
+    ) -> Result<bool, sqlx::Error> {
+        let table_name = self.get_table("tenant");
+
+        // If user_id is provided, verify ownership
+        if let Some(user_id) = user_id {
+            let check_query = format!("SELECT created_by FROM {table_name} WHERE id = $1");
+
+            if let Some(row) = sqlx::query(&check_query)
+                .bind(tenant_id)
+                .fetch_optional(&self.pool)
+                .await?
+            {
+                let created_by: Uuid = row.get("created_by");
+                if created_by != user_id {
+                    return Ok(false); // User is not authorized to rename this tenant
+                }
+            } else {
+                return Ok(false); // Tenant not found
+            }
+        }
+
+        // Update the tenant name
+        let update_query = format!("UPDATE {table_name} SET name = $1 WHERE id = $2");
+
+        let result = sqlx::query(&update_query)
+            .bind(name)
+            .bind(tenant_id)
+            .execute(&self.pool)
+            .await?;
+
+        Ok(result.rows_affected() > 0)
+    }
+
     pub async fn count_recent_pings_for_tenant(
         &self,
         tenant_id: i32,

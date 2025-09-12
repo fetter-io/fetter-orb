@@ -34,12 +34,20 @@ export function TabTenant({ selectedTenantId, tenantsState }: TabTenantProps) {
         <TenantCard
           key={id}
           tenant={tenant}
+          tenantId={id}
           selected={isSelected}
           scrollIntoViewNow={scrollIntoViewNow}
+          currentUserId={session?.user?.user_id}
+          onRename={() => tenantsState.refresh()}
         />
       );
     });
-  }, [tenantsState.data, selectedTenantId]);
+  }, [
+    tenantsState.data,
+    selectedTenantId,
+    session?.user?.user_id,
+    tenantsState.refresh,
+  ]);
 
   if (!tenantsState.data) {
     return <div className="text-gray-400 p-4">Loading tenants…</div>;

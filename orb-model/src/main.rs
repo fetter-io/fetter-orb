@@ -279,6 +279,32 @@ pub async fn set_tenant(
 
     Ok(Json(tenant_id))
 }
+
+#[derive(Deserialize)]
+pub struct TenantRenameParams {
+    pub tenant_id: i32,
+    pub user_id: Option<Uuid>,
+    pub name: String,
+}
+
+pub async fn post_tenant_rename(
+    State(db): State<Arc<DBContext>>,
+    Json(input): Json<TenantRenameParams>,
+) -> Result<Json<Value>, (StatusCode, String)> {
+    let success = db
+        .tenant_rename(input.tenant_id, input.user_id, &input.name)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    if success {
+        Ok(Json(json!({ "status": "success", "renamed": true })))
+    } else {
+        Ok(Json(
+            json!({ "status": "failed", "renamed": false, "reason": "unauthorized or tenant not found" }),
+        ))
+    }
+}
+
 //------------------------------------------------------------------------------
 
 #[derive(Deserialize)]
@@ -474,6 +500,7 @@ async fn main() {
         .route("/package_counts", get(get_package_counts))
         .route("/system_tag_pings", get(get_system_tag_pings))
         .route("/tenant", get(get_tenant).post(set_tenant))
+        .route("/tenant_rename", post(post_tenant_rename))
         .route("/tenant_count", get(get_tenant_count))
         .route("/tenant_limit", get(get_tenant_limit))
         .route(

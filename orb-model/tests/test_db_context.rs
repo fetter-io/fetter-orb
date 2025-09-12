@@ -545,3 +545,90 @@ async fn test_user_tenant_last_a() {
     let post3 = ctx.user_tenant_last(user_id).await.unwrap();
     assert_eq!(post3, Some(2));
 }
+
+#[tokio::test]
+async fn test_tenant_rename() {
+    let pool = get_db_pool().await;
+    let ctx = DBContext::new(pool, Some("test_tenant_rename".into()));
+    ctx.tables_drop().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
+
+    // Create two users with different github_ids
+    let user1_id = ctx
+        .user_tenant_init("user1", 1, "user1@example.com", "User One")
+        .await
+        .unwrap();
+    let user2_id = ctx
+        .user_tenant_init("user2", 2, "user2@example.com", "User Two")
+        .await
+        .unwrap();
+
+    // Create a tenant owned by user1
+    let tenant = Tenant {
+        key: "test-tenant".to_string(),
+        name: "Original Name".to_string(),
+        ping_limit: 10,
+        created_by: user1_id,
+    };
+    let tenant_id = ctx.tenant_insert_or_get(&tenant).await.unwrap();
+
+    // Assign the owner to the tenant so they can access it via get_tenants
+    ctx.tenant_assign_user(tenant_id, user1_id).await.unwrap();
+
+    // Test 1: Owner can rename the tenant
+    let result = ctx
+        .tenant_rename(tenant_id, Some(user1_id), "New Name")
+        .await
+        .unwrap();
+    assert!(result, "Owner should be able to rename the tenant");
+
+    // Verify the name was changed
+    let tenants = ctx.get_tenants(Some(user1_id)).await.unwrap();
+    let renamed_tenant = tenants
+        .iter()
+        .find(|(id, _)| *id == tenant_id)
+        .map(|(_, t)| t)
+        .expect("Tenant should exist");
+    assert_eq!(renamed_tenant.name, "New Name");
+
+    // Test 2: Non-owner cannot rename the tenant
+    let result = ctx
+        .tenant_rename(tenant_id, Some(user2_id), "Unauthorized Name")
+        .await
+        .unwrap();
+    assert!(!result, "Non-owner should not be able to rename the tenant");
+
+    // Verify the name was not changed
+    let tenants = ctx.get_tenants(Some(user1_id)).await.unwrap();
+    let unchanged_tenant = tenants
+        .iter()
+        .find(|(id, _)| *id == tenant_id)
+        .map(|(_, t)| t)
+        .expect("Tenant should exist");
+    assert_eq!(unchanged_tenant.name, "New Name"); // Should still be "New Name"
+
+    // Test 3: Rename without user_id (no authorization check)
+    let result = ctx
+        .tenant_rename(tenant_id, None, "Admin Renamed")
+        .await
+        .unwrap();
+    assert!(result, "Rename should succeed when no user_id is provided");
+
+    // Verify the name was changed
+    let tenants = ctx.get_tenants(Some(user1_id)).await.unwrap();
+    let admin_renamed_tenant = tenants
+        .iter()
+        .find(|(id, _)| *id == tenant_id)
+        .map(|(_, t)| t)
+        .expect("Tenant should exist");
+    assert_eq!(admin_renamed_tenant.name, "Admin Renamed");
+
+    // Test 4: Rename non-existent tenant
+    let result = ctx
+        .tenant_rename(99999, Some(user1_id), "Non-existent")
+        .await
+        .unwrap();
+    assert!(!result, "Renaming non-existent tenant should return false");
+
+    ctx.tables_drop().await.unwrap();
+}
