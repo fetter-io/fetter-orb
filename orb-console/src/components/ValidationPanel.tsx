@@ -30,7 +30,17 @@ export function ValidationPanel({
       const pkgB = idToPackage.get(idB);
       const nameA = pkgA?.name ?? "Unknown";
       const nameB = pkgB?.name ?? "Unknown";
-      return nameA.localeCompare(nameB);
+      const versionA = pkgA?.version ?? "";
+      const versionB = pkgB?.version ?? "";
+      
+      // Sort by name first
+      const nameComparison = nameA.localeCompare(nameB);
+      if (nameComparison !== 0) {
+        return nameComparison;
+      }
+      
+      // If names are equal, sort by version
+      return versionA.localeCompare(versionB);
     });
   };
 
