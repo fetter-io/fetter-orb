@@ -42,7 +42,12 @@ export function TabTenant({ selectedTenantId, tenantsState }: TabTenantProps) {
         />
       );
     });
-  }, [tenantsState.data, selectedTenantId, session?.user?.user_id, tenantsState.refresh]);
+  }, [
+    tenantsState.data,
+    selectedTenantId,
+    session?.user?.user_id,
+    tenantsState.refresh,
+  ]);
 
   if (!tenantsState.data) {
     return <div className="text-gray-400 p-4">Loading tenants…</div>;

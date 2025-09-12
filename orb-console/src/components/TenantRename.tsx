@@ -47,13 +47,15 @@ export function TenantRename({
       });
 
       if (!res.ok) {
-        const errorText = await res.text().catch(() => "");
-        console.error("Rename failed:", res.status, res.statusText, errorText);
-        throw new Error(`Failed to rename tenant: ${res.status} ${res.statusText}`);
+        // const errorText = await res.text().catch(() => "");
+        // console.error("Rename failed:", res.status, res.statusText, errorText);
+        throw new Error(
+          `Failed to rename tenant: ${res.status} ${res.statusText}`,
+        );
       }
 
       const result = await res.json();
-      
+
       if (result.renamed) {
         onSuccess();
       } else {
@@ -61,7 +63,9 @@ export function TenantRename({
       }
     } catch (err: unknown) {
       console.error("Rename error:", err);
-      alert(`Could not rename tenant: ${err instanceof Error ? err.message : String(err)}`);
+      alert(
+        `Could not rename tenant: ${err instanceof Error ? err.message : String(err)}`,
+      );
     } finally {
       setRenaming(false);
     }

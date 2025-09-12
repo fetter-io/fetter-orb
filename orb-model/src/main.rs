@@ -299,7 +299,9 @@ pub async fn post_tenant_rename(
     if success {
         Ok(Json(json!({ "status": "success", "renamed": true })))
     } else {
-        Ok(Json(json!({ "status": "failed", "renamed": false, "reason": "unauthorized or tenant not found" })))
+        Ok(Json(
+            json!({ "status": "failed", "renamed": false, "reason": "unauthorized or tenant not found" }),
+        ))
     }
 }
 
