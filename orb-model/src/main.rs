@@ -100,7 +100,7 @@ pub async fn get_dep_manifest(
             .await
             .map(|opt| {
                 Json(match opt {
-                    Some(data) => serde_json::json!({ 
+                    Some(data) => serde_json::json!({
                         "dep_manifest": data.content,
                         "superset": data.superset,
                         "subset": data.subset
@@ -125,6 +125,8 @@ pub async fn get_validate(
             .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
         None => Ok(Json(json!({
             "dep_manifest": "",
+            "superset": false,
+            "subset": false,
             "missing": [],
             "unrequired": [],
             "misdefined": [],

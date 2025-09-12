@@ -1326,6 +1326,8 @@ impl DBContext {
             let empty: Vec<(i32, Option<String>)> = Vec::new();
             return Ok(json!({
                 "dep_manifest": empty,
+                "superset": false,
+                "subset": false,
                 "missing": empty,
                 "unrequired": empty,
                 "misdefined": empty,
@@ -1391,6 +1393,8 @@ impl DBContext {
 
         Ok(json!({
             "dep_manifest": dm_content,
+            "superset": permit_superset,
+            "subset": permit_subset,
             "missing": missing,
             "unrequired": unrequired,
             "misdefined": misdefined,

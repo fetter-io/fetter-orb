@@ -84,13 +84,17 @@ export function TabAllow({
       <AllowListEditor
         key={selectedTenantId} // not sure if this does what we want
         initialValue={validationState.data?.dep_manifest ?? ""}
+        initialSuperset={validationState.data?.superset ?? false}
+        initialSubset={validationState.data?.subset ?? false}
         tenantId={selectedTenantId}
-        onSubmit={async ([tenantId, content]) => {
+        onSubmit={async ([tenantId, content, superset, subset]) => {
           const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
           const body = JSON.stringify({
             user_id: userId,
             tenant_id: tenantId,
             content: content,
+            superset: superset,
+            subset: subset,
           });
           await fetch(`${apiBase}/dep_manifest`, {
             method: "POST",

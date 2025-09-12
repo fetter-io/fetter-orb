@@ -111,6 +111,8 @@ export type ValidationEntry = [number, string | null];
 
 export type ValidationResult = {
   dep_manifest: string;
+  superset: boolean;
+  subset: boolean;
   missing: ValidationEntry[];
   unrequired: ValidationEntry[];
   misdefined: ValidationEntry[];
