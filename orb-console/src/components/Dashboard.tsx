@@ -445,18 +445,6 @@ export default function Dashboard() {
             />
           )}
 
-          {activeTab === "allow" && selectedTenantId !== null && (
-            <TabAllow
-              validationState={validationState}
-              packagesState={packagesState}
-              systemTagsState={systemTagsState}
-              auditState={auditState}
-              selectedSystemId={selectedSystemId}
-              setSelectedSystemId={setSelectedSystemId}
-              selectedTenantId={selectedTenantId}
-            />
-          )}
-
           {activeTab === "vulns" && (
             <TabVulns
               auditState={auditState}
@@ -466,6 +454,18 @@ export default function Dashboard() {
               packagesState={packagesState}
               highlightedVulnId={highlightedVulnId}
               onPackageClick={handlePackageClick}
+            />
+          )}
+
+          {activeTab === "allow" && selectedTenantId !== null && (
+            <TabAllow
+              validationState={validationState}
+              packagesState={packagesState}
+              systemTagsState={systemTagsState}
+              auditState={auditState}
+              selectedSystemId={selectedSystemId}
+              setSelectedSystemId={setSelectedSystemId}
+              selectedTenantId={selectedTenantId}
             />
           )}
 

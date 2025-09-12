@@ -56,21 +56,29 @@ export function ValidationPanel({
                   </tr>
                 </thead>
                 <tbody>
-                  {[...map.entries()].map(([id, sitePackages]) => {
-                    const pkg = idToPackage.get(id);
-                    return (
-                      <tr
-                        key={`${label}-${id}`}
-                        className="border-b border-slate-800 bg-gray-900 break-all"
-                      >
-                        <td className="px-2 py-1 truncate">
-                          {pkg?.name ?? "Unknown"}
-                        </td>
-                        <td className="px-2 py-1">{pkg?.version ?? "—"}</td>
-                        <td className="px-2 py-1">{sitePackages ?? "—"}</td>
-                      </tr>
-                    );
-                  })}
+                  {[...map.entries()]
+                    .sort(([idA], [idB]) => {
+                      const pkgA = idToPackage.get(idA);
+                      const pkgB = idToPackage.get(idB);
+                      const nameA = pkgA?.name ?? "Unknown";
+                      const nameB = pkgB?.name ?? "Unknown";
+                      return nameA.localeCompare(nameB);
+                    })
+                    .map(([id, sitePackages]) => {
+                      const pkg = idToPackage.get(id);
+                      return (
+                        <tr
+                          key={`${label}-${id}`}
+                          className="border-b border-slate-800 bg-gray-900 break-all"
+                        >
+                          <td className="px-2 py-1 truncate">
+                            {pkg?.name ?? "Unknown"}
+                          </td>
+                          <td className="px-2 py-1">{pkg?.version ?? "—"}</td>
+                          <td className="px-2 py-1">{sitePackages ?? "—"}</td>
+                        </tr>
+                      );
+                    })}
                 </tbody>
               </table>
             </div>
