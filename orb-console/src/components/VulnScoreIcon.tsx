@@ -7,7 +7,7 @@ export function VulnScoreIcon({ score }: VulnScoreIconProps) {
 
   return (
     <div
-      className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold ring-1 ${
+      className={`w-5 h-5 rounded-full flex items-center justify-center text-white text-xs ring-1 ${
         score >= 9.0
           ? "bg-red-600 ring-red-700"
           : score >= 7.0

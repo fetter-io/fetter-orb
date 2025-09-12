@@ -30,8 +30,10 @@ export function PackageVersionsCard({
       className={`p-2 border rounded-lg shadow-md text-sm w-full transition-colors duration-1000
       ${highlight ? "border-blue-500 bg-gray-800" : "border-slate-600 bg-gray-800"}`}
     >
-      <h3 className="font-bold text-white ml-1 mb-2 flex items-center gap-2">
-        <span className="truncate">{pkg.name}</span>
+      <div className="flex  items-center justify-between pr-1">
+        <h3 className="font-bold text-white ml-1 mb-2 flex items-center gap-2">
+          <span className="truncate">{pkg.name}</span>
+        </h3>
         {hasAnyVuln && (
           <span
             title={`${vulnCount} vulnerable ${vulnCount === 1 ? "version" : "versions"}`}
@@ -41,7 +43,7 @@ export function PackageVersionsCard({
             ⚠️
           </span>
         )}
-      </h3>
+      </div>
       <div
         className="max-h-56 overflow-y-auto border-t border-slate-700"
         aria-label={`${pkg.name} versions`}
@@ -50,7 +52,7 @@ export function PackageVersionsCard({
           <thead className="sticky top-0 bg-gray-950 text-gray-500 border-b border-slate-700">
             <tr>
               <th className="px-2 py-1 w-1/6">Version</th>
-              <th className="px-2 py-1 w-1/6">Links</th>
+              <th className="px-2 py-1 w-1/6"></th>
               <th className="px-2 py-1 w-2/6">Path</th>
               <th className="px-2 py-1 w-2/6">System</th>
             </tr>
@@ -67,18 +69,17 @@ export function PackageVersionsCard({
                   className="border-b border-slate-800 bg-gray-900"
                 >
                   <td className="px-2 py-1 whitespace-nowrap truncate">
-                    {entry.version}
+                    <a
+                      href={`https://pypi.org/project/${pkg.key}/${entry.version}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline"
+                    >
+                      {entry.version}
+                    </a>
                   </td>
                   <td className="px-2 py-1 truncate">
                     <span className="inline-flex items-center gap-x-2">
-                      <a
-                        href={`https://pypi.org/project/${pkg.key}/${entry.version}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="hover:underline"
-                      >
-                        PyPI
-                      </a>
                       {isVulnerable && (
                         <button
                           title="Vulnerability details"
