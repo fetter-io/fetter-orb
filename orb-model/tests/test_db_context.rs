@@ -391,9 +391,15 @@ async fn test_dep_manifest_load_a() {
     // do first to force tenant creation
     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
 
-    let msg = format!(r#"{{"user_id": "{}", "tenant_id": 2, "content": "numpy==2.0.0\nstatic-frame==2.0.0\n"}}"#, user_id);
+    let msg = format!(
+        r#"{{"user_id": "{}", "tenant_id": 2, "content": "numpy==2.0.0\nstatic-frame==2.0.0\n"}}"#,
+        user_id
+    );
     let result = ctx.dep_manifest_load_from_json(&msg).await.unwrap();
-    assert!(result, "dep_manifest_load should succeed for authorized user");
+    assert!(
+        result,
+        "dep_manifest_load should succeed for authorized user"
+    );
 
     let dm = ctx.dep_manifest_from_tenant_id(2).await.unwrap().unwrap();
     assert_eq!(dm, "numpy==2.0.0\nstatic-frame==2.0.0\n");

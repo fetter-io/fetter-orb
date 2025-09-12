@@ -1887,10 +1887,9 @@ impl DBContext {
     pub async fn dep_manifest_load_from_json(&self, payload: &str) -> Result<bool, sqlx::Error> {
         let request: DepManifestRequest =
             serde_json::from_str(payload).expect("Invalid JSON payload");
-        
-        let user_id = Uuid::parse_str(&request.user_id)
-            .map_err(|_| sqlx::Error::RowNotFound)?;
-        
+
+        let user_id = Uuid::parse_str(&request.user_id).map_err(|_| sqlx::Error::RowNotFound)?;
+
         self.dep_manifest_load(request.tenant_id, Some(user_id), &request.content)
             .await
     }
