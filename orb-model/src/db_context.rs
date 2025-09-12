@@ -105,6 +105,13 @@ pub struct User {
     pub created_at: String,
 }
 
+#[derive(serde::Deserialize)]
+struct DepManifestRequest {
+    user_id: String,
+    tenant_id: i32,
+    content: String,
+}
+
 //------------------------------------------------------------------------------
 // NOTE: DBContext is cloneable as PgPoll is an Arc.
 #[derive(Clone)]
@@ -1836,8 +1843,27 @@ impl DBContext {
     pub async fn dep_manifest_load(
         &self,
         tenant_id: i32,
+        user_id: Option<Uuid>,
         content: &String,
-    ) -> Result<(), sqlx::Error> {
+    ) -> Result<bool, sqlx::Error> {
+        // If user_id is provided, verify ownership
+        if let Some(user_id) = user_id {
+            let tenant_table = self.get_table("tenant");
+            let check_query = format!("SELECT created_by FROM {tenant_table} WHERE id = $1");
+            if let Some(row) = sqlx::query(&check_query)
+                .bind(tenant_id)
+                .fetch_optional(&self.pool)
+                .await?
+            {
+                let created_by: Uuid = row.get("created_by");
+                if created_by != user_id {
+                    return Ok(false); // User is not authorized to modify this tenant
+                }
+            } else {
+                return Ok(false); // Tenant not found
+            }
+        }
+
         let dep_manifest_table = self.get_table("dep_manifest");
 
         let insert_query = format!(
@@ -1855,13 +1881,17 @@ impl DBContext {
             .execute(&self.pool)
             .await?;
 
-        Ok(())
+        Ok(true)
     }
 
-    pub async fn dep_manifest_load_from_json(&self, payload: &str) -> Result<(), sqlx::Error> {
-        let (tenant_id, body): (i32, String) =
+    pub async fn dep_manifest_load_from_json(&self, payload: &str) -> Result<bool, sqlx::Error> {
+        let request: DepManifestRequest =
             serde_json::from_str(payload).expect("Invalid JSON payload");
-        // TODO: validate tenant against defined list
-        self.dep_manifest_load(tenant_id, &body).await
+        
+        let user_id = Uuid::parse_str(&request.user_id)
+            .map_err(|_| sqlx::Error::RowNotFound)?;
+        
+        self.dep_manifest_load(request.tenant_id, Some(user_id), &request.content)
+            .await
     }
 }

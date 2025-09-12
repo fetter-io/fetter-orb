@@ -22,6 +22,7 @@ interface TabAllowProps {
   selectedSystemId: number | null;
   setSelectedSystemId: (id: number | null) => void;
   selectedTenantId: number;
+  userId: string;
 }
 
 export function TabAllow({
@@ -32,6 +33,7 @@ export function TabAllow({
   selectedSystemId,
   setSelectedSystemId,
   selectedTenantId,
+  userId,
 }: TabAllowProps) {
   const validationSets = useMemo(() => {
     if (!validationState.data) {
@@ -85,7 +87,11 @@ export function TabAllow({
         tenantId={selectedTenantId}
         onSubmit={async ([tenantId, content]) => {
           const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
-          const body = JSON.stringify([tenantId, content]);
+          const body = JSON.stringify({
+            user_id: userId,
+            tenant_id: tenantId,
+            content: content,
+          });
           await fetch(`${apiBase}/dep_manifest`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },

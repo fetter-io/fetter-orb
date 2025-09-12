@@ -466,6 +466,7 @@ export default function Dashboard() {
               selectedSystemId={selectedSystemId}
               setSelectedSystemId={setSelectedSystemId}
               selectedTenantId={selectedTenantId}
+              userId={session?.user?.user_id || ""}
             />
           )}
 
