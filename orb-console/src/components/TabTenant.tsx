@@ -42,6 +42,7 @@ export function TabTenant({ selectedTenantId, tenantsState }: TabTenantProps) {
         />
       );
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     tenantsState.data,
     selectedTenantId,
