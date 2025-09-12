@@ -62,21 +62,23 @@ export function AllowListEditor({
         <>
           <div className="flex gap-4 text-xs text-gray-400">
             <div className="flex items-center gap-2">
-              <div className={`w-4 h-4 border-2 rounded flex items-center justify-center text-xs ${
-                superset
-                  ? "bg-green-600 border-green-500 text-white"
-                  : "bg-slate-700 border-slate-500 text-gray-500"
-              }`}>
-              </div>
+              <div
+                className={`w-4 h-4 border-2 rounded flex items-center justify-center text-xs ${
+                  superset
+                    ? "bg-green-600 border-green-500 text-white"
+                    : "bg-slate-700 border-slate-500 text-gray-500"
+                }`}
+              ></div>
               Superset
             </div>
             <div className="flex items-center gap-2">
-              <div className={`w-4 h-4 border-2 rounded flex items-center justify-center text-xs ${
-                subset
-                  ? "bg-green-600 border-green-500 text-white"
-                  : "bg-slate-700 border-slate-500 text-gray-500"
-              }`}>
-              </div>
+              <div
+                className={`w-4 h-4 border-2 rounded flex items-center justify-center text-xs ${
+                  subset
+                    ? "bg-green-600 border-green-500 text-white"
+                    : "bg-slate-700 border-slate-500 text-gray-500"
+                }`}
+              ></div>
               Subset
             </div>
           </div>
@@ -85,17 +87,19 @@ export function AllowListEditor({
             {value || "No allow list provided."}
           </pre>
 
-          <button className="button-entry" onClick={() => {
-            setEditSuperset(superset);
-            setEditSubset(subset);
-            setIsEditing(true);
-          }}>
+          <button
+            className="button-entry"
+            onClick={() => {
+              setEditSuperset(superset);
+              setEditSubset(subset);
+              setIsEditing(true);
+            }}
+          >
             Edit
           </button>
         </>
       ) : (
         <>
-
           <div className="flex gap-4">
             <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
               <input

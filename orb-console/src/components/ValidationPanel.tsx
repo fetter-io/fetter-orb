@@ -32,13 +32,13 @@ export function ValidationPanel({
       const nameB = pkgB?.name ?? "Unknown";
       const versionA = pkgA?.version ?? "";
       const versionB = pkgB?.version ?? "";
-      
+
       // Sort by name first
       const nameComparison = nameA.localeCompare(nameB);
       if (nameComparison !== 0) {
         return nameComparison;
       }
-      
+
       // If names are equal, sort by version
       return versionA.localeCompare(versionB);
     });
