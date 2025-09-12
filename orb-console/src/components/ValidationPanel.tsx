@@ -24,11 +24,39 @@ export function ValidationPanel({
     }
   }
 
+  const sortEntriesByPackageName = (entries: [number, string | null][]) => {
+    return entries.sort(([idA], [idB]) => {
+      const pkgA = idToPackage.get(idA);
+      const pkgB = idToPackage.get(idB);
+      const nameA = pkgA?.name ?? "Unknown";
+      const nameB = pkgB?.name ?? "Unknown";
+      return nameA.localeCompare(nameB);
+    });
+  };
+
   const sections = [
-    { label: "Missing", map: validationSets.missing },
-    { label: "Unrequired", map: validationSets.unrequired },
-    { label: "Misdefined", map: validationSets.misdefined },
-    { label: "Undefined", map: validationSets.undefined },
+    {
+      label: "Missing",
+      entries: sortEntriesByPackageName([...validationSets.missing.entries()]),
+    },
+    {
+      label: "Unrequired",
+      entries: sortEntriesByPackageName([
+        ...validationSets.unrequired.entries(),
+      ]),
+    },
+    {
+      label: "Misdefined",
+      entries: sortEntriesByPackageName([
+        ...validationSets.misdefined.entries(),
+      ]),
+    },
+    {
+      label: "Undefined",
+      entries: sortEntriesByPackageName([
+        ...validationSets.undefined.entries(),
+      ]),
+    },
   ];
 
   return (
@@ -38,13 +66,13 @@ export function ValidationPanel({
       </h3>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {sections.map(({ label, map }) => (
+        {sections.map(({ label, entries }) => (
           <div
             key={label}
             className="border border-slate-700 rounded bg-gray-900 overflow-hidden"
           >
             <div className="px-2 py-2 text-sm font-semibold text-gray-400">
-              {label} ({map.size})
+              {label} ({entries.length})
             </div>
             <div className="max-h-64 overflow-y-auto">
               <table className="table-fixed w-full text-xs text-left text-gray-400">
@@ -56,29 +84,21 @@ export function ValidationPanel({
                   </tr>
                 </thead>
                 <tbody>
-                  {[...map.entries()]
-                    .sort(([idA], [idB]) => {
-                      const pkgA = idToPackage.get(idA);
-                      const pkgB = idToPackage.get(idB);
-                      const nameA = pkgA?.name ?? "Unknown";
-                      const nameB = pkgB?.name ?? "Unknown";
-                      return nameA.localeCompare(nameB);
-                    })
-                    .map(([id, sitePackages]) => {
-                      const pkg = idToPackage.get(id);
-                      return (
-                        <tr
-                          key={`${label}-${id}`}
-                          className="border-b border-slate-800 bg-gray-900 break-all"
-                        >
-                          <td className="px-2 py-1 truncate">
-                            {pkg?.name ?? "Unknown"}
-                          </td>
-                          <td className="px-2 py-1">{pkg?.version ?? "—"}</td>
-                          <td className="px-2 py-1">{sitePackages ?? "—"}</td>
-                        </tr>
-                      );
-                    })}
+                  {entries.map(([id, sitePackages]) => {
+                    const pkg = idToPackage.get(id);
+                    return (
+                      <tr
+                        key={`${label}-${id}`}
+                        className="border-b border-slate-800 bg-gray-900 break-all"
+                      >
+                        <td className="px-2 py-1 truncate">
+                          {pkg?.name ?? "Unknown"}
+                        </td>
+                        <td className="px-2 py-1">{pkg?.version ?? "—"}</td>
+                        <td className="px-2 py-1">{sitePackages ?? "—"}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
