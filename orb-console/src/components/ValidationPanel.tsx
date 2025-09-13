@@ -75,7 +75,7 @@ export function ValidationPanel({
         Validation
       </h3>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {sections.map(({ label, entries }) => (
           <div
             key={label}
