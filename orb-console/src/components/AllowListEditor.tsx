@@ -18,33 +18,57 @@ export function AllowListEditor({
   onSubmit,
 }: AllowListEditorProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [value, setValue] = useState(initialValue);
-  const [editValue, setEditValue] = useState(initialValue);
-  const [superset, setSuperset] = useState(initialSuperset);
-  const [subset, setSubset] = useState(initialSubset);
-  const [editSuperset, setEditSuperset] = useState(initialSuperset);
-  const [editSubset, setEditSubset] = useState(initialSubset);
+  const [draft, setDraft] = useState({
+    value: initialValue,
+    superset: initialSuperset,
+    subset: initialSubset,
+  });
 
+  // If the committed props change while we're NOT editing, keep draft in sync
   useEffect(() => {
-    setValue(initialValue);
-    setEditValue(initialValue);
-    setSuperset(initialSuperset);
-    setSubset(initialSubset);
-    setEditSuperset(initialSuperset);
-    setEditSubset(initialSubset);
-  }, [initialValue, initialSuperset, initialSubset]);
+    if (!isEditing) {
+      setDraft({
+        value: initialValue,
+        superset: initialSuperset,
+        subset: initialSubset,
+      });
+    }
+  }, [initialValue, initialSuperset, initialSubset, isEditing]);
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handleEditStart = () => {
+    // Snapshot current committed props into the draft when entering edit
+    setDraft({
+      value: initialValue,
+      superset: initialSuperset,
+      subset: initialSubset,
+    });
+    setIsEditing(true);
+  };
+
+  const handleCancel = () => {
+    // Revert draft to the current committed props
+    setDraft({
+      value: initialValue,
+      superset: initialSuperset,
+      subset: initialSubset,
+    });
+    setIsEditing(false);
+  };
 
   const handleSubmit = async () => {
     setSubmitting(true);
     setError(null);
     try {
-      await onSubmit([tenantId, editValue.trim(), editSuperset, editSubset]);
-      setValue(editValue.trim());
-      setSuperset(editSuperset);
-      setSubset(editSubset);
+      await onSubmit([
+        tenantId,
+        draft.value.trim(),
+        draft.superset,
+        draft.subset,
+      ]);
+      // Parent should update props -> component re-renders with new committed values
       setIsEditing(false);
     } catch (err) {
       console.error("Submit error:", err);
@@ -63,38 +87,31 @@ export function AllowListEditor({
           <div className="flex gap-4 text-xs text-gray-400">
             <div className="flex items-center gap-2">
               <div
-                className={`w-4 h-4 border-2 rounded flex items-center justify-center text-xs ${
-                  superset
-                    ? "bg-green-600 border-green-500 text-white"
-                    : "bg-slate-700 border-slate-500 text-gray-500"
+                className={`w-4 h-4 border-2 rounded ${
+                  initialSuperset
+                    ? "bg-green-600 border-green-500"
+                    : "bg-slate-700 border-slate-500"
                 }`}
-              ></div>
+              />
               Superset
             </div>
             <div className="flex items-center gap-2">
               <div
-                className={`w-4 h-4 border-2 rounded flex items-center justify-center text-xs ${
-                  subset
-                    ? "bg-green-600 border-green-500 text-white"
-                    : "bg-slate-700 border-slate-500 text-gray-500"
+                className={`w-4 h-4 border-2 rounded ${
+                  initialSubset
+                    ? "bg-green-600 border-green-500"
+                    : "bg-slate-700 border-slate-500"
                 }`}
-              ></div>
+              />
               Subset
             </div>
           </div>
 
           <pre className="bg-gray-900 text-gray-500 p-2 rounded max-h-48 overflow-auto whitespace-pre-wrap text-xs">
-            {value || "No allow list provided."}
+            {initialValue || "No allow list provided."}
           </pre>
 
-          <button
-            className="button-entry"
-            onClick={() => {
-              setEditSuperset(superset);
-              setEditSubset(subset);
-              setIsEditing(true);
-            }}
-          >
+          <button className="button-entry" onClick={handleEditStart}>
             Edit
           </button>
         </>
@@ -104,8 +121,10 @@ export function AllowListEditor({
             <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
               <input
                 type="checkbox"
-                checked={editSuperset}
-                onChange={(e) => setEditSuperset(e.target.checked)}
+                checked={draft.superset}
+                onChange={(e) =>
+                  setDraft((d) => ({ ...d, superset: e.target.checked }))
+                }
                 className="w-4 h-4 accent-blue-500 bg-slate-700 border-2 border-slate-500 rounded"
               />
               Allow superset
@@ -113,8 +132,10 @@ export function AllowListEditor({
             <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
               <input
                 type="checkbox"
-                checked={editSubset}
-                onChange={(e) => setEditSubset(e.target.checked)}
+                checked={draft.subset}
+                onChange={(e) =>
+                  setDraft((d) => ({ ...d, subset: e.target.checked }))
+                }
                 className="w-4 h-4 accent-blue-500 bg-slate-700 border-2 border-slate-500 rounded"
               />
               Allow subset
@@ -124,10 +145,11 @@ export function AllowListEditor({
           <textarea
             className="w-full p-2 rounded text-sm text-gray-100 bg-slate-900 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             rows={8}
-            value={editValue}
-            onChange={(e) => setEditValue(e.target.value)}
+            value={draft.value}
+            onChange={(e) => setDraft((d) => ({ ...d, value: e.target.value }))}
             placeholder="Enter a URL or paste full lock file contents"
           />
+
           <div className="flex gap-4 items-center">
             <button
               onClick={handleSubmit}
@@ -136,15 +158,7 @@ export function AllowListEditor({
             >
               {submitting ? "Submitting..." : "Submit"}
             </button>
-            <button
-              onClick={() => {
-                setEditValue(value);
-                setEditSuperset(superset);
-                setEditSubset(subset);
-                setIsEditing(false);
-              }}
-              className="button-close"
-            >
+            <button onClick={handleCancel} className="button-close">
               Cancel
             </button>
             {error && <p className="text-red-400 text-xs">{error}</p>}
