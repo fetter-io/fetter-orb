@@ -35,7 +35,6 @@ export function TabAllow({
   selectedTenantId,
   userId,
 }: TabAllowProps) {
-
   const validationSets = useMemo(() => {
     if (!validationState.data) {
       const empty = new Map<number, string | null>();
@@ -89,7 +88,6 @@ export function TabAllow({
         initialSubset={validationState.data?.subset ?? false}
         tenantId={selectedTenantId}
         onSubmit={async ([tenantId, content, superset, subset]) => {
-          console.log("calling on Submit", userId, tenantId, content, superset, subset);
           const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
           const body = JSON.stringify({
             user_id: userId,

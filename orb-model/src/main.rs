@@ -40,7 +40,6 @@ pub async fn post_monitor_scan(
     State(db): State<Arc<DBContext>>,
     body: String,
 ) -> Result<StatusCode, (StatusCode, String)> {
-    // println!("monitor_scan: {:?}", body);
     match db.monitor_scan_load_from_json(&body).await {
         Ok(_) => Ok(StatusCode::NO_CONTENT),
         Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
@@ -93,7 +92,6 @@ pub async fn get_dep_manifest(
     State(db): State<Arc<DBContext>>,
     Query(params): Query<DepManifestParams>,
 ) -> Result<Json<Value>, (StatusCode, String)> {
-    // println!("{:?}", params);
     match params.tenant_id {
         Some(tenant_id) => db
             .dep_manifest_from_tenant_id(tenant_id)
@@ -147,7 +145,6 @@ pub async fn get_package_versions(
     State(db): State<Arc<DBContext>>,
     Query(params): Query<PackageVersionsParams>,
 ) -> Result<Json<Value>, (StatusCode, String)> {
-    // println!("{:?}", params);
     match params.tenant_id {
         Some(tenant_id) => db
             .package_versions(params.system_tag_id, Some(tenant_id))
@@ -467,7 +464,6 @@ pub async fn require_internal_header(
 ) -> Result<Response, StatusCode> {
     // Ok(next.run(req).await)
     if let Some(value) = req.headers().get("x-orb-internal") {
-        // println!("{:?} {:?}", value, secret);
         if value == secret.as_str() {
             return Ok(next.run(req).await);
         }

@@ -1318,23 +1318,7 @@ impl DBContext {
         system_tag_id: Option<i32>,
         tenant_id: Option<i32>,
     ) -> ResultDynError<Value> {
-        let (package_to_sites, package_to_id) = self
-            .get_latest_packages_to_sites(system_tag_id, tenant_id)
-            .await?;
-
-        if package_to_sites.is_empty() {
-            let empty: Vec<(i32, Option<String>)> = Vec::new();
-            return Ok(json!({
-                "dep_manifest": String::new(),
-                "superset": false,
-                "subset": false,
-                "missing": empty,
-                "unrequired": empty,
-                "misdefined": empty,
-                "undefined": empty,
-            }));
-        }
-
+        // Always get dep_manifest content first, regardless of packages
         let (dm_content, permit_superset, permit_subset) = match tenant_id {
             Some(t_id) => match self.dep_manifest_from_tenant_id(t_id).await? {
                 Some(data) => (data.content, data.superset, data.subset),
@@ -1342,6 +1326,23 @@ impl DBContext {
             },
             None => ("".to_string(), false, false),
         };
+
+        let (package_to_sites, package_to_id) = self
+            .get_latest_packages_to_sites(system_tag_id, tenant_id)
+            .await?;
+
+        if package_to_sites.is_empty() {
+            let empty: Vec<(i32, Option<String>)> = Vec::new();
+            return Ok(json!({
+                "dep_manifest": dm_content,
+                "superset": permit_superset,
+                "subset": permit_subset,
+                "missing": empty,
+                "unrequired": empty,
+                "misdefined": empty,
+                "undefined": empty,
+            }));
+        }
 
         let lf = LockFile::new(dm_content.clone());
         let deps = lf.get_dependencies(None)?; // can provide Vec<String> of options
@@ -1389,7 +1390,6 @@ impl DBContext {
             }
             // else, package is missing... will need to insert new packages?
         }
-        // println!("misdefined: {:?}", misdefined);
 
         Ok(json!({
             "dep_manifest": dm_content,
@@ -1707,7 +1707,6 @@ impl DBContext {
             .bind(user_id)
             .fetch_optional(&self.pool)
             .await?;
-        // println!("user_term_accepted result: {:?}", result);
         Ok(result.unwrap_or(false))
     }
 
@@ -1829,7 +1828,6 @@ impl DBContext {
     }
 
     pub async fn monitor_scan_load_from_json(&self, payload: &str) -> Result<(), sqlx::Error> {
-        // println!("monitor_scan_load_from_json: {}", payload);
         // TODO: return more rebust error message on malformed json
         let (tenant_key, st, scan_fs, ts): (String, SystemTag, Option<ScanFS>, Duration) =
             serde_json::from_str(payload).expect("Invalid JSON payload");
@@ -1856,7 +1854,6 @@ impl DBContext {
         }
         let st_id = self.system_tag_insert_or_get(tenant_id, &st).await?;
 
-        println!("start load scan fs");
         self.monitor_scan_load(&scan_fs, st_id, &ts).await
     }
 
@@ -1895,8 +1892,6 @@ impl DBContext {
             DO UPDATE SET content = EXCLUDED.content, superset = EXCLUDED.superset, subset = EXCLUDED.subset
             "#
         );
-        println!("insert_query: {:?}", insert_query);
-
         sqlx::query(&insert_query)
             .bind(tenant_id)
             .bind(content)
@@ -1909,13 +1904,11 @@ impl DBContext {
     }
 
     pub async fn dep_manifest_load_from_json(&self, payload: &str) -> Result<bool, sqlx::Error> {
-        println!("got payload {:?}", payload);
         let request: DepManifestRequest =
             serde_json::from_str(payload).expect("Invalid JSON payload");
 
         let user_id = Uuid::parse_str(&request.user_id).map_err(|_| sqlx::Error::RowNotFound)?;
 
-        println!("parsed {:?}", request);
         self.dep_manifest_load(
             request.tenant_id,
             Some(user_id),
