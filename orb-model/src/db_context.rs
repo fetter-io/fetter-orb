@@ -105,7 +105,7 @@ pub struct User {
     pub created_at: String,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Debug)]
 struct DepManifestRequest {
     user_id: String,
     tenant_id: i32,
@@ -1325,7 +1325,7 @@ impl DBContext {
         if package_to_sites.is_empty() {
             let empty: Vec<(i32, Option<String>)> = Vec::new();
             return Ok(json!({
-                "dep_manifest": empty,
+                "dep_manifest": String::new(),
                 "superset": false,
                 "subset": false,
                 "missing": empty,
@@ -1885,7 +1885,6 @@ impl DBContext {
                 return Ok(false); // Tenant not found
             }
         }
-
         let dep_manifest_table = self.get_table("dep_manifest");
 
         let insert_query = format!(
@@ -1896,6 +1895,7 @@ impl DBContext {
             DO UPDATE SET content = EXCLUDED.content, superset = EXCLUDED.superset, subset = EXCLUDED.subset
             "#
         );
+        println!("insert_query: {:?}", insert_query);
 
         sqlx::query(&insert_query)
             .bind(tenant_id)
@@ -1909,11 +1909,13 @@ impl DBContext {
     }
 
     pub async fn dep_manifest_load_from_json(&self, payload: &str) -> Result<bool, sqlx::Error> {
+        println!("got payload {:?}", payload);
         let request: DepManifestRequest =
             serde_json::from_str(payload).expect("Invalid JSON payload");
 
         let user_id = Uuid::parse_str(&request.user_id).map_err(|_| sqlx::Error::RowNotFound)?;
 
+        println!("parsed {:?}", request);
         self.dep_manifest_load(
             request.tenant_id,
             Some(user_id),
