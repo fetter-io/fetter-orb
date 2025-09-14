@@ -10,7 +10,7 @@ import {
 import colors from "tailwindcss/colors";
 import { PackageVersions } from "@/types";
 
-type ValidationStatusChartProps = {
+type ValidationChartProps = {
   packages: PackageVersions[];
   validationSets: {
     missing: Map<number, string | null>;
@@ -20,17 +20,17 @@ type ValidationStatusChartProps = {
   };
 };
 
-export function ValidationStatusChart({
+export function ValidationChart({
   packages,
   validationSets,
-}: ValidationStatusChartProps) {
+}: ValidationChartProps) {
   // Calculate counts with safety checks
   const totalPackages = packages?.length || 0;
   const missingCount = validationSets?.missing?.size || 0;
   const unrequiredCount = validationSets?.unrequired?.size || 0;
   const misdefinedCount = validationSets?.misdefined?.size || 0;
   const undefinedCount = validationSets?.undefined?.size || 0;
-  
+
   // Allowed packages = total - unrequired - misdefined
   const allowedCount = Math.max(0, totalPackages - unrequiredCount - misdefinedCount);
 
@@ -70,7 +70,7 @@ export function ValidationStatusChart({
   }
 
   // Additional safety check - ensure all data values are valid
-  const hasInvalidData = data.some(item => 
+  const hasInvalidData = data.some(item =>
     !Number.isFinite(item.allowed) ||
     !Number.isFinite(item.missing) ||
     !Number.isFinite(item.unrequired) ||
@@ -79,7 +79,7 @@ export function ValidationStatusChart({
   );
 
   if (hasInvalidData) {
-    console.warn('ValidationStatusChart: Invalid data detected', { data, counts: { totalPackages, allowedCount, missingCount, unrequiredCount, misdefinedCount, undefinedCount } });
+    console.warn('ValidationChart: Invalid data detected', { data, counts: { totalPackages, allowedCount, missingCount, unrequiredCount, misdefinedCount, undefinedCount } });
     return (
       <div className="h-20 bg-slate-900 rounded-md p-2 border border-slate-700 flex items-center justify-center">
         <p className="text-slate-500 text-sm">Unable to display chart data</p>
@@ -99,7 +99,7 @@ export function ValidationStatusChart({
     if (active && payload && payload.length && payload[0]) {
       const count = payload[0].value;
       const percentage = safePercentage(count, totalPackages);
-      
+
       return (
         <div
           style={{
@@ -146,7 +146,7 @@ export function ValidationStatusChart({
   ];
 
   // Log data for debugging
-  console.log('ValidationStatusChart vertical data:', { chartData, counts: { totalPackages, allowedCount, missingCount, unrequiredCount, misdefinedCount, undefinedCount } });
+  console.log('ValidationChart vertical data:', { chartData, counts: { totalPackages, allowedCount, missingCount, unrequiredCount, misdefinedCount, undefinedCount } });
 
   return (
     <div className="h-32 bg-slate-900 rounded-md p-2 border border-slate-700">
@@ -155,13 +155,13 @@ export function ValidationStatusChart({
           data={chartData}
           margin={{ top: 5, right: 10, left: 40, bottom: 20 }}
         >
-          <XAxis 
-            dataKey="name" 
+          <XAxis
+            dataKey="name"
             tick={{ fill: colors.slate[400], fontSize: 10 }}
             axisLine={{ stroke: colors.slate[600] }}
             tickLine={{ stroke: colors.slate[600] }}
           />
-          <YAxis 
+          <YAxis
             tick={{ fill: colors.slate[400], fontSize: 10 }}
             axisLine={{ stroke: colors.slate[600] }}
             tickLine={{ stroke: colors.slate[600] }}

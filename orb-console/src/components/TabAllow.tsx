@@ -5,7 +5,7 @@ import { SystemTagSelector } from "@/components/SystemTagSelector";
 import { DashboardStatus } from "@/components/DashboardStatus";
 import { AllowListEditor } from "@/components/AllowListEditor";
 import { ValidationPanel } from "@/components/ValidationPanel";
-import { ValidationStatusChart } from "@/components/ValidationStatusChart";
+import { ValidationChart } from "@/components/ValidationChart";
 import {
   SystemTag,
   PackageVersions,
@@ -83,7 +83,7 @@ export function TabAllow({
       </div>
 
       {validationState.data && packagesState.data && packagesState.data.length > 0 && (
-        <ValidationStatusChart
+        <ValidationChart
           packages={packagesState.data}
           validationSets={validationSets}
         />
