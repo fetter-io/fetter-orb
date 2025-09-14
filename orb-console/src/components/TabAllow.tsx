@@ -5,6 +5,7 @@ import { SystemTagSelector } from "@/components/SystemTagSelector";
 import { DashboardStatus } from "@/components/DashboardStatus";
 import { AllowListEditor } from "@/components/AllowListEditor";
 import { ValidationPanel } from "@/components/ValidationPanel";
+import { ValidationStatusChart } from "@/components/ValidationStatusChart";
 import {
   SystemTag,
   PackageVersions,
@@ -80,6 +81,13 @@ export function TabAllow({
           <DashboardStatus label="validation" state={validationState} />
         </div>
       </div>
+
+      {validationState.data && packagesState.data && packagesState.data.length > 0 && (
+        <ValidationStatusChart
+          packages={packagesState.data}
+          validationSets={validationSets}
+        />
+      )}
 
       <AllowListEditor
         key={selectedTenantId} // not sure if this does what we want
