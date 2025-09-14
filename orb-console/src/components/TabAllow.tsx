@@ -82,12 +82,14 @@ export function TabAllow({
         </div>
       </div>
 
-      {validationState.data && packagesState.data && packagesState.data.length > 0 && (
-        <ValidationChart
-          packages={packagesState.data}
-          validationSets={validationSets}
-        />
-      )}
+      {validationState.data &&
+        packagesState.data &&
+        packagesState.data.length > 0 && (
+          <ValidationChart
+            packages={packagesState.data}
+            validationSets={validationSets}
+          />
+        )}
 
       <AllowListEditor
         key={selectedTenantId} // not sure if this does what we want

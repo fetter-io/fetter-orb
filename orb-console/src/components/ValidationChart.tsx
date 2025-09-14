@@ -32,7 +32,10 @@ export function ValidationChart({
   const undefinedCount = validationSets?.undefined?.size || 0;
 
   // Allowed packages = total - unrequired - misdefined
-  const allowedCount = Math.max(0, totalPackages - unrequiredCount - misdefinedCount);
+  const allowedCount = Math.max(
+    0,
+    totalPackages - unrequiredCount - misdefinedCount,
+  );
 
   // Helper function to safely calculate percentage
   const safePercentage = (count: number, total: number): number => {
@@ -54,8 +57,12 @@ export function ValidationChart({
       name: "Status",
       allowed: Number.isFinite(allowedPercentage) ? allowedPercentage : 0,
       missing: Number.isFinite(missingPercentage) ? missingPercentage : 0,
-      unrequired: Number.isFinite(unrequiredPercentage) ? unrequiredPercentage : 0,
-      misdefined: Number.isFinite(misdefinedPercentage) ? misdefinedPercentage : 0,
+      unrequired: Number.isFinite(unrequiredPercentage)
+        ? unrequiredPercentage
+        : 0,
+      misdefined: Number.isFinite(misdefinedPercentage)
+        ? misdefinedPercentage
+        : 0,
       undefined: Number.isFinite(undefinedPercentage) ? undefinedPercentage : 0,
     },
   ];
@@ -70,16 +77,27 @@ export function ValidationChart({
   }
 
   // Additional safety check - ensure all data values are valid
-  const hasInvalidData = data.some(item =>
-    !Number.isFinite(item.allowed) ||
-    !Number.isFinite(item.missing) ||
-    !Number.isFinite(item.unrequired) ||
-    !Number.isFinite(item.misdefined) ||
-    !Number.isFinite(item.undefined)
+  const hasInvalidData = data.some(
+    (item) =>
+      !Number.isFinite(item.allowed) ||
+      !Number.isFinite(item.missing) ||
+      !Number.isFinite(item.unrequired) ||
+      !Number.isFinite(item.misdefined) ||
+      !Number.isFinite(item.undefined),
   );
 
   if (hasInvalidData) {
-    console.warn('ValidationChart: Invalid data detected', { data, counts: { totalPackages, allowedCount, missingCount, unrequiredCount, misdefinedCount, undefinedCount } });
+    console.warn("ValidationChart: Invalid data detected", {
+      data,
+      counts: {
+        totalPackages,
+        allowedCount,
+        missingCount,
+        unrequiredCount,
+        misdefinedCount,
+        undefinedCount,
+      },
+    });
     return (
       <div className="h-20 bg-slate-900 rounded-md p-2 border border-slate-700 flex items-center justify-center">
         <p className="text-slate-500 text-sm">Unable to display chart data</p>
@@ -138,15 +156,50 @@ export function ValidationChart({
 
   // Create vertical bar chart data - one bar per category
   const chartData = [
-    { name: "Allowed", count: allowedCount, percentage: safePercentage(allowedCount, totalPackages), fill: colors.green[600] },
-    { name: "Missing", count: missingCount, percentage: safePercentage(missingCount, totalPackages), fill: colors.yellow[600] },
-    { name: "Unrequired", count: unrequiredCount, percentage: safePercentage(unrequiredCount, totalPackages), fill: colors.orange[600] },
-    { name: "Misdefined", count: misdefinedCount, percentage: safePercentage(misdefinedCount, totalPackages), fill: colors.red[600] },
-    { name: "Undefined", count: undefinedCount, percentage: safePercentage(undefinedCount, totalPackages), fill: colors.gray[600] },
+    {
+      name: "Allowed",
+      count: allowedCount,
+      percentage: safePercentage(allowedCount, totalPackages),
+      fill: colors.green[600],
+    },
+    {
+      name: "Missing",
+      count: missingCount,
+      percentage: safePercentage(missingCount, totalPackages),
+      fill: colors.yellow[600],
+    },
+    {
+      name: "Unrequired",
+      count: unrequiredCount,
+      percentage: safePercentage(unrequiredCount, totalPackages),
+      fill: colors.orange[600],
+    },
+    {
+      name: "Misdefined",
+      count: misdefinedCount,
+      percentage: safePercentage(misdefinedCount, totalPackages),
+      fill: colors.red[600],
+    },
+    {
+      name: "Undefined",
+      count: undefinedCount,
+      percentage: safePercentage(undefinedCount, totalPackages),
+      fill: colors.gray[600],
+    },
   ];
 
   // Log data for debugging
-  console.log('ValidationChart vertical data:', { chartData, counts: { totalPackages, allowedCount, missingCount, unrequiredCount, misdefinedCount, undefinedCount } });
+  console.log("ValidationChart vertical data:", {
+    chartData,
+    counts: {
+      totalPackages,
+      allowedCount,
+      missingCount,
+      unrequiredCount,
+      misdefinedCount,
+      undefinedCount,
+    },
+  });
 
   return (
     <div className="h-32 bg-slate-900 rounded-md p-2 border border-slate-700">
