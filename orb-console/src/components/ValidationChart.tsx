@@ -113,10 +113,30 @@ export function ValidationChart({
               strokeWidth: 3, // outline thickness
             }}
           />
-          <Bar dataKey="missing" fillOpacity={0.6} stackId="1" fill={colors.yellow[600]} />
-          <Bar dataKey="unrequired" fillOpacity={0.6} stackId="1" fill={colors.orange[400]} />
-          <Bar dataKey="misdefined" fillOpacity={0.6} stackId="1" fill={colors.red[700]} />
-          <Bar dataKey="undefined" fillOpacity={0.6} stackId="1" fill={colors.gray[600]} />
+          <Bar
+            dataKey="missing"
+            fillOpacity={0.6}
+            stackId="1"
+            fill={colors.yellow[600]}
+          />
+          <Bar
+            dataKey="unrequired"
+            fillOpacity={0.6}
+            stackId="1"
+            fill={colors.orange[400]}
+          />
+          <Bar
+            dataKey="misdefined"
+            fillOpacity={0.6}
+            stackId="1"
+            fill={colors.red[700]}
+          />
+          <Bar
+            dataKey="undefined"
+            fillOpacity={0.6}
+            stackId="1"
+            fill={colors.gray[600]}
+          />
         </BarChart>
       </ResponsiveContainer>
     </div>
