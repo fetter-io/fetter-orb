@@ -55,7 +55,7 @@ export function PackageVersionsCard({
             <tr>
               <th className="px-2 py-1 w-1/6">Version</th>
               <th className="px-2 py-1 w-1/6"></th>
-              <th className="px-2 py-1 w-2/6">Path</th>
+              <th className="px-2 py-1 w-2/6">Sites</th>
               <th className="px-2 py-1 w-2/6">System</th>
             </tr>
           </thead>

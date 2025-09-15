@@ -1371,6 +1371,33 @@ impl DBContext {
         let mut misdefined: Vec<(i32, Option<String>)> = Vec::new();
         let mut undefined: Vec<(i32, Option<String>)> = Vec::new();
 
+        // Debug: Count ValidationExplain types by sites
+        let mut debug_missing_count = 0;
+        let mut debug_unrequired_count = 0;
+        let mut debug_misdefined_count = 0;
+        let mut debug_undefined_count = 0;
+
+        for record in &vr.records {
+            // Debug counting logic
+            let count = if let Some(ref sites) = record.sites {
+                sites.len()
+            } else {
+                1
+            };
+            match record.explain() {
+                ValidationExplain::Missing => debug_missing_count += count,
+                ValidationExplain::Unrequired => debug_unrequired_count += count,
+                ValidationExplain::Misdefined => debug_misdefined_count += count,
+                ValidationExplain::Undefined => debug_undefined_count += count,
+            }
+        }
+        // Debug output for ValidationExplain counts
+        println!("Debug ValidationExplain counts:");
+        println!("  Missing: {}", debug_missing_count);
+        println!("  Unrequired: {}", debug_unrequired_count);
+        println!("  Misdefined: {}", debug_misdefined_count);
+        println!("  Undefined: {}", debug_undefined_count);
+
         for record in vr.records {
             if let Some(ref pkg) = record.package {
                 let pkg_id = package_to_id.get(pkg).unwrap_or(&-1);
@@ -1390,6 +1417,7 @@ impl DBContext {
             }
             // else, package is missing... will need to insert new packages?
         }
+
         Ok(json!({
             "dep_manifest": dm_content,
             "superset": permit_superset,

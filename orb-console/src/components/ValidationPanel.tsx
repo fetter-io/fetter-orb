@@ -5,7 +5,7 @@ type ValidationPanelProps = {
     missing: Map<number, string | null>;
     unrequired: Map<number, string | null>;
     misdefined: Map<number, string | null>;
-    undefined: Map<number, string | null>;
+    undefined: Map<number, string | null>; // this never has values
   };
   packages: PackageVersions[];
 };
@@ -38,7 +38,6 @@ export function ValidationPanel({
       if (nameComparison !== 0) {
         return nameComparison;
       }
-
       // If names are equal, sort by version
       return versionA.localeCompare(versionB);
     });
@@ -61,12 +60,6 @@ export function ValidationPanel({
         ...validationSets.misdefined.entries(),
       ]),
     },
-    {
-      label: "Undefined",
-      entries: sortEntriesByPackageName([
-        ...validationSets.undefined.entries(),
-      ]),
-    },
   ];
 
   return (
@@ -75,7 +68,7 @@ export function ValidationPanel({
         Validation
       </h3>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 gap-2">
         {sections.map(({ label, entries }) => (
           <div
             key={label}
@@ -90,7 +83,7 @@ export function ValidationPanel({
                   <tr>
                     <th className="px-2 py-1 w-1/4">Package</th>
                     <th className="px-2 py-1 w-1/4">Version</th>
-                    <th className="px-2 py-1 w-1/2">Site Packages</th>
+                    <th className="px-2 py-1 w-1/2">Sites</th>
                   </tr>
                 </thead>
                 <tbody>

@@ -26,8 +26,9 @@ export function ValidationChart({
   packages,
   validationSets,
 }: ValidationChartProps) {
-  // Counts
-  const totalPackages = packages?.length || 0;
+  // Counts - sum of all package versions across all packages
+  const totalPackages =
+    packages?.reduce((sum, pkg) => sum + pkg.data.length, 0) || 0;
   const missingCount = validationSets?.missing?.size || 0;
   const unrequiredCount = validationSets?.unrequired?.size || 0;
   const misdefinedCount = validationSets?.misdefined?.size || 0;
@@ -36,7 +37,7 @@ export function ValidationChart({
   // Allowed = total - unrequired - misdefined
   const allowedCount = Math.max(
     0,
-    totalPackages - unrequiredCount - misdefinedCount,
+    totalPackages - (unrequiredCount + misdefinedCount),
   );
 
   if (totalPackages === 0) {
@@ -52,7 +53,7 @@ export function ValidationChart({
     { name: "Missing", count: missingCount, fill: colors.yellow[600] },
     { name: "Unrequired", count: unrequiredCount, fill: colors.orange[400] },
     { name: "Misdefined", count: misdefinedCount, fill: colors.red[700] },
-    { name: "Undefined", count: undefinedCount, fill: colors.gray[600] },
+    // { name: "Undefined", count: undefinedCount, fill: colors.gray[600] },
   ];
 
   const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {

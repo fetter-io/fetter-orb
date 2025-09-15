@@ -99,7 +99,7 @@ export function SystemTagCard({
         <table className="w-full text-xs text-left text-gray-400">
           <thead className="sticky top-0 bg-gray-950 text-gray-500 border-b border-slate-700">
             <tr>
-              <th className="px-2 py-1">Site Package Paths</th>
+              <th className="px-2 py-1">Sites</th>
             </tr>
           </thead>
           <tbody>
