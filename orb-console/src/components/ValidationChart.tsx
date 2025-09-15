@@ -5,6 +5,8 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
+  CartesianGrid,
+  Cell,
 } from "recharts";
 import colors from "tailwindcss/colors";
 import { PackageVersions } from "@/types";
@@ -44,99 +46,66 @@ export function ValidationChart({
     );
   }
 
-  // Single-row dataset for 100% horizontal stacked bar
-  const data = [
-    {
-      label: "All Packages",
-      allowed: allowedCount,
-      missing: missingCount,
-      unrequired: unrequiredCount,
-      misdefined: misdefinedCount,
-      undefined: undefinedCount,
-    },
+  const chartData = [
+    { name: "Allowed",   count: allowedCount,   fill: colors.green[700] },
+    { name: "Missing",   count: missingCount,   fill: colors.yellow[600] },
+    { name: "Unrequired",count: unrequiredCount,fill: colors.orange[400] },
+    { name: "Misdefined",count: misdefinedCount,fill: colors.red[700] },
+    { name: "Undefined", count: undefinedCount, fill: colors.gray[600] },
   ];
 
-  const tooltipFormatter = (value: number, name: string) => {
+  const tooltipFormatter = (value: number, name: string, entry: any) => {
     const pct =
       totalPackages > 0 ? ((value / totalPackages) * 100).toFixed(1) : "0.0";
-    // Capitalize key nicely
-    const label =
-      name.charAt(0).toUpperCase() + name.slice(1).replace(/_/g, " ");
-    return [`${value} (${pct}%)`, label];
+    return [`${value} (${pct}%)`, entry?.payload?.name ?? name];
   };
 
   return (
     <div
-      className="h-30 bg-slate-900 rounded-md p-2 border border-slate-700"
-      aria-label="Validation summary (100% stacked)"
+      className="h-50 bg-slate-900 rounded-md p-2 border border-slate-700"
+      aria-label="Validation summary (horizontal bars)"
     >
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
-          data={data}
+          data={chartData}
           layout="vertical"
-          stackOffset="expand"
-          margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
-          barCategoryGap="0%"
-          barGap={0}
+          margin={{ top: 8, right: 12, left: 0, bottom: 0 }}
+          barCategoryGap={8}
         >
-          {/* Show horizontal % axis */}
+          <CartesianGrid strokeDasharray="3 3" stroke={colors.slate[700]} />
+          {/* Horizontal axis = counts */}
           <XAxis
             type="number"
-            domain={[0, 1]}
-            tickFormatter={(v) => `${Math.round(v * 100)}%`}
+            allowDecimals={false}
             tick={{ fill: colors.slate[400], fontSize: 10 }}
             axisLine={{ stroke: colors.slate[600] }}
             tickLine={{ stroke: colors.slate[600] }}
+            domain={[0, "dataMax"]}
           />
-          <YAxis type="category" dataKey="label" hide />
+          {/* Left labels for each bar */}
+          <YAxis
+            type="category"
+            dataKey="name"
+            width={96} // ensure full label space
+            tick={{ fill: colors.slate[300], fontSize: 12 }}
+            axisLine={{ stroke: colors.slate[600] }}
+            tickLine={{ stroke: colors.slate[600] }}
+          />
           <Tooltip
             formatter={tooltipFormatter}
-            labelFormatter={() => `Total: ${totalPackages} packages`}
             wrapperStyle={{ outline: "none" }}
             contentStyle={{
-              fontSize: 10,
               backgroundColor: colors.slate[800],
               border: `1px solid ${colors.slate[600]}`,
+              fontSize: 10,
             }}
             cursor={{ fill: "transparent" }}
           />
-          x
-          <Bar
-            dataKey="allowed"
-            stackId="1"
-            fill={colors.green[700]}
-            barSize={18}
-            fillOpacity={0.6}
-            background={{
-              fill: colors.slate[700],
-              stroke: colors.slate[700], // outline color
-              strokeWidth: 3, // outline thickness
-            }}
-          />
-          <Bar
-            dataKey="missing"
-            fillOpacity={0.6}
-            stackId="1"
-            fill={colors.yellow[600]}
-          />
-          <Bar
-            dataKey="unrequired"
-            fillOpacity={0.6}
-            stackId="1"
-            fill={colors.orange[400]}
-          />
-          <Bar
-            dataKey="misdefined"
-            fillOpacity={0.6}
-            stackId="1"
-            fill={colors.red[700]}
-          />
-          <Bar
-            dataKey="undefined"
-            fillOpacity={0.6}
-            stackId="1"
-            fill={colors.gray[600]}
-          />
+          <Bar dataKey="count" barSize={14} radius={[2, 2, 2, 2]}>
+            {chartData.map((entry, i) => (
+              <Cell key={`cell-${i}`} fill={entry.fill} />
+            ))}
+          </Bar>
         </BarChart>
       </ResponsiveContainer>
     </div>
