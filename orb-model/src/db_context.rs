@@ -1390,7 +1390,6 @@ impl DBContext {
             }
             // else, package is missing... will need to insert new packages?
         }
-
         Ok(json!({
             "dep_manifest": dm_content,
             "superset": permit_superset,

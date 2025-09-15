@@ -7,6 +7,7 @@ import {
   ResponsiveContainer,
   CartesianGrid,
   Cell,
+  TooltipProps,
 } from "recharts";
 import colors from "tailwindcss/colors";
 import { PackageVersions } from "@/types";
@@ -47,17 +48,44 @@ export function ValidationChart({
   }
 
   const chartData = [
-    { name: "Allowed",   count: allowedCount,   fill: colors.green[700] },
-    { name: "Missing",   count: missingCount,   fill: colors.yellow[600] },
-    { name: "Unrequired",count: unrequiredCount,fill: colors.orange[400] },
-    { name: "Misdefined",count: misdefinedCount,fill: colors.red[700] },
+    { name: "Allowed", count: allowedCount, fill: colors.green[700] },
+    { name: "Missing", count: missingCount, fill: colors.yellow[600] },
+    { name: "Unrequired", count: unrequiredCount, fill: colors.orange[400] },
+    { name: "Misdefined", count: misdefinedCount, fill: colors.red[700] },
     { name: "Undefined", count: undefinedCount, fill: colors.gray[600] },
   ];
 
-  const tooltipFormatter = (value: number, name: string, entry: any) => {
-    const pct =
-      totalPackages > 0 ? ((value / totalPackages) * 100).toFixed(1) : "0.0";
-    return [`${value} (${pct}%)`, entry?.payload?.name ?? name];
+  const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {
+    if (active && payload && payload.length && payload[0]) {
+      const data = payload[0];
+      const value = data.value;
+      const name = data.payload?.name;
+
+      if (typeof value === "number" && name) {
+        const pct =
+          totalPackages > 0
+            ? ((value / totalPackages) * 100).toFixed(1)
+            : "0.0";
+
+        return (
+          <div
+            style={{
+              backgroundColor: colors.slate[800],
+              border: `1px solid ${colors.slate[600]}`,
+              fontSize: 10,
+              padding: "8px",
+              borderRadius: "4px",
+              color: colors.slate[400],
+            }}
+          >
+            <p style={{ margin: 0, color: colors.slate[400] }}>
+              {name}: {value} ({pct}%)
+            </p>
+          </div>
+        );
+      }
+    }
+    return null;
   };
 
   return (
@@ -86,19 +114,14 @@ export function ValidationChart({
           <YAxis
             type="category"
             dataKey="name"
-            width={96} // ensure full label space
-            tick={{ fill: colors.slate[300], fontSize: 12 }}
+            width={90} // ensure full label space
+            tick={{ fill: colors.slate[400], fontSize: 12 }}
             axisLine={{ stroke: colors.slate[600] }}
             tickLine={{ stroke: colors.slate[600] }}
           />
           <Tooltip
-            formatter={tooltipFormatter}
+            content={<CustomTooltip />}
             wrapperStyle={{ outline: "none" }}
-            contentStyle={{
-              backgroundColor: colors.slate[800],
-              border: `1px solid ${colors.slate[600]}`,
-              fontSize: 10,
-            }}
             cursor={{ fill: "transparent" }}
           />
           <Bar dataKey="count" barSize={14} radius={[2, 2, 2, 2]}>
