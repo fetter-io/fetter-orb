@@ -1366,10 +1366,10 @@ impl DBContext {
             None,
         );
 
-        let mut missing: Vec<(i32, Option<String>)> = Vec::new();
-        let mut unrequired: Vec<(i32, Option<String>)> = Vec::new();
-        let mut misdefined: Vec<(i32, Option<String>)> = Vec::new();
-        let mut undefined: Vec<(i32, Option<String>)> = Vec::new();
+        let mut missing: Vec<(i32, String, Option<String>)> = Vec::new();
+        let mut unrequired: Vec<(i32, String, Option<String>)> = Vec::new();
+        let mut misdefined: Vec<(i32, String, Option<String>)> = Vec::new();
+        let mut undefined: Vec<(i32, String, Option<String>)> = Vec::new();
 
         // Debug: Count ValidationExplain types by sites
         // let mut debug_missing_count = 0;
@@ -1399,6 +1399,7 @@ impl DBContext {
 
         for record in vr.records {
             if let Some(ref pkg) = record.package {
+                let pv = pkg.to_string();
                 let pkg_id = package_to_id.get(pkg).unwrap_or(&-1);
                 let target = match record.explain() {
                     ValidationExplain::Missing => &mut missing,
@@ -1408,13 +1409,17 @@ impl DBContext {
                 };
                 if let Some(sites) = record.sites {
                     for site in sites {
-                        target.push((*pkg_id, Some(site.to_string())));
+                        target.push((*pkg_id, pv.clone(), Some(site.to_string())));
                     }
                 } else {
-                    target.push((*pkg_id, None));
+                    target.push((*pkg_id, pv, None));
                 }
             }
-            // else, package is missing... will need to insert new packages?
+            else {
+                // package is missing
+                let pv = format!("{:?}", record.dep_spec);
+                missing.push((-1, pv, None));
+            }
         }
 
         Ok(json!({

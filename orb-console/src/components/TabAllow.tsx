@@ -38,7 +38,7 @@ export function TabAllow({
 }: TabAllowProps) {
   const validationSets = useMemo(() => {
     if (!validationState.data) {
-      const empty = new Map<number, string | null>();
+      const empty: ValidationEntry[] = [];
       return {
         missing: empty,
         unrequired: empty,
@@ -46,9 +46,6 @@ export function TabAllow({
         undefined: empty,
       };
     }
-
-    const toMap = (entries: ValidationEntry[]) =>
-      new Map<number, string | null>(entries);
 
     const {
       missing,
@@ -58,10 +55,10 @@ export function TabAllow({
     } = validationState.data;
 
     return {
-      missing: toMap(missing),
-      unrequired: toMap(unrequired),
-      misdefined: toMap(misdefined),
-      undefined: toMap(undef),
+      missing,
+      unrequired,
+      misdefined,
+      undefined: undef,
     };
   }, [validationState.data]);
 

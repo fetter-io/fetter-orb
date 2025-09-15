@@ -1,11 +1,11 @@
-import { PackageVersions } from "@/types";
+import { PackageVersions, ValidationEntry } from "@/types";
 
 type ValidationPanelProps = {
   validationSets: {
-    missing: Map<number, string | null>;
-    unrequired: Map<number, string | null>;
-    misdefined: Map<number, string | null>;
-    undefined: Map<number, string | null>; // this never has values
+    missing: ValidationEntry[];
+    unrequired: ValidationEntry[];
+    misdefined: ValidationEntry[];
+    undefined: ValidationEntry[];
   };
   packages: PackageVersions[];
 };
@@ -23,8 +23,7 @@ export function ValidationPanel({
       });
     }
   }
-
-  const sortEntriesByPackageName = (entries: [number, string | null][]) => {
+  const sortEntriesByPackageName = (entries: ValidationEntry[]) => {
     return entries.sort(([idA], [idB]) => {
       const pkgA = idToPackage.get(idA);
       const pkgB = idToPackage.get(idB);
@@ -46,19 +45,15 @@ export function ValidationPanel({
   const sections = [
     {
       label: "Missing",
-      entries: sortEntriesByPackageName([...validationSets.missing.entries()]),
+      entries: sortEntriesByPackageName(validationSets.missing),
     },
     {
       label: "Unrequired",
-      entries: sortEntriesByPackageName([
-        ...validationSets.unrequired.entries(),
-      ]),
+      entries: sortEntriesByPackageName(validationSets.unrequired),
     },
     {
       label: "Misdefined",
-      entries: sortEntriesByPackageName([
-        ...validationSets.misdefined.entries(),
-      ]),
+      entries: sortEntriesByPackageName(validationSets.misdefined),
     },
   ];
 
@@ -87,17 +82,19 @@ export function ValidationPanel({
                   </tr>
                 </thead>
                 <tbody>
-                  {entries.map(([id, sitePackages]) => {
+                  {entries.map(([id, pv, sitePackages]) => {
                     const pkg = idToPackage.get(id);
+                    // If we don't have the package in our map (e.g., id = -1), use pv as fallback
+                    const displayName = pkg?.name ?? pv;
+                    const displayVersion = pkg?.version ?? "—";
+
                     return (
                       <tr
-                        key={`${label}-${id}`}
+                        key={`${label}-${id}-${pv}`}
                         className="border-b border-slate-800 bg-gray-900 break-all"
                       >
-                        <td className="px-2 py-1 truncate">
-                          {pkg?.name ?? "Unknown"}
-                        </td>
-                        <td className="px-2 py-1">{pkg?.version ?? "—"}</td>
+                        <td className="px-2 py-1 truncate">{displayName}</td>
+                        <td className="px-2 py-1">{displayVersion}</td>
                         <td className="px-2 py-1">{sitePackages ?? "—"}</td>
                       </tr>
                     );

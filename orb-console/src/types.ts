@@ -107,7 +107,7 @@ export type Tenant = {
   created_by: UUID;
 };
 
-export type ValidationEntry = [number, string | null];
+export type ValidationEntry = [number, string, string | null];
 
 export type ValidationResult = {
   dep_manifest: string;

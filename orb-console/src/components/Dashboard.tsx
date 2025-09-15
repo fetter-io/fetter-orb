@@ -187,7 +187,6 @@ export default function Dashboard() {
     }
     const query = params.toString();
     const res = await fetch(`${apiBase}/validate${query ? `?${query}` : ""}`);
-
     return await res.json();
   }, [selectedTenantId, selectedSystemId]);
 

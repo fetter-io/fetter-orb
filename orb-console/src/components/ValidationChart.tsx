@@ -10,15 +10,15 @@ import {
   TooltipProps,
 } from "recharts";
 import colors from "tailwindcss/colors";
-import { PackageVersions } from "@/types";
+import { PackageVersions, ValidationEntry } from "@/types";
 
 type ValidationChartProps = {
   packages: PackageVersions[];
   validationSets: {
-    missing: Map<number, string | null>;
-    unrequired: Map<number, string | null>;
-    misdefined: Map<number, string | null>;
-    undefined: Map<number, string | null>;
+    missing: ValidationEntry[];
+    unrequired: ValidationEntry[];
+    misdefined: ValidationEntry[];
+    undefined: ValidationEntry[];
   };
 };
 
@@ -29,10 +29,10 @@ export function ValidationChart({
   // Counts - sum of all package versions across all packages
   const totalPackages =
     packages?.reduce((sum, pkg) => sum + pkg.data.length, 0) || 0;
-  const missingCount = validationSets?.missing?.size || 0;
-  const unrequiredCount = validationSets?.unrequired?.size || 0;
-  const misdefinedCount = validationSets?.misdefined?.size || 0;
-  // const undefinedCount = validationSets?.undefined?.size || 0;
+  const missingCount = validationSets?.missing?.length || 0;
+  const unrequiredCount = validationSets?.unrequired?.length || 0;
+  const misdefinedCount = validationSets?.misdefined?.length || 0;
+  // const undefinedCount = validationSets?.undefined?.length || 0;
 
   // Allowed = total - unrequired - misdefined
   const allowedCount = Math.max(
