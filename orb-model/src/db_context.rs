@@ -1414,8 +1414,7 @@ impl DBContext {
                 } else {
                     target.push((*pkg_id, pv, None));
                 }
-            }
-            else {
+            } else {
                 // package is missing
                 let pv = format!("{:?}", record.dep_spec);
                 missing.push((-1, pv, None));
