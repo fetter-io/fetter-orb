@@ -32,7 +32,7 @@ export function ValidationChart({
   const missingCount = validationSets?.missing?.size || 0;
   const unrequiredCount = validationSets?.unrequired?.size || 0;
   const misdefinedCount = validationSets?.misdefined?.size || 0;
-  const undefinedCount = validationSets?.undefined?.size || 0;
+  // const undefinedCount = validationSets?.undefined?.size || 0;
 
   // Allowed = total - unrequired - misdefined
   const allowedCount = Math.max(
