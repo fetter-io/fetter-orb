@@ -88,7 +88,6 @@ export function SystemStatsChart({ data }: SystemStatsChartProps) {
   const getOSPosition = (osNameVersion: string) => {
     return uniqueOSVersions.indexOf(osNameVersion);
   };
-
   // Y-axis
   const getArchCorePosition = (archCoreLabel: string) => {
     return uniqueArchCoreCombos.indexOf(archCoreLabel);
@@ -101,10 +100,6 @@ export function SystemStatsChart({ data }: SystemStatsChartProps) {
     z: point.count,
     color: getOSColor(point.osName),
     point: point,
-    // count: point.count,
-    // osNameVersion: point.osNameVersion,
-    // archCoreLabel: point.archCoreLabel,
-    // systems: point.systems,
   }));
 
   const CustomTooltip = ({
@@ -115,15 +110,11 @@ export function SystemStatsChart({ data }: SystemStatsChartProps) {
     payload?: Array<{
       payload: {
         point: ChartDataPoint;
-        // osNameVersion: string;
-        // archCoreLabel: string;
-        // count: number;
-        // systems: SystemTag[];
       };
     }>;
   }) => {
     if (active && payload && payload.length && payload[0]) {
-      const data = payload[0].payload;
+      const point = payload[0].payload.point;
 
       return (
         <div
@@ -138,10 +129,10 @@ export function SystemStatsChart({ data }: SystemStatsChartProps) {
           }}
         >
           <p style={{ color: colors.slate[100] }}>
-            <strong>{data.osNameVersion}</strong>
+            <strong>{point.osNameVersion}</strong>
           </p>
-          <p style={{ color: colors.slate[300] }}>{data.archCoreLabel}</p>
-          <p style={{ color: colors.slate[300] }}>Systems: {data.count}</p>
+          <p style={{ color: colors.slate[300] }}>{point.archCoreLabel}</p>
+          <p style={{ color: colors.slate[300] }}>Systems: {point.count}</p>
         </div>
       );
     }
