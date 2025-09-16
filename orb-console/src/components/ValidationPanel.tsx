@@ -82,15 +82,14 @@ export function ValidationPanel({
                   </tr>
                 </thead>
                 <tbody>
-                  {entries.map(([id, pv, sitePackages]) => {
-                    const pkg = idToPackage.get(id);
-                    // If we don't have the package in our map (e.g., id = -1), use pv as fallback
-                    const displayName = pkg?.name ?? pv;
-                    const displayVersion = pkg?.version ?? "—";
+                  {entries.map(([id, ds, sitePackages]) => {
+                    const pkg = idToPackage.get(id); // might be null
+                    const displayName = id == -1 && ds ? ds[0] : pkg?.name ?? "Unknown";
+                    const displayVersion = id == -1 && ds ? ds[1] : pkg?.version ?? "—";
 
                     return (
                       <tr
-                        key={`${label}-${id}-${pv}-${sitePackages || 'no-site'}`}
+                        key={`${label}-${id}-${displayName}-${displayVersion}-${sitePackages || 'no-site'}`}
                         className="border-b border-slate-800 bg-gray-900 break-all"
                       >
                         <td className="px-2 py-1 truncate">{displayName}</td>
