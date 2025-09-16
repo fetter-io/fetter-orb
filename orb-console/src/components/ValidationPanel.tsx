@@ -90,7 +90,7 @@ export function ValidationPanel({
 
                     return (
                       <tr
-                        key={`${label}-${id}-${pv}`}
+                        key={`${label}-${id}-${pv}-${sitePackages || 'no-site'}`}
                         className="border-b border-slate-800 bg-gray-900 break-all"
                       >
                         <td className="px-2 py-1 truncate">{displayName}</td>
