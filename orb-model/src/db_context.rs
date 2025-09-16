@@ -1331,8 +1331,11 @@ impl DBContext {
             .get_latest_packages_to_sites(system_tag_id, tenant_id)
             .await?;
 
+        // we return pkg_id or -1, optional dependency (name, spec), optional site
+        type ValidationEntry = (i32, Option<(String, String)>, Option<String>);
+
         if package_to_sites.is_empty() {
-            let empty: Vec<(i32, Option<String>)> = Vec::new();
+            let empty: Vec<ValidationEntry> = Vec::new();
             return Ok(json!({
                 "dep_manifest": dm_content,
                 "superset": permit_superset,
@@ -1366,40 +1369,13 @@ impl DBContext {
             None,
         );
 
-        let mut missing: Vec<(i32, String, Option<String>)> = Vec::new();
-        let mut unrequired: Vec<(i32, String, Option<String>)> = Vec::new();
-        let mut misdefined: Vec<(i32, String, Option<String>)> = Vec::new();
-        let mut undefined: Vec<(i32, String, Option<String>)> = Vec::new();
-
-        // Debug: Count ValidationExplain types by sites
-        // let mut debug_missing_count = 0;
-        // let mut debug_unrequired_count = 0;
-        // let mut debug_misdefined_count = 0;
-        // let mut debug_undefined_count = 0;
-        // for record in &vr.records {
-        //     // Debug counting logic
-        //     let count = if let Some(ref sites) = record.sites {
-        //         sites.len()
-        //     } else {
-        //         1
-        //     };
-        //     match record.explain() {
-        //         ValidationExplain::Missing => debug_missing_count += count,
-        //         ValidationExplain::Unrequired => debug_unrequired_count += count,
-        //         ValidationExplain::Misdefined => debug_misdefined_count += count,
-        //         ValidationExplain::Undefined => debug_undefined_count += count,
-        //     }
-        // }
-        // // Debug output for ValidationExplain counts
-        // println!("Debug ValidationExplain counts:");
-        // println!("  Missing: {}", debug_missing_count);
-        // println!("  Unrequired: {}", debug_unrequired_count);
-        // println!("  Misdefined: {}", debug_misdefined_count);
-        // println!("  Undefined: {}", debug_undefined_count);
+        let mut missing: Vec<ValidationEntry> = Vec::new();
+        let mut unrequired: Vec<ValidationEntry> = Vec::new();
+        let mut misdefined: Vec<ValidationEntry> = Vec::new();
+        let mut undefined: Vec<ValidationEntry> = Vec::new();
 
         for record in vr.records {
             if let Some(ref pkg) = record.package {
-                let pv = pkg.to_string();
                 let pkg_id = package_to_id.get(pkg).unwrap_or(&-1);
                 let target = match record.explain() {
                     ValidationExplain::Missing => &mut missing,
@@ -1409,15 +1385,16 @@ impl DBContext {
                 };
                 if let Some(sites) = record.sites {
                     for site in sites {
-                        target.push((*pkg_id, pv.clone(), Some(site.to_string())));
+                        target.push((*pkg_id, None, Some(site.to_string())));
                     }
                 } else {
-                    target.push((*pkg_id, pv, None));
+                    target.push((*pkg_id, None, None));
                 }
             } else {
-                // package is missing
-                let pv = format!("{:?}", record.dep_spec);
-                missing.push((-1, pv, None));
+                // package is missing, get dep spec
+                if let Some(dep_spec) = record.dep_spec {
+                    missing.push((-1, Some((dep_spec.name.clone(), dep_spec.to_spec())), None));
+                }
             }
         }
 
