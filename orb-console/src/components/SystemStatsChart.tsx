@@ -93,6 +93,11 @@ export function SystemStatsChart({ data }: SystemStatsChartProps) {
     return uniqueArchCoreCombos.indexOf(archCoreLabel);
   };
 
+  // Calculate the maximum count for dynamic Z-axis scaling
+  const maxCount = useMemo(() => {
+    return Math.max(...chartData.map((point) => point.count), 1);
+  }, [chartData]);
+
   // Prepare data for scatter chart
   const scatterData = chartData.map((point) => ({
     x: getOSPosition(point.osNameVersion),
@@ -181,7 +186,11 @@ export function SystemStatsChart({ data }: SystemStatsChartProps) {
             }}
             ticks={uniqueArchCoreCombos.map((_, idx) => idx)}
           />
-          <ZAxis type="number" dataKey="z" range={[1, 400]} />
+          <ZAxis
+            type="number"
+            dataKey="z"
+            range={[1, Math.max(40, maxCount)]}
+          />
           <Tooltip
             content={<CustomTooltip />}
             wrapperStyle={{ outline: "none" }}
