@@ -84,12 +84,14 @@ export function ValidationPanel({
                 <tbody>
                   {entries.map(([id, ds, sitePackages]) => {
                     const pkg = idToPackage.get(id); // might be null
-                    const displayName = id == -1 && ds ? ds[0] : pkg?.name ?? "Unknown";
-                    const displayVersion = id == -1 && ds ? ds[1] : pkg?.version ?? "—";
+                    const displayName =
+                      id == -1 && ds ? ds[0] : (pkg?.name ?? "Unknown");
+                    const displayVersion =
+                      id == -1 && ds ? ds[1] : (pkg?.version ?? "—");
 
                     return (
                       <tr
-                        key={`${label}-${id}-${displayName}-${displayVersion}-${sitePackages || 'no-site'}`}
+                        key={`${label}-${id}-${displayName}-${displayVersion}-${sitePackages || "no-site"}`}
                         className="border-b border-slate-800 bg-gray-900 break-all"
                       >
                         <td className="px-2 py-1 truncate">{displayName}</td>
