@@ -17,35 +17,33 @@ type SystemStatsChartProps = {
 };
 
 type ChartDataPoint = {
+  osName: string;
   osNameVersion: string;
-  architecture: string;
-  logicalCores: number;
   archCoreLabel: string;
   count: number;
   systems: SystemTag[];
 };
 
 export function SystemStatsChart({ data }: SystemStatsChartProps) {
+  // extract data into ChartDataPoint
   const chartData = useMemo(() => {
     if (!data || data.length === 0) return [];
 
-    // Group systems by os_name, architecture, and logical_cores
     const groupedData = new Map<string, ChartDataPoint>();
 
     data.forEach((system) => {
       const osNameVersion = `${system.os_name} ${system.os_version}`;
-      const key = `${osNameVersion}-${system.architecture}-${system.logical_cores}`;
-      const archCoreLabel = `${system.architecture}: ${system.logical_cores} cores`;
-      
+      const archCoreLabel = `${system.architecture}: ${system.logical_cores}cpu`;
+      const key = `${osNameVersion}-${archCoreLabel}`;
+
       if (groupedData.has(key)) {
         const existing = groupedData.get(key)!;
         existing.count += 1;
         existing.systems.push(system);
       } else {
         groupedData.set(key, {
+          osName: system.os_name,
           osNameVersion,
-          architecture: system.architecture,
-          logicalCores: system.logical_cores,
           archCoreLabel,
           count: 1,
           systems: [system],
@@ -56,62 +54,42 @@ export function SystemStatsChart({ data }: SystemStatsChartProps) {
     return Array.from(groupedData.values());
   }, [data]);
 
-
-  // Color palette for different OS types
-  const getOSColor = (osNameVersion: string) => {
+  const getOSColor = (osName: string) => {
+    // replace with map
     const colorMap: Record<string, string> = {
-      // Linux variants
-      "linux": colors.blue[500],
-      "ubuntu": colors.orange[500],
-      "centos": colors.red[500],
-      "debian": colors.red[400],
-      "fedora": colors.blue[400],
-      "rhel": colors.red[600],
-      "redhat": colors.red[600],
-      // macOS variants
-      "darwin": colors.green[500],
-      "macos": colors.green[500],
-      "mac": colors.green[500],
-      "osx": colors.green[500],
-      // Windows variants
-      "windows": colors.purple[500],
-      "win": colors.purple[500],
-      // BSD variants
-      "freebsd": colors.yellow[500],
-      "openbsd": colors.yellow[400],
-      "netbsd": colors.yellow[600],
+      linux: colors.blue[500],
+      macos: colors.purple[700],
+      darwin: colors.purple[700],
+      windows: colors.green[500],
+      freebsd: colors.yellow[500],
+      netbsd: colors.yellow[600],
+      openbsd: colors.yellow[400],
     };
-    
-    // Convert to lowercase for case-insensitive matching
-    const osLower = osNameVersion.toLowerCase();
-    
-    // Try partial matches against the lowercase OS name
+    const osLower = osName.toLowerCase();
     for (const [key, color] of Object.entries(colorMap)) {
-      if (osLower.includes(key)) {
+      if (osLower == key) {
         return color;
       }
     }
-    
-    // Default to gray for unknown OS
     return colors.gray[500];
   };
 
   // Get unique OS name+version combinations for X-axis positioning
   const uniqueOSVersions = useMemo(() => {
-    return Array.from(new Set(chartData.map(point => point.osNameVersion)));
+    return Array.from(new Set(chartData.map((point) => point.osNameVersion)));
   }, [chartData]);
 
   // Get unique architecture:cores combinations for Y-axis positioning
   const uniqueArchCoreCombos = useMemo(() => {
-    return Array.from(new Set(chartData.map(point => point.archCoreLabel)));
+    return Array.from(new Set(chartData.map((point) => point.archCoreLabel)));
   }, [chartData]);
 
-  // Convert OS name+version to numeric position for X-axis
+  // X-axis
   const getOSPosition = (osNameVersion: string) => {
     return uniqueOSVersions.indexOf(osNameVersion);
   };
 
-  // Convert architecture:cores to numeric position for Y-axis
+  // Y-axis
   const getArchCorePosition = (archCoreLabel: string) => {
     return uniqueArchCoreCombos.indexOf(archCoreLabel);
   };
@@ -120,14 +98,13 @@ export function SystemStatsChart({ data }: SystemStatsChartProps) {
   const scatterData = chartData.map((point) => ({
     x: getOSPosition(point.osNameVersion),
     y: getArchCorePosition(point.archCoreLabel),
-    z: point.count * 100, // Scale up for visibility
-    count: point.count,
-    osNameVersion: point.osNameVersion,
-    architecture: point.architecture,
-    logicalCores: point.logicalCores,
-    archCoreLabel: point.archCoreLabel,
-    systems: point.systems,
-    color: getOSColor(point.osNameVersion),
+    z: point.count,
+    color: getOSColor(point.osName),
+    point: point,
+    // count: point.count,
+    // osNameVersion: point.osNameVersion,
+    // archCoreLabel: point.archCoreLabel,
+    // systems: point.systems,
   }));
 
   const CustomTooltip = ({
@@ -137,18 +114,17 @@ export function SystemStatsChart({ data }: SystemStatsChartProps) {
     active?: boolean;
     payload?: Array<{
       payload: {
-        osNameVersion: string;
-        architecture: string;
-        logicalCores: number;
-        archCoreLabel: string;
-        count: number;
-        systems: SystemTag[];
+        point: ChartDataPoint;
+        // osNameVersion: string;
+        // archCoreLabel: string;
+        // count: number;
+        // systems: SystemTag[];
       };
     }>;
   }) => {
     if (active && payload && payload.length && payload[0]) {
       const data = payload[0].payload;
-      
+
       return (
         <div
           style={{
@@ -157,26 +133,15 @@ export function SystemStatsChart({ data }: SystemStatsChartProps) {
             padding: "8px",
             borderRadius: "4px",
             boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+            fontSize: 12,
+            margin: "2px 0",
           }}
         >
-          <p style={{ color: colors.slate[100], fontSize: 12, margin: "2px 0" }}>
+          <p style={{ color: colors.slate[100] }}>
             <strong>{data.osNameVersion}</strong>
           </p>
-          <p style={{ color: colors.slate[300], fontSize: 11, margin: "2px 0" }}>
-            {data.archCoreLabel}
-          </p>
-          <p style={{ color: colors.slate[300], fontSize: 11, margin: "2px 0" }}>
-            Systems: {data.count}
-          </p>
-          {data.systems.length <= 3 && (
-            <div style={{ fontSize: 10, color: colors.slate[400], marginTop: "4px" }}>
-              {data.systems.map((system, idx) => (
-                <div key={idx}>
-                  {system.username}@{system.hostname}
-                </div>
-              ))}
-            </div>
-          )}
+          <p style={{ color: colors.slate[300] }}>{data.archCoreLabel}</p>
+          <p style={{ color: colors.slate[300] }}>Systems: {data.count}</p>
         </div>
       );
     }
@@ -191,11 +156,12 @@ export function SystemStatsChart({ data }: SystemStatsChartProps) {
     );
   }
 
+  // need to replace 400 with the maximum count of each Pint
   return (
     <div className="h-50 bg-slate-900 rounded-md pt-2 border border-slate-700">
       <ResponsiveContainer width="100%" height="100%">
         <ScatterChart
-          margin={{ top: 20, right: 20, bottom: 40, left: 40 }}
+          margin={{ top: 0, right: 12, bottom: 0, left: 8 }}
           data={scatterData}
         >
           <XAxis
@@ -224,11 +190,11 @@ export function SystemStatsChart({ data }: SystemStatsChartProps) {
             }}
             ticks={uniqueArchCoreCombos.map((_, idx) => idx)}
           />
-          <ZAxis type="number" dataKey="z" range={[50, 400]} />
+          <ZAxis type="number" dataKey="z" range={[1, 400]} />
           <Tooltip
             content={<CustomTooltip />}
             wrapperStyle={{ outline: "none" }}
-            cursor={{ strokeDasharray: "3 3" }}
+            cursor={{ strokeDasharray: "1 19" }}
           />
           <Scatter name="Systems" data={scatterData}>
             {scatterData.map((entry, index) => (
