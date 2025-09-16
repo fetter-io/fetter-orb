@@ -20,19 +20,53 @@ type ValidationChartProps = {
     misdefined: ValidationEntry[];
     undefined: ValidationEntry[];
   };
+  idToPackage: Map<number, { name: string; version: string }>;
 };
 
 export function ValidationChart({
   packages,
   validationSets,
+  idToPackage,
 }: ValidationChartProps) {
+  // Count unique package+version combinations (not just unique IDs)
+  // Same package with different versions = separate counts
+  // Multiple sites with same package+version = single count
+  const countUniquePackages = (entries: ValidationEntry[]): number => {
+    const uniquePackageVersions = new Set<string>();
+    let minusOneCount = 0;
+
+    entries.forEach(([id, ds]) => {
+      if (id === -1) {
+        // For missing packages, use the DepSpec info if available
+        if (ds && ds[0]) {
+          uniquePackageVersions.add(`${ds[0]}:${ds[1] || "unknown"}`);
+        } else {
+          minusOneCount++; // Fallback for malformed missing packages
+        }
+      } else {
+        // For real packages, use idToPackage to get name and version
+        const pkg = idToPackage.get(id);
+        if (pkg) {
+          uniquePackageVersions.add(`${pkg.name}:${pkg.version}`);
+        }
+      }
+    });
+
+    console.log(
+      "raw size",
+      entries.length,
+      "unique pkg:ver combinations",
+      uniquePackageVersions.size,
+    );
+    console.log("unique combinations", Array.from(uniquePackageVersions));
+    return uniquePackageVersions.size + minusOneCount;
+  };
+
   // Counts - sum of all package versions across all packages
-  const totalPackages =
-    packages?.reduce((sum, pkg) => sum + pkg.data.length, 0) || 0;
-  const missingCount = validationSets?.missing?.length || 0;
-  const unrequiredCount = validationSets?.unrequired?.length || 0;
-  const misdefinedCount = validationSets?.misdefined?.length || 0;
-  // const undefinedCount = validationSets?.undefined?.length || 0;
+  const totalPackages = packages?.length || 0;
+  const missingCount = countUniquePackages(validationSets?.missing || []);
+  const unrequiredCount = countUniquePackages(validationSets?.unrequired || []);
+  const misdefinedCount = countUniquePackages(validationSets?.misdefined || []);
 
   // Allowed = total - unrequired - misdefined
   const allowedCount = Math.max(
@@ -53,7 +87,7 @@ export function ValidationChart({
     { name: "Misdefined", count: misdefinedCount, fill: colors.red[700] },
     { name: "Unrequired", count: unrequiredCount, fill: colors.yellow[500] },
     { name: "Allowed", count: allowedCount, fill: colors.green[700] },
-    // { name: "Undefined", count: undefinedCount, fill: colors.gray[600] },
+    { name: "Total", count: totalPackages, fill: colors.gray[600] },
   ];
 
   const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {

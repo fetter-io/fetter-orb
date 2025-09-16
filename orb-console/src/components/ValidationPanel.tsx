@@ -1,4 +1,4 @@
-import { PackageVersions, ValidationEntry } from "@/types";
+import { ValidationEntry } from "@/types";
 import { VulnScoreIcon } from "@/components/VulnScoreIcon";
 
 type ValidationPanelProps = {
@@ -8,26 +8,17 @@ type ValidationPanelProps = {
     misdefined: ValidationEntry[];
     undefined: ValidationEntry[];
   };
-  packages: PackageVersions[];
   vulnerablePackageIds?: Map<number, number>;
   onVulnClick?: (packageId: number) => void;
+  idToPackage: Map<number, { name: string; version: string }>;
 };
 
 export function ValidationPanel({
   validationSets,
-  packages,
   vulnerablePackageIds,
   onVulnClick,
+  idToPackage,
 }: ValidationPanelProps) {
-  const idToPackage = new Map<number, { name: string; version: string }>();
-  for (const pkg of packages) {
-    for (const entry of pkg.data) {
-      idToPackage.set(entry.package_id, {
-        name: pkg.name,
-        version: entry.version,
-      });
-    }
-  }
   const sortEntriesByPackageName = (entries: ValidationEntry[]) => {
     return entries.sort(([idA], [idB]) => {
       const pkgA = idToPackage.get(idA);
@@ -94,7 +85,8 @@ export function ValidationPanel({
                       id == -1 && ds ? ds[0] : (pkg?.name ?? "Unknown");
                     const displayVersion =
                       id == -1 && ds ? ds[1] : (pkg?.version ?? "—");
-                    const vulnerabilityScore = id !== -1 ? (vulnerablePackageIds?.get(id) ?? 0) : 0;
+                    const vulnerabilityScore =
+                      id !== -1 ? (vulnerablePackageIds?.get(id) ?? 0) : 0;
 
                     return (
                       <tr

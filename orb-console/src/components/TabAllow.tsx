@@ -66,6 +66,22 @@ export function TabAllow({
     };
   }, [validationState.data]);
 
+  const idToPackage = useMemo(() => {
+    if (!packagesState.data)
+      return new Map<number, { name: string; version: string }>();
+
+    const map = new Map<number, { name: string; version: string }>();
+    for (const pkg of packagesState.data) {
+      for (const entry of pkg.data) {
+        map.set(entry.package_id, {
+          name: pkg.name,
+          version: entry.version,
+        });
+      }
+    }
+    return map;
+  }, [packagesState.data]);
+
   return (
     <>
       <div className="flex items-center items-end justify-between">
@@ -89,6 +105,7 @@ export function TabAllow({
           <ValidationChart
             packages={packagesState.data}
             validationSets={validationSets}
+            idToPackage={idToPackage}
           />
         )}
 
@@ -119,9 +136,9 @@ export function TabAllow({
       {validationState.data && packagesState.data && (
         <ValidationPanel
           validationSets={validationSets}
-          packages={packagesState.data}
           vulnerablePackageIds={vulnerablePackageIds}
           onVulnClick={onVulnClick}
+          idToPackage={idToPackage}
         />
       )}
     </>
