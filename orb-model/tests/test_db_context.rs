@@ -422,6 +422,167 @@ async fn test_dep_manifest_load_a() {
     ctx.tables_drop().await.unwrap();
 }
 
+#[tokio::test]
+async fn test_validate_a() {
+    let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path1.push("tests/fixtures/monitor-scan-02.json");
+    let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
+    let pool = get_db_pool().await;
+    let ctx = DBContext::new(pool, Some("test_validate_missing_package_depspec".into()));
+    ctx.tables_drop().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
+
+    let user_id = ctx
+        .user_tenant_init("foo", 0, "foo@foo.com", "Foo")
+        .await
+        .unwrap();
+    let t = Tenant::from_key("team-a", user_id);
+    let _ = ctx.tenant_insert_or_get(&t).await.unwrap();
+
+    ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
+
+    // Create a dep_manifest with packages that don't exist in the system
+    let msg = format!(
+        r#"{{"user_id": "{}", "tenant_id": 2, "content": "numpy==2.0.0\nmissing-package==1.0.0\nanother-missing>=2.5.0\n", "superset": false, "subset": false}}"#,
+        user_id
+    );
+    let result = ctx.dep_manifest_load_from_json(&msg).await.unwrap();
+    assert!(
+        result,
+        "dep_manifest_load should succeed for authorized user"
+    );
+
+    // Run validation
+    let json_obj = ctx.validate(Some(1), Some(2)).await.unwrap();
+    let obj = json_obj.as_object().expect("Expected JSON object");
+
+    // Check that missing array exists and contains the expected structure
+    let missing = obj.get("missing").expect("missing key should exist");
+    let missing_array = missing.as_array().expect("missing should be an array");
+    assert!(!missing_array.is_empty(), "Should have missing packages");
+
+    // Check the structure of missing entries
+    let mut found_missing_package = false;
+    let mut found_another_missing = false;
+
+    for entry in missing_array {
+        let entry_array = entry.as_array().expect("Each entry should be an array");
+        assert_eq!(
+            entry_array.len(),
+            3,
+            "Each entry should have 3 elements: [id, dep_spec, site]"
+        );
+
+        let id = entry_array[0]
+            .as_i64()
+            .expect("First element should be package id");
+        let dep_spec = &entry_array[1];
+        let site = &entry_array[2];
+
+        // Missing packages should have id = -1
+        if id == -1 {
+            if let Some(dep_spec_obj) = dep_spec.as_array() {
+                assert_eq!(dep_spec_obj.len(), 2, "DepSpec should have [name, spec]");
+                let name = dep_spec_obj[0].as_str().expect("Name should be string");
+                let spec = dep_spec_obj[1].as_str().expect("Spec should be string");
+
+                if name == "missing-package" {
+                    assert_eq!(spec, "==1.0.0");
+                    found_missing_package = true;
+                }
+                if name == "another-missing" {
+                    assert_eq!(spec, ">=2.5.0");
+                    found_another_missing = true;
+                }
+            }
+            assert!(site.is_null(), "Site should be null for missing packages");
+        }
+    }
+
+    assert!(
+        found_missing_package,
+        "Should find missing-package==1.0.0 in missing entries"
+    );
+    assert!(
+        found_another_missing,
+        "Should find another-missing>=2.5.0 in missing entries"
+    );
+
+    ctx.tables_drop().await.unwrap();
+}
+
+#[tokio::test]
+async fn test_validate_b() {
+    let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path1.push("tests/fixtures/monitor-scan-02.json");
+    let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
+    let pool = get_db_pool().await;
+    let ctx = DBContext::new(
+        pool,
+        Some("test_validate_existing_packages_no_depspec".into()),
+    );
+    ctx.tables_drop().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
+
+    let user_id = ctx
+        .user_tenant_init("foo", 0, "foo@foo.com", "Foo")
+        .await
+        .unwrap();
+    let t = Tenant::from_key("team-a", user_id);
+    let _ = ctx.tenant_insert_or_get(&t).await.unwrap();
+
+    ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
+
+    // Create a dep_manifest with packages that exist but are unrequired
+    let msg = format!(
+        r#"{{"user_id": "{}", "tenant_id": 2, "content": "", "superset": false, "subset": false}}"#,
+        user_id
+    );
+    let result = ctx.dep_manifest_load_from_json(&msg).await.unwrap();
+    assert!(
+        result,
+        "dep_manifest_load should succeed for authorized user"
+    );
+
+    // Run validation
+    let json_obj = ctx.validate(Some(1), Some(2)).await.unwrap();
+    let obj = json_obj.as_object().expect("Expected JSON object");
+
+    // Check unrequired packages - these should have real package IDs, not DepSpec
+    let unrequired = obj.get("unrequired").expect("unrequired key should exist");
+    let unrequired_array = unrequired
+        .as_array()
+        .expect("unrequired should be an array");
+    assert!(
+        !unrequired_array.is_empty(),
+        "Should have unrequired packages"
+    );
+
+    for entry in unrequired_array {
+        let entry_array = entry.as_array().expect("Each entry should be an array");
+        assert_eq!(
+            entry_array.len(),
+            3,
+            "Each entry should have 3 elements: [id, dep_spec, site]"
+        );
+
+        let id = entry_array[0]
+            .as_i64()
+            .expect("First element should be package id");
+        let dep_spec = &entry_array[1];
+        // let _site = &entry_array[2];
+
+        // Existing packages should have real package IDs (not -1) and null dep_spec
+        assert_ne!(id, -1, "Existing packages should have real package IDs");
+        assert!(
+            dep_spec.is_null(),
+            "Existing packages should have null dep_spec"
+        );
+    }
+
+    ctx.tables_drop().await.unwrap();
+}
+
 // //------------------------------------------------------------------------------
 
 #[tokio::test]
