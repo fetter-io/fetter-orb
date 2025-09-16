@@ -12,7 +12,7 @@ export function TabSelector({ activeTab, onTabChange }: TabSelectorProps) {
     { id: "allow", label: "🔓", tooltip: "Allow List" },
     { id: "systems", label: "🖥️", tooltip: "Systems" },
     { id: "tenant", label: "🏢", tooltip: "Tenants" },
-    { id: "account", label: "👤", tooltip: "Account" },
+    { id: "account", label: "⚙️", tooltip: "Account" },
   ];
 
   return (

@@ -40,31 +40,13 @@ export function TabAllow({
   vulnerablePackageIds,
   onVulnClick,
 }: TabAllowProps) {
-  const validationSets = useMemo(() => {
-    if (!validationState.data) {
-      const empty: ValidationEntry[] = [];
-      return {
-        missing: empty,
-        unrequired: empty,
-        misdefined: empty,
-        undefined: empty,
-      };
-    }
-
-    const {
-      missing,
-      unrequired,
-      misdefined,
-      undefined: undef,
-    } = validationState.data;
-
-    return {
-      missing,
-      unrequired,
-      misdefined,
-      undefined: undef,
-    };
-  }, [validationState.data]);
+  const empty: ValidationEntry[] = [];
+  const validationSets = validationState.data ?? {
+    missing: empty,
+    unrequired: empty,
+    misdefined: empty,
+    undefined: empty,
+  };
 
   const idToPackage = useMemo(() => {
     if (!packagesState.data)
@@ -105,7 +87,6 @@ export function TabAllow({
           <ValidationChart
             packages={packagesState.data}
             validationSets={validationSets}
-            idToPackage={idToPackage}
           />
         )}
 

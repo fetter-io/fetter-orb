@@ -28,12 +28,10 @@ export function ValidationPanel({
       const versionA = pkgA?.version ?? "";
       const versionB = pkgB?.version ?? "";
 
-      // Sort by name first
       const nameComparison = nameA.localeCompare(nameB);
       if (nameComparison !== 0) {
         return nameComparison;
       }
-      // If names are equal, sort by version
       return versionA.localeCompare(versionB);
     });
   };
@@ -95,7 +93,7 @@ export function ValidationPanel({
                       >
                         <td className="px-2 py-1 truncate">{displayName}</td>
                         <td className="px-2 py-1">{displayVersion}</td>
-                        <td className="px-2 py-1 flex justify-center">
+                        <td className="px-2 py-1">
                           {vulnerabilityScore > 0 && onVulnClick ? (
                             <button
                               title="Vulnerability details"
