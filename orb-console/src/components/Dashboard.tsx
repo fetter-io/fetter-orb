@@ -467,6 +467,7 @@ export default function Dashboard() {
               selectedTenantId={selectedTenantId}
               userId={session?.user?.user_id || ""}
               vulnerablePackageIds={vulnerablePackageIds}
+              onVulnClick={handleVulnClick}
             />
           )}
 

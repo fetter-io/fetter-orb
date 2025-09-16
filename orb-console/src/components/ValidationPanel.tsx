@@ -10,12 +10,14 @@ type ValidationPanelProps = {
   };
   packages: PackageVersions[];
   vulnerablePackageIds?: Map<number, number>;
+  onVulnClick?: (packageId: number) => void;
 };
 
 export function ValidationPanel({
   validationSets,
   packages,
   vulnerablePackageIds,
+  onVulnClick,
 }: ValidationPanelProps) {
   const idToPackage = new Map<number, { name: string; version: string }>();
   for (const pkg of packages) {
@@ -102,7 +104,17 @@ export function ValidationPanel({
                         <td className="px-2 py-1 truncate">{displayName}</td>
                         <td className="px-2 py-1">{displayVersion}</td>
                         <td className="px-2 py-1 flex justify-center">
-                          <VulnScoreIcon score={vulnerabilityScore} />
+                          {vulnerabilityScore > 0 && onVulnClick ? (
+                            <button
+                              title="Vulnerability details"
+                              className="border-b border-transparent cursor-pointer"
+                              onClick={() => onVulnClick(id)}
+                            >
+                              <VulnScoreIcon score={vulnerabilityScore} />
+                            </button>
+                          ) : (
+                            <VulnScoreIcon score={vulnerabilityScore} />
+                          )}
                         </td>
                         <td className="px-2 py-1">{sitePackages ?? "—"}</td>
                       </tr>
