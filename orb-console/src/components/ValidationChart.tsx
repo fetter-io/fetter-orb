@@ -49,10 +49,10 @@ export function ValidationChart({
   }
 
   const chartData = [
-    { name: "Allowed", count: allowedCount, fill: colors.green[700] },
     { name: "Missing", count: missingCount, fill: colors.orange[600] },
-    { name: "Unrequired", count: unrequiredCount, fill: colors.yellow[500] },
     { name: "Misdefined", count: misdefinedCount, fill: colors.red[700] },
+    { name: "Unrequired", count: unrequiredCount, fill: colors.yellow[500] },
+    { name: "Allowed", count: allowedCount, fill: colors.green[700] },
     // { name: "Undefined", count: undefinedCount, fill: colors.gray[600] },
   ];
 
