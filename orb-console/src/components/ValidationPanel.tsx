@@ -1,4 +1,5 @@
 import { PackageVersions, ValidationEntry } from "@/types";
+import { VulnScoreIcon } from "@/components/VulnScoreIcon";
 
 type ValidationPanelProps = {
   validationSets: {
@@ -8,11 +9,13 @@ type ValidationPanelProps = {
     undefined: ValidationEntry[];
   };
   packages: PackageVersions[];
+  vulnerablePackageIds?: Map<number, number>;
 };
 
 export function ValidationPanel({
   validationSets,
   packages,
+  vulnerablePackageIds,
 }: ValidationPanelProps) {
   const idToPackage = new Map<number, { name: string; version: string }>();
   for (const pkg of packages) {
@@ -76,9 +79,10 @@ export function ValidationPanel({
               <table className="table-fixed w-full text-xs text-left text-gray-400">
                 <thead className="sticky top-0 bg-gray-950 text-gray-500 border-b border-slate-700">
                   <tr>
-                    <th className="px-2 py-1 w-1/4">Package</th>
-                    <th className="px-2 py-1 w-1/4">Version</th>
-                    <th className="px-2 py-1 w-1/2">Sites</th>
+                    <th className="px-2 py-1 w-2/6">Package</th>
+                    <th className="px-2 py-1 w-1/6">Version</th>
+                    <th className="px-2 py-1 w-1/6"></th>
+                    <th className="px-2 py-1 w-2/6">Sites</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -88,6 +92,7 @@ export function ValidationPanel({
                       id == -1 && ds ? ds[0] : (pkg?.name ?? "Unknown");
                     const displayVersion =
                       id == -1 && ds ? ds[1] : (pkg?.version ?? "—");
+                    const vulnerabilityScore = id !== -1 ? (vulnerablePackageIds?.get(id) ?? 0) : 0;
 
                     return (
                       <tr
@@ -96,6 +101,9 @@ export function ValidationPanel({
                       >
                         <td className="px-2 py-1 truncate">{displayName}</td>
                         <td className="px-2 py-1">{displayVersion}</td>
+                        <td className="px-2 py-1 flex justify-center">
+                          <VulnScoreIcon score={vulnerabilityScore} />
+                        </td>
                         <td className="px-2 py-1">{sitePackages ?? "—"}</td>
                       </tr>
                     );

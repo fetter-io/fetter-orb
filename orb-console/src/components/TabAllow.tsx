@@ -24,6 +24,7 @@ interface TabAllowProps {
   setSelectedSystemId: (id: number | null) => void;
   selectedTenantId: number;
   userId: string;
+  vulnerablePackageIds: Map<number, number>;
 }
 
 export function TabAllow({
@@ -35,6 +36,7 @@ export function TabAllow({
   setSelectedSystemId,
   selectedTenantId,
   userId,
+  vulnerablePackageIds,
 }: TabAllowProps) {
   const validationSets = useMemo(() => {
     if (!validationState.data) {
@@ -116,6 +118,7 @@ export function TabAllow({
         <ValidationPanel
           validationSets={validationSets}
           packages={packagesState.data}
+          vulnerablePackageIds={vulnerablePackageIds}
         />
       )}
     </>

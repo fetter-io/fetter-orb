@@ -466,6 +466,7 @@ export default function Dashboard() {
               setSelectedSystemId={setSelectedSystemId}
               selectedTenantId={selectedTenantId}
               userId={session?.user?.user_id || ""}
+              vulnerablePackageIds={vulnerablePackageIds}
             />
           )}
 
