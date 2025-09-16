@@ -2,6 +2,7 @@
 
 import { DashboardStatus } from "@/components/DashboardStatus";
 import { SystemTagCard } from "@/components/SystemTagCard";
+import { SystemStatsChart } from "@/components/SystemStatsChart";
 import { SystemTag, Tab } from "@/types";
 import { DataState } from "@/hooks/useDashboardData";
 
@@ -21,6 +22,10 @@ export function TabSystems({
   return (
     <>
       <DashboardStatus label="systems" state={systemTagsState} />
+
+      {systemTagsState.data && systemTagsState.data.length > 0 && (
+        <SystemStatsChart data={systemTagsState.data} />
+      )}
 
       <div className="flex flex-col gap-4">
         {systemTagsState.data?.map((tag) => (
