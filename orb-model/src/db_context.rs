@@ -3,9 +3,9 @@ use chrono::{DateTime, Utc};
 use std::env;
 
 use fetter::{
-    AuditReport, CvssFilter, DepManifest, DirectURL, FlagCacheRefresh, FlagLog, LockFile, Package,
-    PathShared, ResultDynError, ScanFS, SystemTag, UreqClientLive, ValidationExplain,
-    ValidationFlags, ValidationReport, VcsInfo, VersionSpec,
+    AuditReport, CliAnchor, CvssFilter, DepManifest, DirectURL, FlagCacheRefresh, FlagLog,
+    LockFile, Package, PathShared, ResultDynError, ScanFS, SystemTag, Tableable, UreqClientLive,
+    ValidationExplain, ValidationFlags, ValidationReport, VcsInfo, VersionSpec,
 };
 
 use serde::{Deserialize, Serialize};
@@ -1407,6 +1407,25 @@ impl DBContext {
             "unrequired": unrequired,
             "misdefined": misdefined,
         }))
+    }
+
+    pub async fn derive_dep_manifest(
+        &self,
+        system_tag_id: Option<i32>,
+        tenant_id: Option<i32>,
+    ) -> ResultDynError<Value> {
+        let (package_to_sites, _package_to_id) = self
+            .get_latest_packages_to_sites(system_tag_id, tenant_id)
+            .await?;
+        let dm = DepManifest::from_packages(package_to_sites.keys(), CliAnchor::Lower.into())
+            .expect("could not derive DepManifest from packages");
+        let dmr = dm.to_dep_manifest_report();
+        let dss: Vec<String> = dmr
+            .get_records()
+            .iter()
+            .map(|r| r.dep_spec.to_string())
+            .collect();
+        Ok(json!(dss))
     }
 
     //--------------------------------------------------------------------------

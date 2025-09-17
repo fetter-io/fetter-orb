@@ -116,5 +116,4 @@ export type ValidationResult = {
   missing: ValidationEntry[];
   unrequired: ValidationEntry[];
   misdefined: ValidationEntry[];
-  undefined: ValidationEntry[];
 };

@@ -14,7 +14,7 @@ import { PackageVersions, ValidationEntry } from "@/types";
 
 type ValidationChartProps = {
   packages: PackageVersions[];
-  validationSets: {
+  validationEntries: {
     missing: ValidationEntry[];
     unrequired: ValidationEntry[];
     misdefined: ValidationEntry[];
@@ -23,14 +23,14 @@ type ValidationChartProps = {
 
 export function ValidationChart({
   packages,
-  validationSets,
+  validationEntries,
 }: ValidationChartProps) {
   // counts here are of package, version, site; this is higher than the number of packages displayed
   const totalPackages =
     packages?.reduce((sum, pkg) => sum + (pkg.data?.length || 0), 0) || 0;
-  const missingCount = validationSets?.missing.length || 0;
-  const unrequiredCount = validationSets?.unrequired.length || 0;
-  const misdefinedCount = validationSets?.misdefined.length || 0;
+  const missingCount = validationEntries?.missing.length || 0;
+  const unrequiredCount = validationEntries?.unrequired.length || 0;
+  const misdefinedCount = validationEntries?.misdefined.length || 0;
 
   // Allowed = total - unrequired - misdefined
   const allowedCount = Math.max(

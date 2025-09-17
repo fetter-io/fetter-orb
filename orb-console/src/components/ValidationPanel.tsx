@@ -2,7 +2,7 @@ import { ValidationEntry } from "@/types";
 import { VulnScoreIcon } from "@/components/VulnScoreIcon";
 
 type ValidationPanelProps = {
-  validationSets: {
+  validationEntries: {
     missing: ValidationEntry[];
     unrequired: ValidationEntry[];
     misdefined: ValidationEntry[];
@@ -13,7 +13,7 @@ type ValidationPanelProps = {
 };
 
 export function ValidationPanel({
-  validationSets,
+  validationEntries,
   vulnerablePackageIds,
   onVulnClick,
   idToPackage,
@@ -38,15 +38,15 @@ export function ValidationPanel({
   const sections = [
     {
       label: "Missing",
-      entries: sortEntriesByPackageName(validationSets.missing),
+      entries: sortEntriesByPackageName(validationEntries.missing),
     },
     {
       label: "Unrequired",
-      entries: sortEntriesByPackageName(validationSets.unrequired),
+      entries: sortEntriesByPackageName(validationEntries.unrequired),
     },
     {
       label: "Misdefined",
-      entries: sortEntriesByPackageName(validationSets.misdefined),
+      entries: sortEntriesByPackageName(validationEntries.misdefined),
     },
   ];
 

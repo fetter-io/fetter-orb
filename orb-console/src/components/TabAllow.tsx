@@ -40,8 +40,10 @@ export function TabAllow({
   vulnerablePackageIds,
   onVulnClick,
 }: TabAllowProps) {
+
+  // we extract out the ValidationEntry for each category here
   const empty: ValidationEntry[] = [];
-  const validationSets = validationState.data ?? {
+  const validationEntries = validationState.data ?? {
     missing: empty,
     unrequired: empty,
     misdefined: empty,
@@ -85,7 +87,7 @@ export function TabAllow({
         packagesState.data.length > 0 && (
           <ValidationChart
             packages={packagesState.data}
-            validationSets={validationSets}
+            validationEntries={validationEntries}
           />
         )}
 
@@ -115,7 +117,7 @@ export function TabAllow({
 
       {validationState.data && packagesState.data && (
         <ValidationPanel
-          validationSets={validationSets}
+          validationEntries={validationEntries}
           vulnerablePackageIds={vulnerablePackageIds}
           onVulnClick={onVulnClick}
           idToPackage={idToPackage}
