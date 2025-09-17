@@ -18,7 +18,6 @@ type ValidationChartProps = {
     missing: ValidationEntry[];
     unrequired: ValidationEntry[];
     misdefined: ValidationEntry[];
-    undefined: ValidationEntry[];
   };
 };
 

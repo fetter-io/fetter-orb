@@ -128,7 +128,6 @@ pub async fn get_validate(
             "missing": [],
             "unrequired": [],
             "misdefined": [],
-            "undefined": []
         }))),
     }
 }

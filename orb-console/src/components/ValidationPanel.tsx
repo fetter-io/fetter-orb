@@ -6,7 +6,6 @@ type ValidationPanelProps = {
     missing: ValidationEntry[];
     unrequired: ValidationEntry[];
     misdefined: ValidationEntry[];
-    undefined: ValidationEntry[];
   };
   vulnerablePackageIds?: Map<number, number>;
   onVulnClick?: (packageId: number) => void;

@@ -45,7 +45,6 @@ export function TabAllow({
     missing: empty,
     unrequired: empty,
     misdefined: empty,
-    undefined: empty,
   };
 
   const idToPackage = useMemo(() => {

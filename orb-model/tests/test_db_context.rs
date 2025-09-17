@@ -417,7 +417,6 @@ async fn test_dep_manifest_load_a() {
     assert!(map.contains_key("missing"));
     assert!(map.contains_key("unrequired"));
     assert!(map.contains_key("misdefined"));
-    assert!(map.contains_key("undefined"));
 
     ctx.tables_drop().await.unwrap();
 }

@@ -1344,7 +1344,6 @@ impl DBContext {
                 "missing": empty,
                 "unrequired": empty,
                 "misdefined": empty,
-                "undefined": empty,
             }));
         }
 
@@ -1373,6 +1372,7 @@ impl DBContext {
         let mut missing: Vec<ValidationEntry> = Vec::new();
         let mut unrequired: Vec<ValidationEntry> = Vec::new();
         let mut misdefined: Vec<ValidationEntry> = Vec::new();
+        // this is defined but should never be filled
         let mut undefined: Vec<ValidationEntry> = Vec::new();
 
         for record in vr.records {
@@ -1406,7 +1406,6 @@ impl DBContext {
             "missing": missing,
             "unrequired": unrequired,
             "misdefined": misdefined,
-            "undefined": undefined,
         }))
     }
 
