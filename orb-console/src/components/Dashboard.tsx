@@ -259,12 +259,9 @@ export default function Dashboard() {
     const unrequiredSet = new Set<number>();
     const misdefinedSet = new Set<number>();
 
-    // Extract package IDs from unrequired ValidationEntries
     validationState.data.unrequired.forEach(([packageId]) => {
       unrequiredSet.add(packageId);
     });
-
-    // Extract package IDs from misdefined ValidationEntries
     validationState.data.misdefined.forEach(([packageId]) => {
       misdefinedSet.add(packageId);
     });
