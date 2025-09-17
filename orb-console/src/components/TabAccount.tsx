@@ -10,7 +10,6 @@ export function TabAccount({ userInfo }: { userInfo: UserRecord | null }) {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-zinc-200">Account</h2>
       <div className="text-sm text-gray-300">
         <div className="divide-y divide-slate-600 border border-slate-600 bg-gray-800 rounded overflow-hidden text-sm">
           <div className="grid grid-cols-2 gap-2 px-2 py-2">

@@ -1211,6 +1211,7 @@ impl DBContext {
         Ok((packages, package_to_id))
     }
 
+    /// From the DB, thus builds two mappings: package_to_sites (versioned Package to a Vec of sites) and package_to_id (versioned Package to its DB ID)
     pub async fn get_latest_packages_to_sites(
         &self,
         system_tag_id: Option<i32>,
