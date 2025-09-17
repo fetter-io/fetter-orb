@@ -247,6 +247,34 @@ export default function Dashboard() {
     pollInterval: 0,
   });
 
+  // Create validationSets derived from validationState
+  const validationSets = useMemo(() => {
+    if (!validationState.data) {
+      return {
+        unrequired: new Set<number>(),
+        misdefined: new Set<number>(),
+      };
+    }
+
+    const unrequiredSet = new Set<number>();
+    const misdefinedSet = new Set<number>();
+
+    // Extract package IDs from unrequired ValidationEntries
+    validationState.data.unrequired.forEach(([packageId]) => {
+      unrequiredSet.add(packageId);
+    });
+
+    // Extract package IDs from misdefined ValidationEntries
+    validationState.data.misdefined.forEach(([packageId]) => {
+      misdefinedSet.add(packageId);
+    });
+
+    return {
+      unrequired: unrequiredSet,
+      misdefined: misdefinedSet,
+    };
+  }, [validationState.data]);
+
   //----------------------------------------------------------------------------
   // auditState
 
