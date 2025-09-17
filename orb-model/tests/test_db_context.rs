@@ -582,6 +582,58 @@ async fn test_validate_b() {
     ctx.tables_drop().await.unwrap();
 }
 
+#[tokio::test]
+async fn test_derive_dep_manifest_a() {
+    let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path1.push("tests/fixtures/monitor-scan-02.json");
+    let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
+    let pool = get_db_pool().await;
+    let ctx = DBContext::new(pool, Some("test_derive_dep_manifest".into()));
+    ctx.tables_drop().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
+
+    let user_id = ctx
+        .user_tenant_init("foo", 0, "foo@foo.com", "Foo")
+        .await
+        .unwrap();
+    let t = Tenant::from_key("team-a", user_id);
+    let _ = ctx.tenant_insert_or_get(&t).await.unwrap();
+
+    ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
+    let json_obj = ctx.derive_dep_manifest(Some(1), Some(2)).await.unwrap();
+    let dep_specs = json_obj.as_array().expect("Expected JSON array");
+
+    assert!(!dep_specs.is_empty(), "Should have derived dependency specifications");
+    let spec_strings: Vec<String> = dep_specs
+        .iter()
+        .map(|spec| spec.as_str().expect("Each entry should be a string").to_string())
+        .collect();
+
+    let expected_packages = vec![
+        "asttokens>=2.4.1",
+        "decorator>=5.1.1",
+        "dill>=0.3.8",
+        "executing>=2.1.0",
+        "fetter>=1.0.0"
+    ];
+
+    for expected in &expected_packages {
+        assert!(
+            spec_strings.contains(&expected.to_string()),
+            "Expected to find '{}' in derived specifications", expected
+        );
+    }
+
+    let json_obj_all = ctx.derive_dep_manifest(None, None).await.unwrap();
+    let dep_specs_all = json_obj_all.as_array().expect("Expected JSON array");
+    assert!(
+        dep_specs_all.len() >= dep_specs.len(),
+        "All packages should include at least the filtered packages"
+    );
+
+    ctx.tables_drop().await.unwrap();
+}
+
 // //------------------------------------------------------------------------------
 
 #[tokio::test]
