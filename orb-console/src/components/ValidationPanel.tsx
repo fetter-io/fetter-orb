@@ -9,14 +9,18 @@ type ValidationPanelProps = {
   };
   vulnerablePackageIds?: Map<number, number>;
   onVulnClick?: (packageId: number) => void;
+  onPackageClick?: (key: string) => void;
   idToPackage: Map<number, { name: string; version: string }>;
+  idToPackageKey?: Map<number, string>;
 };
 
 export function ValidationPanel({
   validationEntries,
   vulnerablePackageIds,
   onVulnClick,
+  onPackageClick,
   idToPackage,
+  idToPackageKey,
 }: ValidationPanelProps) {
   const sortEntriesByPackageName = (entries: ValidationEntry[]) => {
     return entries.sort(([idA], [idB]) => {
@@ -77,20 +81,46 @@ export function ValidationPanel({
                 </thead>
                 <tbody>
                   {entries.map(([id, ds, sitePackages]) => {
-                    const pkg = idToPackage.get(id); // might be null
-                    const displayName =
-                      id == -1 && ds ? ds[0] : (pkg?.name ?? "Unknown");
-                    const displayVersion =
-                      id == -1 && ds ? ds[1] : (pkg?.version ?? "—");
-                    const vulnerabilityScore =
-                      id !== -1 ? (vulnerablePackageIds?.get(id) ?? 0) : 0;
+                    let displayName: string;
+                    let displayVersion: string;
+                    let vulnerabilityScore: number;
+                    let packageKey: string | null;
+                    let canClickPackage: boolean;
+
+                    if (id === -1) {
+                      // No package reference - use data from ds
+                      displayName = ds?.[0] ?? "Unknown";
+                      displayVersion = ds?.[1] ?? "—";
+                      vulnerabilityScore = 0;
+                      packageKey = null;
+                      canClickPackage = false;
+                    } else {
+                      // Real package - use package data
+                      const pkg = idToPackage.get(id);
+                      displayName = pkg?.name ?? "Unknown";
+                      displayVersion = pkg?.version ?? "—";
+                      vulnerabilityScore = vulnerablePackageIds?.get(id) ?? 0;
+                      packageKey = idToPackageKey?.get(id) ?? null;
+                      canClickPackage = !!packageKey && !!onPackageClick;
+                    }
 
                     return (
                       <tr
                         key={`${label}-${id}-${displayName}-${displayVersion}-${sitePackages || "no-site"}`}
                         className="border-b border-slate-800 bg-gray-900 break-all"
                       >
-                        <td className="px-2 py-1 truncate">{displayName}</td>
+                        <td className="px-2 py-1 truncate">
+                          {canClickPackage ? (
+                            <button
+                              className="text-left hover:text-gray-300 hover:underline cursor-pointer"
+                              onClick={() => onPackageClick!(packageKey)}
+                            >
+                              {displayName}
+                            </button>
+                          ) : (
+                            displayName
+                          )}
+                        </td>
                         <td className="px-2 py-1">{displayVersion}</td>
                         <td className="px-2 py-1">
                           {vulnerabilityScore > 0 && onVulnClick ? (

@@ -493,6 +493,7 @@ export default function Dashboard() {
               userId={session?.user?.user_id || ""}
               vulnerablePackageIds={vulnerablePackageIds}
               onVulnClick={handleVulnClick}
+              onPackageClick={handlePackageClick}
             />
           )}
 

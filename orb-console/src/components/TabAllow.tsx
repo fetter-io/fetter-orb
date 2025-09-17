@@ -26,6 +26,7 @@ interface TabAllowProps {
   userId: string;
   vulnerablePackageIds: Map<number, number>;
   onVulnClick: (packageId: number) => void;
+  onPackageClick: (key: string) => void;
 }
 
 export function TabAllow({
@@ -39,6 +40,7 @@ export function TabAllow({
   userId,
   vulnerablePackageIds,
   onVulnClick,
+  onPackageClick,
 }: TabAllowProps) {
   // we extract out the ValidationEntry for each category here
   const empty: ValidationEntry[] = [];
@@ -59,6 +61,18 @@ export function TabAllow({
           name: pkg.name,
           version: entry.version,
         });
+      }
+    }
+    return map;
+  }, [packagesState.data]);
+
+  const idToPackageKey = useMemo(() => {
+    if (!packagesState.data) return new Map<number, string>();
+
+    const map = new Map<number, string>();
+    for (const pkg of packagesState.data) {
+      for (const entry of pkg.data) {
+        map.set(entry.package_id, pkg.key);
       }
     }
     return map;
@@ -119,7 +133,9 @@ export function TabAllow({
           validationEntries={validationEntries}
           vulnerablePackageIds={vulnerablePackageIds}
           onVulnClick={onVulnClick}
+          onPackageClick={onPackageClick}
           idToPackage={idToPackage}
+          idToPackageKey={idToPackageKey}
         />
       )}
     </>
