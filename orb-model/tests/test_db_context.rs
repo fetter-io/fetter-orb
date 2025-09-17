@@ -603,10 +603,17 @@ async fn test_derive_dep_manifest_a() {
     let json_obj = ctx.dep_manifest_derive(Some(1), Some(2)).await.unwrap();
     let dep_specs = json_obj.as_array().expect("Expected JSON array");
 
-    assert!(!dep_specs.is_empty(), "Should have derived dependency specifications");
+    assert!(
+        !dep_specs.is_empty(),
+        "Should have derived dependency specifications"
+    );
     let spec_strings: Vec<String> = dep_specs
         .iter()
-        .map(|spec| spec.as_str().expect("Each entry should be a string").to_string())
+        .map(|spec| {
+            spec.as_str()
+                .expect("Each entry should be a string")
+                .to_string()
+        })
         .collect();
 
     let expected_packages = vec![
@@ -614,13 +621,14 @@ async fn test_derive_dep_manifest_a() {
         "decorator>=5.1.1",
         "dill>=0.3.8",
         "executing>=2.1.0",
-        "fetter>=1.0.0"
+        "fetter>=1.0.0",
     ];
 
     for expected in &expected_packages {
         assert!(
             spec_strings.contains(&expected.to_string()),
-            "Expected to find '{}' in derived specifications", expected
+            "Expected to find '{}' in derived specifications",
+            expected
         );
     }
 
