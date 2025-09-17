@@ -27,6 +27,7 @@ interface TabAllowProps {
   vulnerablePackageIds: Map<number, number>;
   onVulnClick: (packageId: number) => void;
   onPackageClick: (key: string) => void;
+  onSystemTagClick: (systemTagId: number) => void;
 }
 
 export function TabAllow({
@@ -41,6 +42,7 @@ export function TabAllow({
   vulnerablePackageIds,
   onVulnClick,
   onPackageClick,
+  onSystemTagClick,
 }: TabAllowProps) {
   // we extract out the ValidationEntry for each category here
   const empty: ValidationEntry[] = [];
@@ -53,9 +55,15 @@ export function TabAllow({
   // this unpacks each package version into a single object that can be looked up by key
   const idToPackage = useMemo(() => {
     if (!packagesState.data)
-      return new Map<number, { name: string; version: string }>();
+      return new Map<
+        number,
+        { name: string; version: string; system_tag_id: number; key: string }
+      >();
 
-    const map = new Map<number, { name: string; version: string }>();
+    const map = new Map<
+      number,
+      { name: string; version: string; system_tag_id: number; key: string }
+    >();
     for (const pkg of packagesState.data) {
       for (const entry of pkg.data) {
         map.set(entry.package_id, {
@@ -64,18 +72,6 @@ export function TabAllow({
           system_tag_id: entry.system_tag_id,
           key: pkg.key,
         });
-      }
-    }
-    return map;
-  }, [packagesState.data]);
-
-  const idToPackageKey = useMemo(() => {
-    if (!packagesState.data) return new Map<number, string>();
-
-    const map = new Map<number, string>();
-    for (const pkg of packagesState.data) {
-      for (const entry of pkg.data) {
-        map.set(entry.package_id, pkg.key);
       }
     }
     return map;
@@ -137,8 +133,8 @@ export function TabAllow({
           vulnerablePackageIds={vulnerablePackageIds}
           onVulnClick={onVulnClick}
           onPackageClick={onPackageClick}
+          onSystemTagClick={onSystemTagClick}
           idToPackage={idToPackage}
-          idToPackageKey={idToPackageKey}
         />
       )}
     </>

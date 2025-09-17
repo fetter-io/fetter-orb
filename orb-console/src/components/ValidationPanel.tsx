@@ -10,8 +10,11 @@ type ValidationPanelProps = {
   vulnerablePackageIds?: Map<number, number>;
   onVulnClick?: (packageId: number) => void;
   onPackageClick?: (key: string) => void;
-  idToPackage: Map<number, { name: string; version: string }>;
-  idToPackageKey?: Map<number, string>;
+  onSystemTagClick?: (systemTagId: number) => void;
+  idToPackage: Map<
+    number,
+    { name: string; version: string; system_tag_id: number; key: string }
+  >;
 };
 
 export function ValidationPanel({
@@ -19,8 +22,8 @@ export function ValidationPanel({
   vulnerablePackageIds,
   onVulnClick,
   onPackageClick,
+  onSystemTagClick,
   idToPackage,
-  idToPackageKey,
 }: ValidationPanelProps) {
   const sortEntriesByPackageName = (entries: ValidationEntry[]) => {
     return entries.sort(([idA], [idB]) => {
@@ -86,6 +89,8 @@ export function ValidationPanel({
                     let vulnerabilityScore: number;
                     let packageKey: string | null;
                     let canClickPackage: boolean;
+                    let systemTagId: number | null;
+                    let canClickSite: boolean;
 
                     if (id === -1) {
                       // No package reference - use data from ds
@@ -94,14 +99,19 @@ export function ValidationPanel({
                       vulnerabilityScore = 0;
                       packageKey = null;
                       canClickPackage = false;
+                      systemTagId = null;
+                      canClickSite = false;
                     } else {
                       // Real package - use package data
                       const pkg = idToPackage.get(id);
                       displayName = pkg?.name ?? "Unknown";
                       displayVersion = pkg?.version ?? "—";
                       vulnerabilityScore = vulnerablePackageIds?.get(id) ?? 0;
-                      packageKey = idToPackageKey?.get(id) ?? null;
+                      packageKey = pkg?.key ?? null;
                       canClickPackage = !!packageKey && !!onPackageClick;
+                      systemTagId = pkg?.system_tag_id ?? null;
+                      canClickSite =
+                        !!sitePackages && !!systemTagId && !!onSystemTagClick;
                     }
 
                     return (
@@ -113,7 +123,7 @@ export function ValidationPanel({
                           {canClickPackage ? (
                             <button
                               className="text-left hover:text-gray-300 hover:underline cursor-pointer"
-                              onClick={() => onPackageClick!(packageKey)}
+                              onClick={() => onPackageClick!(packageKey!)}
                             >
                               {displayName}
                             </button>
@@ -135,7 +145,18 @@ export function ValidationPanel({
                             <VulnScoreIcon score={vulnerabilityScore} />
                           )}
                         </td>
-                        <td className="px-2 py-1">{sitePackages ?? "—"}</td>
+                        <td className="px-2 py-1">
+                          {canClickSite ? (
+                            <button
+                              className="text-left hover:text-gray-300 hover:underline cursor-pointer"
+                              onClick={() => onSystemTagClick!(systemTagId!)}
+                            >
+                              {sitePackages}
+                            </button>
+                          ) : (
+                            (sitePackages ?? "—")
+                          )}
+                        </td>
                       </tr>
                     );
                   })}

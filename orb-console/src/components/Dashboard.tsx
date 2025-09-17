@@ -255,7 +255,6 @@ export default function Dashboard() {
         misdefined: new Set<number>(),
       };
     }
-
     const unrequiredSet = new Set<number>();
     const misdefinedSet = new Set<number>();
 
@@ -464,6 +463,7 @@ export default function Dashboard() {
               setSelectedSystemId={setSelectedSystemId}
               highlightedPackageKey={highlightedPackageKey}
               vulnerablePackageIds={vulnerablePackageIds}
+              validationSets={validationSets}
               onSystemTagClick={handleSystemTagClick}
               onVulnClick={handleVulnClick}
             />
@@ -494,6 +494,7 @@ export default function Dashboard() {
               vulnerablePackageIds={vulnerablePackageIds}
               onVulnClick={handleVulnClick}
               onPackageClick={handlePackageClick}
+              onSystemTagClick={handleSystemTagClick}
             />
           )}
 
