@@ -600,7 +600,7 @@ async fn test_derive_dep_manifest_a() {
     let _ = ctx.tenant_insert_or_get(&t).await.unwrap();
 
     ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
-    let json_obj = ctx.derive_dep_manifest(Some(1), Some(2)).await.unwrap();
+    let json_obj = ctx.dep_manifest_derive(Some(1), Some(2)).await.unwrap();
     let dep_specs = json_obj.as_array().expect("Expected JSON array");
 
     assert!(!dep_specs.is_empty(), "Should have derived dependency specifications");
@@ -624,7 +624,7 @@ async fn test_derive_dep_manifest_a() {
         );
     }
 
-    let json_obj_all = ctx.derive_dep_manifest(None, None).await.unwrap();
+    let json_obj_all = ctx.dep_manifest_derive(None, None).await.unwrap();
     let dep_specs_all = json_obj_all.as_array().expect("Expected JSON array");
     assert!(
         dep_specs_all.len() >= dep_specs.len(),

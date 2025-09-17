@@ -1409,7 +1409,7 @@ impl DBContext {
         }))
     }
 
-    pub async fn derive_dep_manifest(
+    pub async fn dep_manifest_derive(
         &self,
         system_tag_id: Option<i32>,
         tenant_id: Option<i32>,

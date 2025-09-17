@@ -111,6 +111,22 @@ pub async fn get_dep_manifest(
     }
 }
 
+// NOTE: this can take a system_tag_id, though in practice we do not derive dep manifest at the system level
+pub async fn get_dep_manifest_derive(
+    State(db): State<Arc<DBContext>>,
+    Query(params): Query<DepManifestParams>,
+) -> Result<Json<Value>, (StatusCode, String)> {
+    match params.tenant_id {
+        Some(tenant_id) => db
+            .dep_manifest_derive(params.system_tag_id, Some(tenant_id))
+            .await
+            .map(Json)
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
+        None => Ok(Json(serde_json::json!([]))),
+    }
+}
+
+
 pub async fn get_validate(
     State(db): State<Arc<DBContext>>,
     Query(params): Query<DepManifestParams>,
@@ -496,6 +512,7 @@ async fn main() {
     let route_protected = Router::new()
         .route("/audit", get(get_audit))
         .route("/dep_manifest", post(post_dep_manifest))
+        .route("/dep_manifest_derive", get(get_dep_manifest_derive))
         .route("/on_login", post(post_on_login))
         .route("/package_versions", get(get_package_versions))
         .route("/package_counts", get(get_package_counts))

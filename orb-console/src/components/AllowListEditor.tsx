@@ -36,6 +36,7 @@ export function AllowListEditor({
   }, [initialValue, initialSuperset, initialSubset, isEditing]);
 
   const [submitting, setSubmitting] = useState(false);
+  const [deriving, setDeriving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleEditStart = () => {
@@ -75,6 +76,26 @@ export function AllowListEditor({
       setError("Failed to submit allow list.");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleDerive = async () => {
+    setDeriving(true);
+    setError(null);
+    try {
+      const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
+      const response = await fetch(`${apiBase}/dep_manifest_derive?tenant_id=${tenantId}`);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      const derivedPackages: string[] = await response.json();
+      const derivedContent = derivedPackages.join('\n');
+      setDraft((d) => ({ ...d, value: derivedContent }));
+    } catch (err) {
+      console.error("Derive error:", err);
+      setError("Failed to derive package list.");
+    } finally {
+      setDeriving(false);
     }
   };
 
@@ -150,18 +171,27 @@ export function AllowListEditor({
             placeholder="Enter a URL or paste full lock file contents"
           />
 
-          <div className="flex gap-4 items-center">
+          <div className="flex justify-between items-center">
+            <div className="flex gap-4 items-center">
+              <button
+                onClick={handleSubmit}
+                disabled={submitting || deriving}
+                className="button-accept"
+              >
+                {submitting ? "Submitting..." : "Submit"}
+              </button>
+              <button onClick={handleCancel} className="button-close">
+                Cancel
+              </button>
+              {error && <p className="text-red-400 text-xs">{error}</p>}
+            </div>
             <button
-              onClick={handleSubmit}
-              disabled={submitting}
-              className="button-accept"
+              onClick={handleDerive}
+              disabled={submitting || deriving}
+              className="button-entry"
             >
-              {submitting ? "Submitting..." : "Submit"}
+              {deriving ? "Deriving..." : "Derive"}
             </button>
-            <button onClick={handleCancel} className="button-close">
-              Cancel
-            </button>
-            {error && <p className="text-red-400 text-xs">{error}</p>}
           </div>
         </>
       )}
