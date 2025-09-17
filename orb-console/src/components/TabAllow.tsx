@@ -50,6 +50,7 @@ export function TabAllow({
     misdefined: empty,
   };
 
+  // this unpacks each package version into a single object that can be looked up by key
   const idToPackage = useMemo(() => {
     if (!packagesState.data)
       return new Map<number, { name: string; version: string }>();
@@ -60,6 +61,8 @@ export function TabAllow({
         map.set(entry.package_id, {
           name: pkg.name,
           version: entry.version,
+          system_tag_id: entry.system_tag_id,
+          key: pkg.key,
         });
       }
     }
