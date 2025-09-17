@@ -40,7 +40,6 @@ export function TabAllow({
   vulnerablePackageIds,
   onVulnClick,
 }: TabAllowProps) {
-
   // we extract out the ValidationEntry for each category here
   const empty: ValidationEntry[] = [];
   const validationEntries = validationState.data ?? {

@@ -15,7 +15,7 @@ export function TabSelector({ activeTab, onTabChange }: TabSelectorProps) {
     { id: "account", label: "⚙️", tooltip: "Account" },
   ];
 
-  const activeTabName = tabs.find(tab => tab.id === activeTab)?.tooltip;
+  const activeTabName = tabs.find((tab) => tab.id === activeTab)?.tooltip;
 
   return (
     <div>
@@ -39,7 +39,9 @@ export function TabSelector({ activeTab, onTabChange }: TabSelectorProps) {
         </div>
       </div>
       <div className="text-center">
-        <span className="text-gray-500 text-xs uppercase tracking-widest">{activeTabName}</span>
+        <span className="text-gray-500 text-xs uppercase tracking-widest">
+          {activeTabName}
+        </span>
       </div>
     </div>
   );

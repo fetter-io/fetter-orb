@@ -84,12 +84,14 @@ export function AllowListEditor({
     setError(null);
     try {
       const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
-      const response = await fetch(`${apiBase}/dep_manifest_derive?tenant_id=${tenantId}`);
+      const response = await fetch(
+        `${apiBase}/dep_manifest_derive?tenant_id=${tenantId}`,
+      );
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       const derivedPackages: string[] = await response.json();
-      const derivedContent = derivedPackages.join('\n');
+      const derivedContent = derivedPackages.join("\n");
       setDraft((d) => ({ ...d, value: derivedContent }));
     } catch (err) {
       console.error("Derive error:", err);
