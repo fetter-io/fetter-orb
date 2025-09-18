@@ -13,16 +13,24 @@ type AllowIconProps =
       status: "allowed" | "unrequired" | "misdefined" | "missing";
     };
 
-export function AllowIcon({ packageId, validationSets, status }: AllowIconProps) {
+export function AllowIcon({
+  packageId,
+  validationSets,
+  status,
+}: AllowIconProps) {
   let symbol: string;
   let bgColor: string;
   let ringColor: string;
   let title: string;
 
   // Determine status from props or sets
-  const resolvedStatus = status ||
-    (validationSets?.misdefined.has(packageId!) ? "misdefined" :
-     validationSets?.unrequired.has(packageId!) ? "unrequired" : "allowed");
+  const resolvedStatus =
+    status ||
+    (validationSets?.misdefined.has(packageId!)
+      ? "misdefined"
+      : validationSets?.unrequired.has(packageId!)
+        ? "unrequired"
+        : "allowed");
 
   switch (resolvedStatus) {
     case "misdefined":

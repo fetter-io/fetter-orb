@@ -77,6 +77,21 @@ export function TabAllow({
     return map;
   }, [packagesState.data]);
 
+  // Calculate package counts for use in both chart and panel
+  const packageCounts = useMemo(() => {
+    const total =
+      packagesState.data?.reduce(
+        (sum, pkg) => sum + (pkg.data?.length || 0),
+        0,
+      ) || 0;
+    const missing = validationEntries?.missing.length || 0;
+    const unrequired = validationEntries?.unrequired.length || 0;
+    const misdefined = validationEntries?.misdefined.length || 0;
+    const allowed = Math.max(0, total - (unrequired + misdefined));
+
+    return { total, missing, unrequired, misdefined, allowed };
+  }, [packagesState.data, validationEntries]);
+
   return (
     <>
       <div className="flex items-center items-end justify-between">
@@ -97,10 +112,7 @@ export function TabAllow({
       {validationState.data &&
         packagesState.data &&
         packagesState.data.length > 0 && (
-          <ValidationChart
-            packages={packagesState.data}
-            validationEntries={validationEntries}
-          />
+          <ValidationChart packageCounts={packageCounts} />
         )}
 
       <AllowListEditor
@@ -130,6 +142,7 @@ export function TabAllow({
       {validationState.data && packagesState.data && (
         <ValidationPanel
           validationEntries={validationEntries}
+          packageCounts={packageCounts}
           vulnerablePackageIds={vulnerablePackageIds}
           onVulnClick={onVulnClick}
           onPackageClick={onPackageClick}

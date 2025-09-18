@@ -10,34 +10,25 @@ import {
   TooltipProps,
 } from "recharts";
 import colors from "tailwindcss/colors";
-import { PackageVersions, ValidationEntry } from "@/types";
 
 type ValidationChartProps = {
-  packages: PackageVersions[];
-  validationEntries: {
-    missing: ValidationEntry[];
-    unrequired: ValidationEntry[];
-    misdefined: ValidationEntry[];
+  packageCounts: {
+    total: number;
+    missing: number;
+    unrequired: number;
+    misdefined: number;
+    allowed: number;
   };
 };
 
-export function ValidationChart({
-  packages,
-  validationEntries,
-}: ValidationChartProps) {
-  // counts here are of package, version, site; this is higher than the number of packages displayed
-
-  const totalPackages =
-    packages?.reduce((sum, pkg) => sum + (pkg.data?.length || 0), 0) || 0;
-  const missingCount = validationEntries?.missing.length || 0;
-  const unrequiredCount = validationEntries?.unrequired.length || 0;
-  const misdefinedCount = validationEntries?.misdefined.length || 0;
-
-  // Allowed = total - unrequired - misdefined
-  const allowedCount = Math.max(
-    0,
-    totalPackages - (unrequiredCount + misdefinedCount),
-  );
+export function ValidationChart({ packageCounts }: ValidationChartProps) {
+  const {
+    total: totalPackages,
+    missing: missingCount,
+    unrequired: unrequiredCount,
+    misdefined: misdefinedCount,
+    allowed: allowedCount,
+  } = packageCounts;
 
   if (totalPackages === 0) {
     return (

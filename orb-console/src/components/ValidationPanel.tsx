@@ -8,6 +8,13 @@ type ValidationPanelProps = {
     unrequired: ValidationEntry[];
     misdefined: ValidationEntry[];
   };
+  packageCounts: {
+    total: number;
+    missing: number;
+    unrequired: number;
+    misdefined: number;
+    allowed: number;
+  };
   vulnerablePackageIds?: Map<number, number>;
   onVulnClick?: (packageId: number) => void;
   onPackageClick?: (key: string) => void;
@@ -20,6 +27,7 @@ type ValidationPanelProps = {
 
 export function ValidationPanel({
   validationEntries,
+  packageCounts,
   vulnerablePackageIds,
   onVulnClick,
   onPackageClick,
@@ -47,14 +55,22 @@ export function ValidationPanel({
     {
       label: "Missing",
       entries: sortEntriesByPackageName(validationEntries.missing),
+      count: packageCounts.missing,
     },
     {
       label: "Unrequired",
       entries: sortEntriesByPackageName(validationEntries.unrequired),
+      count: packageCounts.unrequired,
     },
     {
       label: "Misdefined",
       entries: sortEntriesByPackageName(validationEntries.misdefined),
+      count: packageCounts.misdefined,
+    },
+    {
+      label: "Allowed",
+      entries: [],
+      count: packageCounts.allowed,
     },
   ];
 
@@ -65,14 +81,20 @@ export function ValidationPanel({
       </h3>
 
       <div className="grid grid-cols-1 gap-2">
-        {sections.map(({ label, entries }) => (
+        {sections.map(({ label, entries, count }) => (
           <div
             key={label}
             className="border border-slate-700 rounded bg-gray-900 overflow-hidden"
           >
             <div className="px-2 py-2 text-sm font-semibold text-gray-400 flex justify-between items-center">
-              <span>{label} ({entries.length})</span>
-              <AllowIcon status={label.toLowerCase() as "missing" | "unrequired" | "misdefined"} />
+              <span>
+                {label} ({count})
+              </span>
+              <AllowIcon
+                status={
+                  label.toLowerCase() as "missing" | "unrequired" | "misdefined"
+                }
+              />
             </div>
             <div className="max-h-64 overflow-y-auto">
               <table className="table-fixed w-full text-xs text-left text-gray-400">
