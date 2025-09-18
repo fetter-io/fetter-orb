@@ -130,7 +130,7 @@ export function AllowListEditor({
             </div>
           </div>
 
-          <pre className="bg-gray-900 text-gray-500 p-2 rounded max-h-48 overflow-auto whitespace-pre-wrap text-xs">
+          <pre className="bg-gray-900 text-gray-400 p-2 rounded max-h-48 overflow-auto whitespace-pre-wrap text-xs">
             {initialValue || "No allow list provided."}
           </pre>
 
