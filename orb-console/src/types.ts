@@ -33,10 +33,10 @@ export type SystemTag = {
   site_packages: string[];
 };
 
-export type PackageVersionEntry = {
+export type PackageVersionSiteEntry = {
   package_id: number;
   version: string;
-  path: string;
+  path: string; // this is the site-packages directory
   system_tag_id: number;
   system_tag_username: string;
   system_tag_hostname: string;
@@ -45,7 +45,7 @@ export type PackageVersionEntry = {
 export type PackageVersions = {
   key: string;
   name: string;
-  data: PackageVersionEntry[];
+  data: PackageVersionSiteEntry[];
 };
 
 export type PackageCountsRecord = {

@@ -1,6 +1,7 @@
 import { ValidationEntry } from "@/types";
 import { VulnScoreIcon } from "@/components/VulnScoreIcon";
 import { AllowIcon } from "@/components/AllowIcon";
+import { PackageVersionInfo } from "@/components/TabAllow";
 
 type ValidationPanelProps = {
   validationEntries: {
@@ -21,16 +22,8 @@ type ValidationPanelProps = {
   onPackageClick?: (key: string) => void;
   onSystemTagClick?: (systemTagId: number) => void;
   highlightedAllowStatus?: string | null;
-  idToPackage: Map<
-    number,
-    {
-      name: string;
-      version: string;
-      system_tag_id: number;
-      key: string;
-      path: string;
-    }
-  >;
+  idToPackage: Map<number, PackageVersionInfo>;
+  siteToSystemTag: Map<string, number>;
 };
 
 export function ValidationPanel({
@@ -42,6 +35,7 @@ export function ValidationPanel({
   onSystemTagClick,
   highlightedAllowStatus,
   idToPackage,
+  siteToSystemTag,
 }: ValidationPanelProps) {
   const sortEntriesByPackageName = (entries: ValidationEntry[]) => {
     return entries.sort(([idA], [idB]) => {
@@ -127,7 +121,7 @@ export function ValidationPanel({
                     </tr>
                   </thead>
                   <tbody>
-                    {entries.map(([id, ds, sitePackages]) => {
+                    {entries.map(([id, ds, site]) => {
                       let displayName: string;
                       let displayVersion: string;
                       let vulnerabilityScore: number;
@@ -153,14 +147,17 @@ export function ValidationPanel({
                         vulnerabilityScore = vulnerablePackageIds?.get(id) ?? 0;
                         packageKey = pkg?.key ?? null;
                         canClickPackage = !!packageKey && !!onPackageClick;
-                        systemTagId = pkg?.system_tag_id ?? null;
+                        // Get systemTagId from the site path using siteToSystemTag mapping
+                        systemTagId = site
+                          ? (siteToSystemTag.get(site) ?? null)
+                          : null;
                         canClickSite =
-                          !!sitePackages && !!systemTagId && !!onSystemTagClick;
+                          !!site && !!systemTagId && !!onSystemTagClick;
                       }
 
                       return (
                         <tr
-                          key={`${label}-${id}-${displayName}-${displayVersion}-${sitePackages || "no-site"}`}
+                          key={`${label}-${id}-${displayName}-${displayVersion}-${site || "no-site"}`}
                           className="border-b border-slate-800 bg-gray-900 break-all"
                         >
                           <td className="px-2 py-1 truncate">
@@ -195,10 +192,10 @@ export function ValidationPanel({
                                 className="text-left hover:text-gray-300 hover:underline cursor-pointer"
                                 onClick={() => onSystemTagClick!(systemTagId!)}
                               >
-                                {sitePackages}
+                                {site}
                               </button>
                             ) : (
-                              (sitePackages ?? "—")
+                              (site ?? "—")
                             )}
                           </td>
                         </tr>

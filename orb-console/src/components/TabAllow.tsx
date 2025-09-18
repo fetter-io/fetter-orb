@@ -15,6 +15,13 @@ import {
 } from "@/types";
 import { DataState } from "@/hooks/useDashboardData";
 
+export type PackageVersionInfo = {
+  name: string;
+  version: string;
+  key: string;
+  sites: string[];
+};
+
 interface TabAllowProps {
   validationState: DataState<ValidationResult>;
   packagesState: DataState<PackageVersions[]>;
@@ -58,42 +65,41 @@ export function TabAllow({
     );
   }, [validationState.data]);
 
-  // this unpacks each package version into a single object that can be looked up by key
-  const idToPackage = useMemo(() => {
-    if (!packagesState.data)
-      return new Map<
-        number,
-        {
-          name: string;
-          version: string;
-          system_tag_id: number;
-          key: string;
-          path: string;
-        }
-      >();
+  // this unpacks each package-version into a single object that can be looked up by key; this only takes the first package-version-site encountered
+  const { idToPackage, siteToSystemTag } = useMemo(() => {
+    if (!packagesState.data) {
+      return {
+        idToPackage: new Map<number, PackageVersionInfo>(),
+        siteToSystemTag: new Map<string, number>(),
+      };
+    }
 
-    const map = new Map<
-      number,
-      {
-        name: string;
-        version: string;
-        system_tag_id: number;
-        key: string;
-        path: string;
-      }
-    >();
+    const idToPackageMap = new Map<number, PackageVersionInfo>();
+    const siteToSystemTagMap = new Map<string, number>();
+
     for (const pkg of packagesState.data) {
       for (const entry of pkg.data) {
-        map.set(entry.package_id, {
+        // Build siteToSystemTag mapping
+        siteToSystemTagMap.set(entry.path, entry.system_tag_id);
+
+        // Build idToPackage mapping
+        if (idToPackageMap.has(entry.package_id)) {
+          idToPackageMap.get(entry.package_id)?.sites.push(entry.path);
+          continue;
+        }
+        idToPackageMap.set(entry.package_id, {
           name: pkg.name,
           version: entry.version,
-          system_tag_id: entry.system_tag_id,
           key: pkg.key,
-          path: entry.path,
+          sites: [entry.path],
         });
       }
     }
-    return map;
+
+    return {
+      idToPackage: idToPackageMap,
+      siteToSystemTag: siteToSystemTagMap,
+    };
   }, [packagesState.data]);
 
   // Calculate allowed entries by finding all package IDs not in unrequired or misdefined
@@ -108,13 +114,11 @@ export function TabAllow({
     );
 
     const allowed: ValidationEntry[] = [];
-    for (const [packageId] of idToPackage.entries()) {
+    for (const [packageId, pvi] of idToPackage.entries()) {
       if (!unrequiredIds.has(packageId) && !misdefinedIds.has(packageId)) {
-        allowed.push([
-          packageId,
-          null,
-          idToPackage.get(packageId)?.path || null,
-        ]);
+        pvi.sites.forEach((site) => {
+          allowed.push([packageId, null, site]);
+        });
       }
     }
     return allowed;
@@ -130,12 +134,14 @@ export function TabAllow({
 
   // Calculate package counts for use in both chart and panel
   const packageCounts = useMemo(() => {
-    // note: cannot use idToPackage as each package as multiple entries
+    // get total package-version-site
     const total =
       packagesState.data?.reduce(
         (sum, pkg) => sum + (pkg.data?.length || 0),
         0,
       ) || 0;
+    // console.log("derived total", total, "idToPackage size", idToPackage.size);
+    // these lengths are package-version-site
     const missing = validationEntries?.missing.length || 0;
     const unrequired = validationEntries?.unrequired.length || 0;
     const misdefined = validationEntries?.misdefined.length || 0;
@@ -201,6 +207,7 @@ export function TabAllow({
           onSystemTagClick={onSystemTagClick}
           highlightedAllowStatus={highlightedAllowStatus}
           idToPackage={idToPackage}
+          siteToSystemTag={siteToSystemTag}
         />
       )}
     </>

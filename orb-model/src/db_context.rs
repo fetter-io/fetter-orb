@@ -1314,6 +1314,7 @@ impl DBContext {
         Ok(json!(paired))
     }
 
+    /// Returns partitioned validation results, where known package-versions are identified by their package_id. The returned results may have multiple entries for each site with the same package-version
     pub async fn validate(
         &self,
         system_tag_id: Option<i32>,
@@ -1384,6 +1385,7 @@ impl DBContext {
                     ValidationExplain::Misdefined => &mut misdefined,
                     ValidationExplain::Undefined => &mut undefined,
                 };
+                // NOTE: we duplicate the pkg_id for different sites
                 if let Some(sites) = record.sites {
                     for site in sites {
                         target.push((*pkg_id, None, Some(site.to_string())));
