@@ -51,6 +51,9 @@ export default function Dashboard() {
   const [highlightedAllowStatus, setHighlightedAllowStatus] = useState<
     string | null
   >(null);
+  const [filteredSystems, setFilteredSystems] = useState<SystemTag[] | null>(
+    null,
+  );
   const [highlightedVulnId, setHighlightedVulnId] = useState<string | null>(
     null,
   );
@@ -410,6 +413,23 @@ export default function Dashboard() {
     }, 100);
   };
 
+  const handleScatterPointClick = (systems: SystemTag[]) => {
+    // If empty array is passed, clear the filter
+    setFilteredSystems(systems.length > 0 ? systems : null);
+    setActiveTab("systems");
+  };
+
+  // Use filtered systems if available, otherwise use original data
+  const displayedSystemsState = useMemo(() => {
+    if (filteredSystems) {
+      return {
+        ...systemTagsState,
+        data: filteredSystems,
+      };
+    }
+    return systemTagsState;
+  }, [systemTagsState, filteredSystems]);
+
   const handlePackageClick = (key: string) => {
     setHighlightedPackageKey(key);
     setActiveTab("packages");
@@ -518,10 +538,12 @@ export default function Dashboard() {
 
           {activeTab === "systems" && (
             <TabSystems
-              systemTagsState={systemTagsState}
+              systemTagsState={displayedSystemsState}
               highlightedSystemTagId={highlightedSystemTagId}
               onPackagesClick={setSelectedSystemId}
               setActiveTab={setActiveTab}
+              onScatterPointClick={handleScatterPointClick}
+              isFiltered={!!filteredSystems}
             />
           )}
 
