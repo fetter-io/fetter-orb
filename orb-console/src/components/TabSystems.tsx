@@ -41,11 +41,17 @@ export function TabSystems({
             data={systemTagsState.data}
             onPointClick={handleScatterPointClick}
           />
-          <div className="flex justify-end">
+          <div className="flex items-center justify-between py-0 px-1 mt-1">
+            <span className="text-xs text-gray-600">
+              {isFiltered
+                ? `Showing ${filteredSystems?.length || 0} of ${systemTagsState.data?.length || 0} systems`
+                : `Showing ${systemTagsState.data?.length || 0} systems`
+              }
+            </span>
             {isFiltered && (
               <button
                 onClick={() => handleScatterPointClick([])}
-                className="text-xs text-blue-400 mt-1 px-1 hover:text-blue-300 transition-colors"
+                className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
               >
                 Show All
               </button>

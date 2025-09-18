@@ -194,8 +194,7 @@ export function SystemStatsChart({ data, onPointClick }: SystemStatsChartProps) 
           />
           <Tooltip
             content={<CustomTooltip />}
-            wrapperStyle={{ outline: "none" }}
-            cursor={{ strokeDasharray: "1 19" }}
+            cursor={false}
           />
           <Scatter
             name="Systems"
