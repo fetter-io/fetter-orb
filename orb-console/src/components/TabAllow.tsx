@@ -28,6 +28,7 @@ interface TabAllowProps {
   onVulnClick: (packageId: number) => void;
   onPackageClick: (key: string) => void;
   onSystemTagClick: (systemTagId: number) => void;
+  highlightedAllowStatus: string | null;
 }
 
 export function TabAllow({
@@ -43,6 +44,7 @@ export function TabAllow({
   onVulnClick,
   onPackageClick,
   onSystemTagClick,
+  highlightedAllowStatus,
 }: TabAllowProps) {
   // we extract out the ValidationEntry for each category here
   const baseValidationEntries = useMemo(() => {
@@ -197,6 +199,7 @@ export function TabAllow({
           onVulnClick={onVulnClick}
           onPackageClick={onPackageClick}
           onSystemTagClick={onSystemTagClick}
+          highlightedAllowStatus={highlightedAllowStatus}
           idToPackage={idToPackage}
         />
       )}

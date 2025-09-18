@@ -48,6 +48,9 @@ export default function Dashboard() {
   const [highlightedPackageKey, setHighlightedPackageKey] = useState<
     string | null
   >(null);
+  const [highlightedAllowStatus, setHighlightedAllowStatus] = useState<
+    string | null
+  >(null);
   const [highlightedVulnId, setHighlightedVulnId] = useState<string | null>(
     null,
   );
@@ -395,12 +398,15 @@ export default function Dashboard() {
   };
 
   const handleAllowClick = (status: string) => {
+    setHighlightedAllowStatus(status);
     setActiveTab("allow");
 
     setTimeout(() => {
       document
         .getElementById(`validation-section-${status}`)
         ?.scrollIntoView({ behavior: "smooth", block: "center" });
+
+      setTimeout(() => setHighlightedAllowStatus(null), 3000);
     }, 100);
   };
 
@@ -506,6 +512,7 @@ export default function Dashboard() {
               onVulnClick={handleVulnClick}
               onPackageClick={handlePackageClick}
               onSystemTagClick={handleSystemTagClick}
+              highlightedAllowStatus={highlightedAllowStatus}
             />
           )}
 

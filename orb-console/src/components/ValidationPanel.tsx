@@ -20,6 +20,7 @@ type ValidationPanelProps = {
   onVulnClick?: (packageId: number) => void;
   onPackageClick?: (key: string) => void;
   onSystemTagClick?: (systemTagId: number) => void;
+  highlightedAllowStatus?: string | null;
   idToPackage: Map<
     number,
     {
@@ -39,6 +40,7 @@ export function ValidationPanel({
   onVulnClick,
   onPackageClick,
   onSystemTagClick,
+  highlightedAllowStatus,
   idToPackage,
 }: ValidationPanelProps) {
   const sortEntriesByPackageName = (entries: ValidationEntry[]) => {
@@ -88,12 +90,16 @@ export function ValidationPanel({
       </h3>
 
       <div className="grid grid-cols-1 gap-2">
-        {sections.map(({ label, entries, count }) => (
-          <div
-            key={label}
-            id={`validation-section-${label.toLowerCase()}`}
-            className="border border-slate-700 rounded bg-gray-900 overflow-hidden"
-          >
+        {sections.map(({ label, entries, count }) => {
+          const isHighlighted = highlightedAllowStatus === label.toLowerCase();
+          return (
+            <div
+              key={label}
+              id={`validation-section-${label.toLowerCase()}`}
+              className={`border rounded bg-gray-900 overflow-hidden transition-colors duration-1000 ${
+                isHighlighted ? "border-blue-500 bg-gray-800" : "border-slate-700"
+              }`}
+            >
             <div className="px-2 py-2 text-sm font-semibold text-gray-400 flex justify-between items-center">
               <span>
                 {label} ({count})
@@ -106,7 +112,6 @@ export function ValidationPanel({
                     | "misdefined"
                     | "allowed"
                 }
-                onAllowClick={undefined}
               />
             </div>
             <div className="max-h-64 overflow-y-auto">
@@ -201,7 +206,8 @@ export function ValidationPanel({
               </table>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
