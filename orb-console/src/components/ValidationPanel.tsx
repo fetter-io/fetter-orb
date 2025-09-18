@@ -22,7 +22,7 @@ type ValidationPanelProps = {
   onSystemTagClick?: (systemTagId: number) => void;
   idToPackage: Map<
     number,
-    { name: string; version: string; system_tag_id: number; key: string }
+    { name: string; version: string; system_tag_id: number; key: string; path: string }
   >;
 };
 
