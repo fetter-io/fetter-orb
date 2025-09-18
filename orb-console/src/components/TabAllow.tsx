@@ -61,12 +61,24 @@ export function TabAllow({
     if (!packagesState.data)
       return new Map<
         number,
-        { name: string; version: string; system_tag_id: number; key: string; path: string }
+        {
+          name: string;
+          version: string;
+          system_tag_id: number;
+          key: string;
+          path: string;
+        }
       >();
 
     const map = new Map<
       number,
-      { name: string; version: string; system_tag_id: number; key: string; path: string }
+      {
+        name: string;
+        version: string;
+        system_tag_id: number;
+        key: string;
+        path: string;
+      }
     >();
     for (const pkg of packagesState.data) {
       for (const entry of pkg.data) {
@@ -96,7 +108,11 @@ export function TabAllow({
     const allowed: ValidationEntry[] = [];
     for (const [packageId] of idToPackage.entries()) {
       if (!unrequiredIds.has(packageId) && !misdefinedIds.has(packageId)) {
-        allowed.push([packageId, null, idToPackage.get(packageId)?.path || null]);
+        allowed.push([
+          packageId,
+          null,
+          idToPackage.get(packageId)?.path || null,
+        ]);
       }
     }
     return allowed;
@@ -112,7 +128,12 @@ export function TabAllow({
 
   // Calculate package counts for use in both chart and panel
   const packageCounts = useMemo(() => {
-    const total = idToPackage.size;
+    // note: cannot use idToPackage as each package as multiple entries
+    const total =
+      packagesState.data?.reduce(
+        (sum, pkg) => sum + (pkg.data?.length || 0),
+        0,
+      ) || 0;
     const missing = validationEntries?.missing.length || 0;
     const unrequired = validationEntries?.unrequired.length || 0;
     const misdefined = validationEntries?.misdefined.length || 0;
