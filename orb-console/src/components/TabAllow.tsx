@@ -140,7 +140,6 @@ export function TabAllow({
         (sum, pkg) => sum + (pkg.data?.length || 0),
         0,
       ) || 0;
-    // console.log("derived total", total, "idToPackage size", idToPackage.size);
     // these lengths are package-version-site
     const missing = validationEntries?.missing.length || 0;
     const unrequired = validationEntries?.unrequired.length || 0;
