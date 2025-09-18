@@ -131,7 +131,6 @@ export function ValidationPanel({
                       let canClickSite: boolean;
 
                       if (id === -1) {
-                        // No package reference - use data from ds
                         displayName = ds?.[0] ?? "Unknown";
                         displayVersion = ds?.[1] ?? "—";
                         vulnerabilityScore = 0;
@@ -140,14 +139,12 @@ export function ValidationPanel({
                         systemTagId = null;
                         canClickSite = false;
                       } else {
-                        // Real package - use package data
                         const pkg = idToPackage.get(id);
                         displayName = pkg?.name ?? "Unknown";
                         displayVersion = pkg?.version ?? "—";
                         vulnerabilityScore = vulnerablePackageIds?.get(id) ?? 0;
                         packageKey = pkg?.key ?? null;
                         canClickPackage = !!packageKey && !!onPackageClick;
-                        // Get systemTagId from the site path using siteToSystemTag mapping
                         systemTagId = site
                           ? (siteToSystemTag.get(site) ?? null)
                           : null;
