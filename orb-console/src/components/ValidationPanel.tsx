@@ -1,5 +1,6 @@
 import { ValidationEntry } from "@/types";
 import { VulnScoreIcon } from "@/components/VulnScoreIcon";
+import { AllowIcon } from "@/components/AllowIcon";
 
 type ValidationPanelProps = {
   validationEntries: {
@@ -69,8 +70,9 @@ export function ValidationPanel({
             key={label}
             className="border border-slate-700 rounded bg-gray-900 overflow-hidden"
           >
-            <div className="px-2 py-2 text-sm font-semibold text-gray-400">
-              {label} ({entries.length})
+            <div className="px-2 py-2 text-sm font-semibold text-gray-400 flex justify-between items-center">
+              <span>{label} ({entries.length})</span>
+              <AllowIcon status={label.toLowerCase() as "missing" | "unrequired" | "misdefined"} />
             </div>
             <div className="max-h-64 overflow-y-auto">
               <table className="table-fixed w-full text-xs text-left text-gray-400">

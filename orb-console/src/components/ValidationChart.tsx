@@ -26,6 +26,7 @@ export function ValidationChart({
   validationEntries,
 }: ValidationChartProps) {
   // counts here are of package, version, site; this is higher than the number of packages displayed
+
   const totalPackages =
     packages?.reduce((sum, pkg) => sum + (pkg.data?.length || 0), 0) || 0;
   const missingCount = validationEntries?.missing.length || 0;
@@ -123,7 +124,7 @@ export function ValidationChart({
             wrapperStyle={{ outline: "none" }}
             cursor={{ fill: "transparent" }}
           />
-          <Bar dataKey="count" barSize={14} radius={[2, 2, 2, 2]}>
+          <Bar dataKey="count" barSize={10} radius={[2, 2, 2, 2]}>
             {chartData.map((entry, i) => (
               <Cell key={`cell-${i}`} fill={entry.fill} />
             ))}
