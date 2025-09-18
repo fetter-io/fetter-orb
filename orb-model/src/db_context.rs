@@ -3,9 +3,9 @@ use chrono::{DateTime, Utc};
 use std::env;
 
 use fetter::{
-    AuditReport, CvssFilter, DepManifest, DirectURL, FlagCacheRefresh, FlagLog, LockFile, Package,
-    PathShared, ResultDynError, ScanFS, SystemTag, UreqClientLive, ValidationExplain,
-    ValidationFlags, ValidationReport, VcsInfo, VersionSpec,
+    AuditReport, CliAnchor, CvssFilter, DepManifest, DirectURL, FlagCacheRefresh, FlagLog,
+    LockFile, Package, PathShared, ResultDynError, ScanFS, SystemTag, Tableable, UreqClientLive,
+    ValidationExplain, ValidationFlags, ValidationReport, VcsInfo, VersionSpec,
 };
 
 use serde::{Deserialize, Serialize};
@@ -103,6 +103,22 @@ pub struct User {
     pub tenant_limit: i32,
     pub term_accepted: bool,
     pub created_at: String,
+}
+
+#[derive(serde::Deserialize, Debug)]
+struct DepManifestRequest {
+    user_id: String,
+    tenant_id: i32,
+    content: String,
+    superset: bool,
+    subset: bool,
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
+pub struct DepManifestData {
+    pub content: String,
+    pub superset: bool,
+    pub subset: bool,
 }
 
 //------------------------------------------------------------------------------
@@ -213,7 +229,9 @@ impl DBContext {
             r#"
             CREATE TABLE {if_clause}{dep_manifest_table} (
                 tenant_id INTEGER PRIMARY KEY REFERENCES {tenant_table}(id) ON DELETE RESTRICT,
-                content TEXT NOT NULL
+                content TEXT NOT NULL,
+                superset BOOLEAN NOT NULL DEFAULT FALSE,
+                subset BOOLEAN NOT NULL DEFAULT FALSE
             );
             "#
         );
@@ -1193,6 +1211,7 @@ impl DBContext {
         Ok((packages, package_to_id))
     }
 
+    /// From the DB, thus builds two mappings: package_to_sites (versioned Package to a Vec of sites) and package_to_id (versioned Package to its DB ID)
     pub async fn get_latest_packages_to_sites(
         &self,
         system_tag_id: Option<i32>,
@@ -1295,41 +1314,46 @@ impl DBContext {
         Ok(json!(paired))
     }
 
+    /// Returns partitioned validation results, where known package-versions are identified by their package_id. The returned results may have multiple entries for each site with the same package-version
     pub async fn validate(
         &self,
         system_tag_id: Option<i32>,
         tenant_id: Option<i32>,
     ) -> ResultDynError<Value> {
+        // Always get dep_manifest content first, regardless of packages
+        let (dm_content, permit_superset, permit_subset) = match tenant_id {
+            Some(t_id) => match self.dep_manifest_from_tenant_id(t_id).await? {
+                Some(data) => (data.content, data.superset, data.subset),
+                None => ("".to_string(), false, false),
+            },
+            None => ("".to_string(), false, false),
+        };
+
         let (package_to_sites, package_to_id) = self
             .get_latest_packages_to_sites(system_tag_id, tenant_id)
             .await?;
 
+        // we return pkg_id or -1, optional dependency (name, spec), optional site
+        type ValidationEntry = (i32, Option<(String, String)>, Option<String>);
+
         if package_to_sites.is_empty() {
-            let empty: Vec<(i32, Option<String>)> = Vec::new();
+            let empty: Vec<ValidationEntry> = Vec::new();
             return Ok(json!({
-                "dep_manifest": empty,
+                "dep_manifest": dm_content,
+                "superset": permit_superset,
+                "subset": permit_subset,
                 "missing": empty,
                 "unrequired": empty,
                 "misdefined": empty,
-                "undefined": empty,
             }));
         }
-
-        let dm_content = match tenant_id {
-            Some(t_id) => match self.dep_manifest_from_tenant_id(t_id).await? {
-                Some(text) => text,
-                None => "".to_string(),
-            },
-            None => "".to_string(),
-        };
 
         let lf = LockFile::new(dm_content.clone());
         let deps = lf.get_dependencies(None)?; // can provide Vec<String> of options
         let dm = DepManifest::try_from_iter(deps.iter())?;
-        // these need to come from the ui
         let vf = ValidationFlags {
-            permit_superset: false,
-            permit_subset: false,
+            permit_superset,
+            permit_subset,
         };
 
         let packages: Vec<_> = package_to_sites.keys().cloned().collect();
@@ -1346,10 +1370,11 @@ impl DBContext {
             None,
         );
 
-        let mut missing: Vec<(i32, Option<String>)> = Vec::new();
-        let mut unrequired: Vec<(i32, Option<String>)> = Vec::new();
-        let mut misdefined: Vec<(i32, Option<String>)> = Vec::new();
-        let mut undefined: Vec<(i32, Option<String>)> = Vec::new();
+        let mut missing: Vec<ValidationEntry> = Vec::new();
+        let mut unrequired: Vec<ValidationEntry> = Vec::new();
+        let mut misdefined: Vec<ValidationEntry> = Vec::new();
+        // this is defined but should never be filled
+        let mut undefined: Vec<ValidationEntry> = Vec::new();
 
         for record in vr.records {
             if let Some(ref pkg) = record.package {
@@ -1360,37 +1385,61 @@ impl DBContext {
                     ValidationExplain::Misdefined => &mut misdefined,
                     ValidationExplain::Undefined => &mut undefined,
                 };
+                // NOTE: we duplicate the pkg_id for different sites
                 if let Some(sites) = record.sites {
                     for site in sites {
-                        target.push((*pkg_id, Some(site.to_string())));
+                        target.push((*pkg_id, None, Some(site.to_string())));
                     }
                 } else {
-                    target.push((*pkg_id, None));
+                    target.push((*pkg_id, None, None));
+                }
+            } else {
+                // package is missing, get dep spec
+                if let Some(dep_spec) = record.dep_spec {
+                    missing.push((-1, Some((dep_spec.name.clone(), dep_spec.to_spec())), None));
                 }
             }
-            // else, package is missing... will need to insert new packages?
         }
-        // println!("misdefined: {:?}", misdefined);
 
         Ok(json!({
             "dep_manifest": dm_content,
+            "superset": permit_superset,
+            "subset": permit_subset,
             "missing": missing,
             "unrequired": unrequired,
             "misdefined": misdefined,
-            "undefined": undefined,
         }))
+    }
+
+    pub async fn dep_manifest_derive(
+        &self,
+        system_tag_id: Option<i32>,
+        tenant_id: Option<i32>,
+    ) -> ResultDynError<Value> {
+        let (package_to_sites, _package_to_id) = self
+            .get_latest_packages_to_sites(system_tag_id, tenant_id)
+            .await?;
+        let dm = DepManifest::from_packages(package_to_sites.keys(), CliAnchor::Lower.into())
+            .expect("could not derive DepManifest from packages");
+        let dmr = dm.to_dep_manifest_report();
+        let dss: Vec<String> = dmr
+            .get_records()
+            .iter()
+            .map(|r| r.dep_spec.to_string())
+            .collect();
+        Ok(json!(dss))
     }
 
     //--------------------------------------------------------------------------
     pub async fn dep_manifest_from_tenant_id(
         &self,
         tenant_id: i32,
-    ) -> Result<Option<String>, sqlx::Error> {
+    ) -> Result<Option<DepManifestData>, sqlx::Error> {
         let table_name = self.get_table("dep_manifest");
 
         let query = format!(
             r#"
-            SELECT content
+            SELECT content, superset, subset
             FROM {table_name}
             WHERE tenant_id = $1
             "#
@@ -1402,8 +1451,14 @@ impl DBContext {
             .await?
         {
             let content: String = row.get("content");
-            // println!("dep_manifest_from_tenant_id: {:?} {:?}", tenant_id, content);
-            Ok(Some(content))
+            let superset: bool = row.get("superset");
+            let subset: bool = row.get("subset");
+
+            Ok(Some(DepManifestData {
+                content,
+                superset,
+                subset,
+            }))
         } else {
             Ok(None)
         }
@@ -1680,7 +1735,6 @@ impl DBContext {
             .bind(user_id)
             .fetch_optional(&self.pool)
             .await?;
-        // println!("user_term_accepted result: {:?}", result);
         Ok(result.unwrap_or(false))
     }
 
@@ -1802,7 +1856,6 @@ impl DBContext {
     }
 
     pub async fn monitor_scan_load_from_json(&self, payload: &str) -> Result<(), sqlx::Error> {
-        // println!("monitor_scan_load_from_json: {}", payload);
         // TODO: return more rebust error message on malformed json
         let (tenant_key, st, scan_fs, ts): (String, SystemTag, Option<ScanFS>, Duration) =
             serde_json::from_str(payload).expect("Invalid JSON payload");
@@ -1829,39 +1882,68 @@ impl DBContext {
         }
         let st_id = self.system_tag_insert_or_get(tenant_id, &st).await?;
 
-        println!("start load scan fs");
         self.monitor_scan_load(&scan_fs, st_id, &ts).await
     }
 
     pub async fn dep_manifest_load(
         &self,
         tenant_id: i32,
+        user_id: Option<Uuid>,
         content: &String,
-    ) -> Result<(), sqlx::Error> {
+        superset: bool,
+        subset: bool,
+    ) -> Result<bool, sqlx::Error> {
+        // If user_id is provided, verify ownership
+        if let Some(user_id) = user_id {
+            let tenant_table = self.get_table("tenant");
+            let check_query = format!("SELECT created_by FROM {tenant_table} WHERE id = $1");
+            if let Some(row) = sqlx::query(&check_query)
+                .bind(tenant_id)
+                .fetch_optional(&self.pool)
+                .await?
+            {
+                let created_by: Uuid = row.get("created_by");
+                if created_by != user_id {
+                    return Ok(false); // User is not authorized to modify this tenant
+                }
+            } else {
+                return Ok(false); // Tenant not found
+            }
+        }
         let dep_manifest_table = self.get_table("dep_manifest");
 
         let insert_query = format!(
             r#"
-            INSERT INTO {dep_manifest_table} (tenant_id, content)
-            VALUES ($1, $2)
+            INSERT INTO {dep_manifest_table} (tenant_id, content, superset, subset)
+            VALUES ($1, $2, $3, $4)
             ON CONFLICT (tenant_id)
-            DO UPDATE SET content = EXCLUDED.content
+            DO UPDATE SET content = EXCLUDED.content, superset = EXCLUDED.superset, subset = EXCLUDED.subset
             "#
         );
-
         sqlx::query(&insert_query)
             .bind(tenant_id)
             .bind(content)
+            .bind(superset)
+            .bind(subset)
             .execute(&self.pool)
             .await?;
 
-        Ok(())
+        Ok(true)
     }
 
-    pub async fn dep_manifest_load_from_json(&self, payload: &str) -> Result<(), sqlx::Error> {
-        let (tenant_id, body): (i32, String) =
+    pub async fn dep_manifest_load_from_json(&self, payload: &str) -> Result<bool, sqlx::Error> {
+        let request: DepManifestRequest =
             serde_json::from_str(payload).expect("Invalid JSON payload");
-        // TODO: validate tenant against defined list
-        self.dep_manifest_load(tenant_id, &body).await
+
+        let user_id = Uuid::parse_str(&request.user_id).map_err(|_| sqlx::Error::RowNotFound)?;
+
+        self.dep_manifest_load(
+            request.tenant_id,
+            Some(user_id),
+            &request.content,
+            request.superset,
+            request.subset,
+        )
+        .await
     }
 }

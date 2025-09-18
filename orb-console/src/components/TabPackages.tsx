@@ -22,8 +22,13 @@ interface TabPackagesProps {
   setSelectedSystemId: (id: number | null) => void;
   highlightedPackageKey: string | null;
   vulnerablePackageIds: Map<number, number>;
+  validationSets: {
+    unrequired: Set<number>;
+    misdefined: Set<number>;
+  };
   onSystemTagClick: (id: number) => void;
   onVulnClick: (id: number) => void;
+  onAllowClick: (status: string) => void;
 }
 
 export function TabPackages({
@@ -35,8 +40,10 @@ export function TabPackages({
   setSelectedSystemId,
   highlightedPackageKey,
   vulnerablePackageIds,
+  validationSets,
   onSystemTagClick,
   onVulnClick,
+  onAllowClick,
 }: TabPackagesProps) {
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -106,6 +113,8 @@ export function TabPackages({
             onVulnClick={onVulnClick}
             highlight={pkg.key === highlightedPackageKey}
             vulnerablePackageIds={vulnerablePackageIds}
+            validationSets={validationSets}
+            onAllowClick={onAllowClick}
           />
         ))}
       </div>

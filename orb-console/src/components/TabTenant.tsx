@@ -56,8 +56,7 @@ export function TabTenant({ selectedTenantId, tenantsState }: TabTenantProps) {
 
   return (
     <div className="gap-4 text-gray-300">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold text-zinc-200">Tenants</h2>
+      <div className="flex justify-end mb-4">
         <button
           onClick={() => setShowDialog(true)}
           className="text-sm rounded-full px-2 py-1 border border-slate-600 transition-colors duration-200

@@ -48,6 +48,9 @@ export default function Dashboard() {
   const [highlightedPackageKey, setHighlightedPackageKey] = useState<
     string | null
   >(null);
+  const [highlightedAllowStatus, setHighlightedAllowStatus] = useState<
+    string | null
+  >(null);
   const [highlightedVulnId, setHighlightedVulnId] = useState<string | null>(
     null,
   );
@@ -187,7 +190,6 @@ export default function Dashboard() {
     }
     const query = params.toString();
     const res = await fetch(`${apiBase}/validate${query ? `?${query}` : ""}`);
-
     return await res.json();
   }, [selectedTenantId, selectedSystemId]);
 
@@ -247,6 +249,30 @@ export default function Dashboard() {
       (activeTab === "packages" || activeTab === "allow") && shouldValidate,
     pollInterval: 0,
   });
+
+  // Create validationSets derived from validationState
+  const validationSets = useMemo(() => {
+    if (!validationState.data) {
+      return {
+        unrequired: new Set<number>(),
+        misdefined: new Set<number>(),
+      };
+    }
+    const unrequiredSet = new Set<number>();
+    const misdefinedSet = new Set<number>();
+
+    validationState.data.unrequired.forEach(([packageId]) => {
+      unrequiredSet.add(packageId);
+    });
+    validationState.data.misdefined.forEach(([packageId]) => {
+      misdefinedSet.add(packageId);
+    });
+
+    return {
+      unrequired: unrequiredSet,
+      misdefined: misdefinedSet,
+    };
+  }, [validationState.data]);
 
   //----------------------------------------------------------------------------
   // auditState
@@ -371,6 +397,19 @@ export default function Dashboard() {
     }, 100);
   };
 
+  const handleAllowClick = (status: string) => {
+    setHighlightedAllowStatus(status);
+    setActiveTab("allow");
+
+    setTimeout(() => {
+      document
+        .getElementById(`validation-section-${status}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+
+      setTimeout(() => setHighlightedAllowStatus(null), 3000);
+    }, 100);
+  };
+
   const handlePackageClick = (key: string) => {
     setHighlightedPackageKey(key);
     setActiveTab("packages");
@@ -403,9 +442,9 @@ export default function Dashboard() {
   return (
     <div className="flex flex-col min-h-screen font-[family-name:var(--font-geist-sans)] bg-gradient-to-b from-slate-950 to-slate-900">
       {/* Frosted header with sticky tab selector */}
-      <header className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur border-b border-slate-700 px-6 py-4">
-        <div className="max-w-4xl mx-auto flex flex-col gap-2">
-          <div className="relative flex items-center justify-between w-full my-2">
+      <header className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur border-b border-slate-700 px-6 pt-4 pb-1">
+        <div className="max-w-4xl mx-auto flex flex-col gap-1">
+          <div className="relative flex items-center justify-between w-full mb-2">
             <div className="flex-shrink-0">
               {tenantsState.data && (
                 <TenantSelector
@@ -440,20 +479,10 @@ export default function Dashboard() {
               setSelectedSystemId={setSelectedSystemId}
               highlightedPackageKey={highlightedPackageKey}
               vulnerablePackageIds={vulnerablePackageIds}
+              validationSets={validationSets}
               onSystemTagClick={handleSystemTagClick}
               onVulnClick={handleVulnClick}
-            />
-          )}
-
-          {activeTab === "allow" && selectedTenantId !== null && (
-            <TabAllow
-              validationState={validationState}
-              packagesState={packagesState}
-              systemTagsState={systemTagsState}
-              auditState={auditState}
-              selectedSystemId={selectedSystemId}
-              setSelectedSystemId={setSelectedSystemId}
-              selectedTenantId={selectedTenantId}
+              onAllowClick={handleAllowClick}
             />
           )}
 
@@ -466,6 +495,24 @@ export default function Dashboard() {
               packagesState={packagesState}
               highlightedVulnId={highlightedVulnId}
               onPackageClick={handlePackageClick}
+            />
+          )}
+
+          {activeTab === "allow" && selectedTenantId !== null && (
+            <TabAllow
+              validationState={validationState}
+              packagesState={packagesState}
+              systemTagsState={systemTagsState}
+              auditState={auditState}
+              selectedSystemId={selectedSystemId}
+              setSelectedSystemId={setSelectedSystemId}
+              selectedTenantId={selectedTenantId}
+              userId={session?.user?.user_id || ""}
+              vulnerablePackageIds={vulnerablePackageIds}
+              onVulnClick={handleVulnClick}
+              onPackageClick={handlePackageClick}
+              onSystemTagClick={handleSystemTagClick}
+              highlightedAllowStatus={highlightedAllowStatus}
             />
           )}
 

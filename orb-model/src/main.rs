@@ -40,7 +40,6 @@ pub async fn post_monitor_scan(
     State(db): State<Arc<DBContext>>,
     body: String,
 ) -> Result<StatusCode, (StatusCode, String)> {
-    // println!("monitor_scan: {:?}", body);
     match db.monitor_scan_load_from_json(&body).await {
         Ok(_) => Ok(StatusCode::NO_CONTENT),
         Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
@@ -93,17 +92,35 @@ pub async fn get_dep_manifest(
     State(db): State<Arc<DBContext>>,
     Query(params): Query<DepManifestParams>,
 ) -> Result<Json<Value>, (StatusCode, String)> {
-    // println!("{:?}", params);
     match params.tenant_id {
         Some(tenant_id) => db
             .dep_manifest_from_tenant_id(tenant_id)
             .await
             .map(|opt| {
                 Json(match opt {
-                    Some(text) => serde_json::json!({ "dep_manifest": text }),
+                    Some(data) => serde_json::json!({
+                        "dep_manifest": data.content,
+                        "superset": data.superset,
+                        "subset": data.subset
+                    }),
                     None => serde_json::json!(null),
                 })
             })
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
+        None => Ok(Json(serde_json::json!([]))),
+    }
+}
+
+// NOTE: this can take a system_tag_id, though in practice we do not derive dep manifest at the system level
+pub async fn get_dep_manifest_derive(
+    State(db): State<Arc<DBContext>>,
+    Query(params): Query<DepManifestParams>,
+) -> Result<Json<Value>, (StatusCode, String)> {
+    match params.tenant_id {
+        Some(tenant_id) => db
+            .dep_manifest_derive(params.system_tag_id, Some(tenant_id))
+            .await
+            .map(Json)
             .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
         None => Ok(Json(serde_json::json!([]))),
     }
@@ -121,10 +138,11 @@ pub async fn get_validate(
             .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
         None => Ok(Json(json!({
             "dep_manifest": "",
+            "superset": false,
+            "subset": false,
             "missing": [],
             "unrequired": [],
             "misdefined": [],
-            "undefined": []
         }))),
     }
 }
@@ -141,7 +159,6 @@ pub async fn get_package_versions(
     State(db): State<Arc<DBContext>>,
     Query(params): Query<PackageVersionsParams>,
 ) -> Result<Json<Value>, (StatusCode, String)> {
-    // println!("{:?}", params);
     match params.tenant_id {
         Some(tenant_id) => db
             .package_versions(params.system_tag_id, Some(tenant_id))
@@ -461,7 +478,6 @@ pub async fn require_internal_header(
 ) -> Result<Response, StatusCode> {
     // Ok(next.run(req).await)
     if let Some(value) = req.headers().get("x-orb-internal") {
-        // println!("{:?} {:?}", value, secret);
         if value == secret.as_str() {
             return Ok(next.run(req).await);
         }
@@ -495,6 +511,7 @@ async fn main() {
     let route_protected = Router::new()
         .route("/audit", get(get_audit))
         .route("/dep_manifest", post(post_dep_manifest))
+        .route("/dep_manifest_derive", get(get_dep_manifest_derive))
         .route("/on_login", post(post_on_login))
         .route("/package_versions", get(get_package_versions))
         .route("/package_counts", get(get_package_counts))
