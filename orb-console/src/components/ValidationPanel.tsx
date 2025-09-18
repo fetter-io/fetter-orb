@@ -7,6 +7,7 @@ type ValidationPanelProps = {
     missing: ValidationEntry[];
     unrequired: ValidationEntry[];
     misdefined: ValidationEntry[];
+    allowed: ValidationEntry[];
   };
   packageCounts: {
     total: number;
@@ -58,18 +59,18 @@ export function ValidationPanel({
       count: packageCounts.missing,
     },
     {
-      label: "Unrequired",
-      entries: sortEntriesByPackageName(validationEntries.unrequired),
-      count: packageCounts.unrequired,
-    },
-    {
       label: "Misdefined",
       entries: sortEntriesByPackageName(validationEntries.misdefined),
       count: packageCounts.misdefined,
     },
     {
+      label: "Unrequired",
+      entries: sortEntriesByPackageName(validationEntries.unrequired),
+      count: packageCounts.unrequired,
+    },
+    {
       label: "Allowed",
-      entries: [],
+      entries: sortEntriesByPackageName(validationEntries.allowed),
       count: packageCounts.allowed,
     },
   ];
@@ -92,7 +93,11 @@ export function ValidationPanel({
               </span>
               <AllowIcon
                 status={
-                  label.toLowerCase() as "missing" | "unrequired" | "misdefined"
+                  label.toLowerCase() as
+                    | "missing"
+                    | "unrequired"
+                    | "misdefined"
+                    | "allowed"
                 }
               />
             </div>

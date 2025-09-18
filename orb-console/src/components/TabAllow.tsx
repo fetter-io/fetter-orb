@@ -45,12 +45,16 @@ export function TabAllow({
   onSystemTagClick,
 }: TabAllowProps) {
   // we extract out the ValidationEntry for each category here
-  const empty: ValidationEntry[] = [];
-  const validationEntries = validationState.data ?? {
-    missing: empty,
-    unrequired: empty,
-    misdefined: empty,
-  };
+  const baseValidationEntries = useMemo(() => {
+    const empty: ValidationEntry[] = [];
+    return (
+      validationState.data ?? {
+        missing: empty,
+        unrequired: empty,
+        misdefined: empty,
+      }
+    );
+  }, [validationState.data]);
 
   // this unpacks each package version into a single object that can be looked up by key
   const idToPackage = useMemo(() => {
@@ -77,20 +81,44 @@ export function TabAllow({
     return map;
   }, [packagesState.data]);
 
+  // Calculate allowed entries by finding all package IDs not in unrequired or misdefined
+  const allowedEntries = useMemo(() => {
+    if (!packagesState.data) return [];
+
+    const unrequiredIds = new Set(
+      baseValidationEntries.unrequired.map(([id]) => id),
+    );
+    const misdefinedIds = new Set(
+      baseValidationEntries.misdefined.map(([id]) => id),
+    );
+
+    const allowed: ValidationEntry[] = [];
+    for (const [packageId] of idToPackage.entries()) {
+      if (!unrequiredIds.has(packageId) && !misdefinedIds.has(packageId)) {
+        allowed.push([packageId, null, null]);
+      }
+    }
+    return allowed;
+  }, [packagesState.data, baseValidationEntries, idToPackage]);
+
+  const validationEntries = useMemo(
+    () => ({
+      ...baseValidationEntries,
+      allowed: allowedEntries,
+    }),
+    [baseValidationEntries, allowedEntries],
+  );
+
   // Calculate package counts for use in both chart and panel
   const packageCounts = useMemo(() => {
-    const total =
-      packagesState.data?.reduce(
-        (sum, pkg) => sum + (pkg.data?.length || 0),
-        0,
-      ) || 0;
+    const total = idToPackage.size;
     const missing = validationEntries?.missing.length || 0;
     const unrequired = validationEntries?.unrequired.length || 0;
     const misdefined = validationEntries?.misdefined.length || 0;
-    const allowed = Math.max(0, total - (unrequired + misdefined));
+    const allowed = validationEntries?.allowed.length || 0;
 
     return { total, missing, unrequired, misdefined, allowed };
-  }, [packagesState.data, validationEntries]);
+  }, [idToPackage.size, validationEntries]);
 
   return (
     <>
