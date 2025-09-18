@@ -95,7 +95,7 @@ export function PackageVersionsCard({
                         <AllowIcon
                           packageId={entry.package_id}
                           validationSets={validationSets}
-                          onAllowClick={onAllowClick || undefined}
+                          {...(onAllowClick && { onAllowClick })}
                         />
                       )}
                     </span>

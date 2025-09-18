@@ -97,115 +97,117 @@ export function ValidationPanel({
               key={label}
               id={`validation-section-${label.toLowerCase()}`}
               className={`border rounded bg-gray-900 overflow-hidden transition-colors duration-1000 ${
-                isHighlighted ? "border-blue-500 bg-gray-800" : "border-slate-700"
+                isHighlighted
+                  ? "border-blue-500 bg-gray-800"
+                  : "border-slate-700"
               }`}
             >
-            <div className="px-2 py-2 text-sm font-semibold text-gray-400 flex justify-between items-center">
-              <span>
-                {label} ({count})
-              </span>
-              <AllowIcon
-                status={
-                  label.toLowerCase() as
-                    | "missing"
-                    | "unrequired"
-                    | "misdefined"
-                    | "allowed"
-                }
-              />
-            </div>
-            <div className="max-h-64 overflow-y-auto">
-              <table className="table-fixed w-full text-xs text-left text-gray-400">
-                <thead className="sticky top-0 bg-gray-950 text-gray-500 border-b border-slate-700">
-                  <tr>
-                    <th className="px-2 py-1 w-2/6">Package</th>
-                    <th className="px-2 py-1 w-1/6">Version</th>
-                    <th className="px-2 py-1 w-1/6"></th>
-                    <th className="px-2 py-1 w-2/6">Sites</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {entries.map(([id, ds, sitePackages]) => {
-                    let displayName: string;
-                    let displayVersion: string;
-                    let vulnerabilityScore: number;
-                    let packageKey: string | null;
-                    let canClickPackage: boolean;
-                    let systemTagId: number | null;
-                    let canClickSite: boolean;
+              <div className="px-2 py-2 text-sm font-semibold text-gray-400 flex justify-between items-center">
+                <span>
+                  {label} ({count})
+                </span>
+                <AllowIcon
+                  status={
+                    label.toLowerCase() as
+                      | "missing"
+                      | "unrequired"
+                      | "misdefined"
+                      | "allowed"
+                  }
+                />
+              </div>
+              <div className="max-h-64 overflow-y-auto">
+                <table className="table-fixed w-full text-xs text-left text-gray-400">
+                  <thead className="sticky top-0 bg-gray-950 text-gray-500 border-b border-slate-700">
+                    <tr>
+                      <th className="px-2 py-1 w-2/6">Package</th>
+                      <th className="px-2 py-1 w-1/6">Version</th>
+                      <th className="px-2 py-1 w-1/6"></th>
+                      <th className="px-2 py-1 w-2/6">Sites</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {entries.map(([id, ds, sitePackages]) => {
+                      let displayName: string;
+                      let displayVersion: string;
+                      let vulnerabilityScore: number;
+                      let packageKey: string | null;
+                      let canClickPackage: boolean;
+                      let systemTagId: number | null;
+                      let canClickSite: boolean;
 
-                    if (id === -1) {
-                      // No package reference - use data from ds
-                      displayName = ds?.[0] ?? "Unknown";
-                      displayVersion = ds?.[1] ?? "—";
-                      vulnerabilityScore = 0;
-                      packageKey = null;
-                      canClickPackage = false;
-                      systemTagId = null;
-                      canClickSite = false;
-                    } else {
-                      // Real package - use package data
-                      const pkg = idToPackage.get(id);
-                      displayName = pkg?.name ?? "Unknown";
-                      displayVersion = pkg?.version ?? "—";
-                      vulnerabilityScore = vulnerablePackageIds?.get(id) ?? 0;
-                      packageKey = pkg?.key ?? null;
-                      canClickPackage = !!packageKey && !!onPackageClick;
-                      systemTagId = pkg?.system_tag_id ?? null;
-                      canClickSite =
-                        !!sitePackages && !!systemTagId && !!onSystemTagClick;
-                    }
+                      if (id === -1) {
+                        // No package reference - use data from ds
+                        displayName = ds?.[0] ?? "Unknown";
+                        displayVersion = ds?.[1] ?? "—";
+                        vulnerabilityScore = 0;
+                        packageKey = null;
+                        canClickPackage = false;
+                        systemTagId = null;
+                        canClickSite = false;
+                      } else {
+                        // Real package - use package data
+                        const pkg = idToPackage.get(id);
+                        displayName = pkg?.name ?? "Unknown";
+                        displayVersion = pkg?.version ?? "—";
+                        vulnerabilityScore = vulnerablePackageIds?.get(id) ?? 0;
+                        packageKey = pkg?.key ?? null;
+                        canClickPackage = !!packageKey && !!onPackageClick;
+                        systemTagId = pkg?.system_tag_id ?? null;
+                        canClickSite =
+                          !!sitePackages && !!systemTagId && !!onSystemTagClick;
+                      }
 
-                    return (
-                      <tr
-                        key={`${label}-${id}-${displayName}-${displayVersion}-${sitePackages || "no-site"}`}
-                        className="border-b border-slate-800 bg-gray-900 break-all"
-                      >
-                        <td className="px-2 py-1 truncate">
-                          {canClickPackage ? (
-                            <button
-                              className="text-left hover:text-gray-300 hover:underline cursor-pointer"
-                              onClick={() => onPackageClick!(packageKey!)}
-                            >
-                              {displayName}
-                            </button>
-                          ) : (
-                            displayName
-                          )}
-                        </td>
-                        <td className="px-2 py-1">{displayVersion}</td>
-                        <td className="px-2 py-1">
-                          {vulnerabilityScore > 0 && onVulnClick ? (
-                            <button
-                              title="Vulnerability details"
-                              className="border-b border-transparent cursor-pointer"
-                              onClick={() => onVulnClick(id)}
-                            >
+                      return (
+                        <tr
+                          key={`${label}-${id}-${displayName}-${displayVersion}-${sitePackages || "no-site"}`}
+                          className="border-b border-slate-800 bg-gray-900 break-all"
+                        >
+                          <td className="px-2 py-1 truncate">
+                            {canClickPackage ? (
+                              <button
+                                className="text-left hover:text-gray-300 hover:underline cursor-pointer"
+                                onClick={() => onPackageClick!(packageKey!)}
+                              >
+                                {displayName}
+                              </button>
+                            ) : (
+                              displayName
+                            )}
+                          </td>
+                          <td className="px-2 py-1">{displayVersion}</td>
+                          <td className="px-2 py-1">
+                            {vulnerabilityScore > 0 && onVulnClick ? (
+                              <button
+                                title="Vulnerability details"
+                                className="border-b border-transparent cursor-pointer"
+                                onClick={() => onVulnClick(id)}
+                              >
+                                <VulnScoreIcon score={vulnerabilityScore} />
+                              </button>
+                            ) : (
                               <VulnScoreIcon score={vulnerabilityScore} />
-                            </button>
-                          ) : (
-                            <VulnScoreIcon score={vulnerabilityScore} />
-                          )}
-                        </td>
-                        <td className="px-2 py-1">
-                          {canClickSite ? (
-                            <button
-                              className="text-left hover:text-gray-300 hover:underline cursor-pointer"
-                              onClick={() => onSystemTagClick!(systemTagId!)}
-                            >
-                              {sitePackages}
-                            </button>
-                          ) : (
-                            (sitePackages ?? "—")
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                            )}
+                          </td>
+                          <td className="px-2 py-1">
+                            {canClickSite ? (
+                              <button
+                                className="text-left hover:text-gray-300 hover:underline cursor-pointer"
+                                onClick={() => onSystemTagClick!(systemTagId!)}
+                              >
+                                {sitePackages}
+                              </button>
+                            ) : (
+                              (sitePackages ?? "—")
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
           );
         })}
       </div>

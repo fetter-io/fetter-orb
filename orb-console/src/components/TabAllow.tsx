@@ -142,7 +142,7 @@ export function TabAllow({
     const allowed = validationEntries?.allowed.length || 0;
 
     return { total, missing, unrequired, misdefined, allowed };
-  }, [idToPackage.size, validationEntries]);
+  }, [validationEntries, packagesState.data]);
 
   return (
     <>
