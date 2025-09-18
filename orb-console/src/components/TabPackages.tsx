@@ -28,6 +28,7 @@ interface TabPackagesProps {
   };
   onSystemTagClick: (id: number) => void;
   onVulnClick: (id: number) => void;
+  onAllowClick: (status: string) => void;
 }
 
 export function TabPackages({
@@ -42,6 +43,7 @@ export function TabPackages({
   validationSets,
   onSystemTagClick,
   onVulnClick,
+  onAllowClick,
 }: TabPackagesProps) {
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -112,6 +114,7 @@ export function TabPackages({
             highlight={pkg.key === highlightedPackageKey}
             vulnerablePackageIds={vulnerablePackageIds}
             validationSets={validationSets}
+            onAllowClick={onAllowClick}
           />
         ))}
       </div>

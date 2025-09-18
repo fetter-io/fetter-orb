@@ -394,6 +394,16 @@ export default function Dashboard() {
     }, 100);
   };
 
+  const handleAllowClick = (status: string) => {
+    setActiveTab("allow");
+
+    setTimeout(() => {
+      document
+        .getElementById(`validation-section-${status}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 100);
+  };
+
   const handlePackageClick = (key: string) => {
     setHighlightedPackageKey(key);
     setActiveTab("packages");
@@ -466,6 +476,7 @@ export default function Dashboard() {
               validationSets={validationSets}
               onSystemTagClick={handleSystemTagClick}
               onVulnClick={handleVulnClick}
+              onAllowClick={handleAllowClick}
             />
           )}
 

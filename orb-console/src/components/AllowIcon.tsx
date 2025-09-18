@@ -6,17 +6,20 @@ type AllowIconProps =
         misdefined: Set<number>;
       };
       status?: never;
+      onAllowClick?: (status: string) => void;
     }
   | {
       packageId?: never;
       validationSets?: never;
       status: "allowed" | "unrequired" | "misdefined" | "missing";
+      onAllowClick?: (status: string) => void;
     };
 
 export function AllowIcon({
   packageId,
   validationSets,
   status,
+  onAllowClick,
 }: AllowIconProps) {
   let symbol: string;
   let bgColor: string;
@@ -59,9 +62,25 @@ export function AllowIcon({
       break;
   }
 
-  return (
+  const handleClick = () => {
+    if (onAllowClick) {
+      onAllowClick(resolvedStatus);
+    }
+  };
+
+  const isClickable = !!onAllowClick;
+
+  return isClickable ? (
+    <button
+      onClick={handleClick}
+      className={`w-5 h-5 rounded-xs flex items-center justify-center font-black text-gray-400 text-sm ring-1 transition-colors hover:bg-gray-600 hover:ring-gray-500 cursor-pointer select-none ${bgColor} ${ringColor}`}
+      title={title}
+    >
+      {symbol}
+    </button>
+  ) : (
     <div
-      className={`w-5 h-5 rounded-xs flex items-center justify-center font-black text-gray-400 text-sm ring-1 ${bgColor} ${ringColor}`}
+      className={`w-5 h-5 rounded-xs flex items-center justify-center font-black text-gray-400 text-sm ring-1 select-none ${bgColor} ${ringColor}`}
       title={title}
     >
       {symbol}

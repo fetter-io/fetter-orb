@@ -12,6 +12,7 @@ type PackageVersionsCardProps = {
     unrequired: Set<number>;
     misdefined: Set<number>;
   };
+  onAllowClick?: (status: string) => void;
 };
 // ...
 export function PackageVersionsCard({
@@ -21,6 +22,7 @@ export function PackageVersionsCard({
   highlight,
   vulnerablePackageIds,
   validationSets,
+  onAllowClick,
 }: PackageVersionsCardProps) {
   const vulnCount = vulnerablePackageIds
     ? pkg.data.reduce(
@@ -93,6 +95,7 @@ export function PackageVersionsCard({
                         <AllowIcon
                           packageId={entry.package_id}
                           validationSets={validationSets}
+                          onAllowClick={onAllowClick || undefined}
                         />
                       )}
                     </span>

@@ -91,6 +91,7 @@ export function ValidationPanel({
         {sections.map(({ label, entries, count }) => (
           <div
             key={label}
+            id={`validation-section-${label.toLowerCase()}`}
             className="border border-slate-700 rounded bg-gray-900 overflow-hidden"
           >
             <div className="px-2 py-2 text-sm font-semibold text-gray-400 flex justify-between items-center">
@@ -105,6 +106,7 @@ export function ValidationPanel({
                     | "misdefined"
                     | "allowed"
                 }
+                onAllowClick={undefined}
               />
             </div>
             <div className="max-h-64 overflow-y-auto">
