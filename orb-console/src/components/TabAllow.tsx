@@ -171,7 +171,10 @@ export function TabAllow({
       {validationState.data &&
         packagesState.data &&
         packagesState.data.length > 0 && (
-          <ValidationChart packageCounts={packageCounts} onAllowClick={onAllowClick} />
+          <ValidationChart
+            packageCounts={packageCounts}
+            onAllowClick={onAllowClick}
+          />
         )}
 
       <AllowListEditor
