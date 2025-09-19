@@ -1,12 +1,12 @@
 "use client";
 
-import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 
 // SSR-safe Virtuoso (avoids window access during prerender)
 const Virtuoso = dynamic(
-  () => import("react-virtuoso").then(m => m.Virtuoso),
-  { ssr: false }
+  () => import("react-virtuoso").then((m) => m.Virtuoso),
+  { ssr: false },
 );
 
 import { SystemTagSelector } from "@/components/SystemTagSelector";
@@ -23,7 +23,7 @@ import {
 import { DataState } from "@/hooks/useDashboardData";
 
 const VIEWPORT_FRACTION = 0.72; // ~72% of viewport for the list
-const MIN_LIST_PX = 280;        // never smaller than this
+const MIN_LIST_PX = 280; // never smaller than this
 
 interface TabPackagesProps {
   packagesState: DataState<PackageVersions[]>;
@@ -69,7 +69,10 @@ export function TabPackages({
   // Responsive list height
   const [listPxHeight, setListPxHeight] = useState<number>(() => {
     if (typeof window === "undefined") return 560; // first paint fallback
-    return Math.max(MIN_LIST_PX, Math.floor(window.innerHeight * VIEWPORT_FRACTION));
+    return Math.max(
+      MIN_LIST_PX,
+      Math.floor(window.innerHeight * VIEWPORT_FRACTION),
+    );
   });
 
   useEffect(() => {
@@ -79,7 +82,10 @@ export function TabPackages({
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
         setListPxHeight(
-          Math.max(MIN_LIST_PX, Math.floor(window.innerHeight * VIEWPORT_FRACTION)),
+          Math.max(
+            MIN_LIST_PX,
+            Math.floor(window.innerHeight * VIEWPORT_FRACTION),
+          ),
         );
       });
     };
@@ -137,7 +143,12 @@ export function TabPackages({
       </div>
 
       {packageCountsState.data && packageCountsState.data.length > 0 && (
-        <div style={{ contentVisibility: "auto", containIntrinsicSize: "420px 1px" }}>
+        <div
+          style={{
+            contentVisibility: "auto",
+            containIntrinsicSize: "420px 1px",
+          }}
+        >
           <PackageCountsChart data={packageCountsState.data} />
         </div>
       )}
@@ -152,7 +163,8 @@ export function TabPackages({
         />
         <div className="flex items-center justify-between py-0 px-1">
           <span className="text-xs text-gray-600">
-            Showing {safePackages.length} of {packagesState.data?.length || 0} packages
+            Showing {safePackages.length} of {packagesState.data?.length || 0}{" "}
+            packages
           </span>
           {packageSearchTerm && (
             <button
