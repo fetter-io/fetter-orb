@@ -118,9 +118,7 @@ export function TenantCard({
       </div>
 
       <div className="mt-2 bg-slate-900 p-2 rounded">
-        <div className="text-zinc-300 font-semibold text-sm">
-          Fetter Agent
-        </div>
+        <div className="text-zinc-300 font-semibold text-sm">Fetter Agent</div>
 
         <div className="flex gap-2 mt-2">
           <button disabled className="button-download-deactivated">

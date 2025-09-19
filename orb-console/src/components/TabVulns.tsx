@@ -38,7 +38,6 @@ export function TabVulns({
   setMinVulnScore,
   setMaxVulnScore,
 }: TabVulnsProps) {
-
   return (
     <>
       <div className="flex items-center items-end justify-between">

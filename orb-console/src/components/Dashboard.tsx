@@ -59,6 +59,7 @@ export default function Dashboard() {
   );
   const [minVulnScore, setMinVulnScore] = useState<number>(0);
   const [maxVulnScore, setMaxVulnScore] = useState<number>(10);
+  const [packageSearchTerm, setPackageSearchTerm] = useState<string>("");
 
   const [userInfo, setUserInfo] = useState<UserRecord | null>(null);
 
@@ -396,11 +397,23 @@ export default function Dashboard() {
     });
   }, [auditState.data, vulnerablePackageIds, minVulnScore, maxVulnScore]);
 
+  // Filter packages by search term
+  const filteredPackages = useMemo(() => {
+    if (!packagesState.data || !packageSearchTerm.trim()) {
+      return packagesState.data || [];
+    }
+
+    const lowerSearchTerm = packageSearchTerm.toLowerCase();
+    return packagesState.data.filter((pkg) =>
+      pkg.name.toLowerCase().includes(lowerSearchTerm),
+    );
+  }, [packagesState.data, packageSearchTerm]);
 
   //----------------------------------------------------------------------------
   // These methods support on click actions that change the currently active tab
 
   const handleSystemTagClick = (id: number) => {
+    setFilteredSystems(null);
     setHighlightedSystemTagId(id);
     setActiveTab("systems");
 
@@ -426,8 +439,8 @@ export default function Dashboard() {
     }, 100);
   };
 
-
   const handlePackageClick = (key: string) => {
+    setPackageSearchTerm(""); // clear a search
     setHighlightedPackageKey(key);
     setActiveTab("packages");
 
@@ -442,6 +455,8 @@ export default function Dashboard() {
 
   // Given a DB package ID
   const handleVulnClick = (id: number) => {
+    setMinVulnScore(0);
+    setMaxVulnScore(10);
     setHighlightedVulnId(`vuln-pkg-${id}`);
     setActiveTab("vulns");
 
@@ -500,6 +515,9 @@ export default function Dashboard() {
               onSystemTagClick={handleSystemTagClick}
               onVulnClick={handleVulnClick}
               onAllowClick={handleAllowClick}
+              filteredPackages={filteredPackages}
+              packageSearchTerm={packageSearchTerm}
+              setPackageSearchTerm={setPackageSearchTerm}
             />
           )}
 

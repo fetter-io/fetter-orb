@@ -25,7 +25,10 @@ type ChartDataPoint = {
   systems: SystemTag[];
 };
 
-export function SystemStatsChart({ data, onPointClick }: SystemStatsChartProps) {
+export function SystemStatsChart({
+  data,
+  onPointClick,
+}: SystemStatsChartProps) {
   // extract data into ChartDataPoint
   const chartData = useMemo(() => {
     if (!data || data.length === 0) return [];
@@ -192,10 +195,7 @@ export function SystemStatsChart({ data, onPointClick }: SystemStatsChartProps) 
             dataKey="z"
             range={[1, Math.max(40, maxCount)]}
           />
-          <Tooltip
-            content={<CustomTooltip />}
-            cursor={false}
-          />
+          <Tooltip content={<CustomTooltip />} cursor={false} />
           <Scatter
             name="Systems"
             data={scatterData}

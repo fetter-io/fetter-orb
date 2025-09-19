@@ -23,7 +23,6 @@ export function TabSystems({
   filteredSystems,
   setFilteredSystems,
 }: TabSystemsProps) {
-
   const handleScatterPointClick = (systems: SystemTag[]) => {
     // If empty array is passed, clear the filter
     setFilteredSystems(systems.length > 0 ? systems : null);
@@ -45,8 +44,7 @@ export function TabSystems({
             <span className="text-xs text-gray-600">
               {isFiltered
                 ? `Showing ${filteredSystems?.length || 0} of ${systemTagsState.data?.length || 0} systems`
-                : `Showing ${systemTagsState.data?.length || 0} systems`
-              }
+                : `Showing ${systemTagsState.data?.length || 0} systems`}
             </span>
             {isFiltered && (
               <button
