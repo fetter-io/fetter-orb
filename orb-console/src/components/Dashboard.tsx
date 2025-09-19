@@ -3,6 +3,7 @@
 // import Image from "next/image";
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { useSession } from "next-auth/react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { Footer } from "@/components/Footer";
 import { useDashboardData } from "@/hooks/useDashboardData";
@@ -29,6 +30,19 @@ import colors from "tailwindcss/colors";
 import { UserMenuDropdown } from "@/components/UserMenuDropdown";
 import { getPackageVulnerabilityScore } from "@/utils/vulnerabilityScore";
 
+const DEFAULT_TAB: Tab = "packages";
+
+const isValidTab = (value: string | null): value is Tab =>
+  value === "packages" ||
+  value === "systems" ||
+  value === "allow" ||
+  value === "vulns" ||
+  value === "tenant" ||
+  value === "account";
+
+const getTabFromParam = (param: string | null): Tab =>
+  isValidTab(param) ? param : DEFAULT_TAB;
+
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
@@ -38,8 +52,16 @@ export default function Dashboard() {
 
   const { data: session, status } = useSession();
 
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const searchParamsString = searchParams?.toString() ?? "";
+  const tabParam = searchParams?.get("tab") ?? null;
+
   //----------------------------------------------------------------------------
-  const [activeTab, setActiveTab] = useState<Tab>("packages");
+  const [activeTab, setActiveTabState] = useState<Tab>(() =>
+    getTabFromParam(tabParam),
+  );
   const [selectedTenantId, setSelectedTenantId] = useState<number | null>(null);
   const [selectedSystemId, setSelectedSystemId] = useState<number | null>(null);
   const [highlightedSystemTagId, setHighlightedSystemTagId] = useState<
@@ -66,6 +88,50 @@ export default function Dashboard() {
   const [lastAuditTime, setLastAuditTime] = useState<number | null>(null);
   const [lastPackageDataHash, setLastPackageDataHash] = useState<string | null>(
     null,
+  );
+
+  //----------------------------------------------------------------------------
+
+  useEffect(() => {
+    const tabFromUrl = getTabFromParam(tabParam);
+    setActiveTabState((prev) => (prev === tabFromUrl ? prev : tabFromUrl));
+
+    if (tabParam && !isValidTab(tabParam)) {
+      const params = new URLSearchParams(searchParamsString);
+      params.delete("tab");
+      const queryString = params.toString();
+      const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
+
+      if (newUrl) {
+        router.replace(newUrl, { scroll: false });
+      }
+    }
+  }, [tabParam, searchParamsString, pathname, router]);
+
+  const setActiveTab = useCallback(
+    (tab: Tab) => {
+      setActiveTabState((prev) => (prev === tab ? prev : tab));
+
+      const currentTab = getTabFromParam(tabParam);
+      if (currentTab === tab) {
+        return;
+      }
+
+      const params = new URLSearchParams(searchParamsString);
+      if (tab === DEFAULT_TAB) {
+        params.delete("tab");
+      } else {
+        params.set("tab", tab);
+      }
+
+      const queryString = params.toString();
+      const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
+
+      if (newUrl) {
+        router.push(newUrl, { scroll: false });
+      }
+    },
+    [pathname, router, searchParamsString, tabParam],
   );
 
   //----------------------------------------------------------------------------
