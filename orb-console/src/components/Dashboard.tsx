@@ -57,6 +57,8 @@ export default function Dashboard() {
   const [filteredSystems, setFilteredSystems] = useState<SystemTag[] | null>(
     null,
   );
+  const [minVulnScore, setMinVulnScore] = useState<number>(0);
+  const [maxVulnScore, setMaxVulnScore] = useState<number>(10);
 
   const [userInfo, setUserInfo] = useState<UserRecord | null>(null);
 
@@ -384,6 +386,16 @@ export default function Dashboard() {
     return scoreMap;
   }, [auditState.data]);
 
+  // Filter audit data by vulnerability score range
+  const filteredAuditData = useMemo(() => {
+    if (!auditState.data) return [];
+
+    return auditState.data.filter((entry) => {
+      const score = vulnerablePackageIds.get(entry.package_id) || 0;
+      return score >= minVulnScore && score <= maxVulnScore;
+    });
+  }, [auditState.data, vulnerablePackageIds, minVulnScore, maxVulnScore]);
+
 
   //----------------------------------------------------------------------------
   // These methods support on click actions that change the currently active tab
@@ -500,6 +512,12 @@ export default function Dashboard() {
               packagesState={packagesState}
               highlightedVulnId={highlightedVulnId}
               onPackageClick={handlePackageClick}
+              filteredAuditData={filteredAuditData}
+              vulnerablePackageIds={vulnerablePackageIds}
+              minVulnScore={minVulnScore}
+              maxVulnScore={maxVulnScore}
+              setMinVulnScore={setMinVulnScore}
+              setMaxVulnScore={setMaxVulnScore}
             />
           )}
 

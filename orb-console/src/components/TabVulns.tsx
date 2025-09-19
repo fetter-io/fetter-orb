@@ -1,12 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import { VulnCard } from "@/components/VulnCard";
 import { SystemTagSelector } from "@/components/SystemTagSelector";
 import { DashboardStatus } from "@/components/DashboardStatus";
 import { VulnCountsChart } from "@/components/VulnCountsChart";
 import { AuditEntry, SystemTag, PackageVersions } from "@/types";
-import { getPackageVulnerabilityScore } from "@/utils/vulnerabilityScore";
 import { DataState } from "@/hooks/useDashboardData";
 
 interface TabVulnsProps {
@@ -17,6 +15,12 @@ interface TabVulnsProps {
   packagesState: DataState<PackageVersions[]>;
   highlightedVulnId: string | null;
   onPackageClick: (key: string) => void;
+  filteredAuditData: AuditEntry[];
+  vulnerablePackageIds: Map<number, number>;
+  minVulnScore: number;
+  maxVulnScore: number;
+  setMinVulnScore: (score: number) => void;
+  setMaxVulnScore: (score: number) => void;
 }
 
 export function TabVulns({
@@ -27,32 +31,13 @@ export function TabVulns({
   packagesState,
   highlightedVulnId,
   onPackageClick,
+  filteredAuditData,
+  vulnerablePackageIds,
+  minVulnScore,
+  maxVulnScore,
+  setMinVulnScore,
+  setMaxVulnScore,
 }: TabVulnsProps) {
-  // Vulnerability score filtering
-  const [minVulnScore, setMinVulnScore] = useState<number>(0);
-  const [maxVulnScore, setMaxVulnScore] = useState<number>(10);
-
-  const vulnerablePackageIds = useMemo(() => {
-    if (!auditState.data) return new Map<number, number>();
-    const scoreMap = new Map<number, number>();
-
-    auditState.data.forEach((entry) => {
-      const { score } = getPackageVulnerabilityScore(entry.record);
-      scoreMap.set(entry.package_id, score);
-    });
-
-    return scoreMap;
-  }, [auditState.data]);
-
-  // Filter audit data by vulnerability score range
-  const filteredAuditData = useMemo(() => {
-    if (!auditState.data) return [];
-
-    return auditState.data.filter((entry) => {
-      const score = vulnerablePackageIds.get(entry.package_id) || 0;
-      return score >= minVulnScore && score <= maxVulnScore;
-    });
-  }, [auditState.data, vulnerablePackageIds, minVulnScore, maxVulnScore]);
 
   return (
     <>
@@ -91,7 +76,7 @@ export function TabVulns({
           {/* Filter Status and Reset */}
           <div className="flex items-center justify-between py-0 px-1">
             <span className="text-xs text-gray-600">
-              Selected {filteredAuditData.length} vulnerable packages
+              Showing {filteredAuditData.length} vulnerable packages
             </span>
             {(minVulnScore > 0 || maxVulnScore < 10) && (
               <button
