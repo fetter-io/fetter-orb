@@ -55,8 +55,8 @@ export default function Dashboard() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const searchParamsString = searchParams.toString();
-  const tabParam = searchParams.get("tab");
+  const searchParamsString = searchParams?.toString() ?? "";
+  const tabParam = searchParams?.get("tab") ?? null;
 
   //----------------------------------------------------------------------------
   const [activeTab, setActiveTabState] = useState<Tab>(() =>
@@ -102,7 +102,9 @@ export default function Dashboard() {
       const queryString = params.toString();
       const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
 
-      router.replace(newUrl, { scroll: false });
+      if (newUrl) {
+        router.replace(newUrl, { scroll: false });
+      }
     }
   }, [tabParam, searchParamsString, pathname, router]);
 
@@ -125,7 +127,9 @@ export default function Dashboard() {
       const queryString = params.toString();
       const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
 
-      router.push(newUrl, { scroll: false });
+      if (newUrl) {
+        router.push(newUrl, { scroll: false });
+      }
     },
     [pathname, router, searchParamsString, tabParam],
   );
