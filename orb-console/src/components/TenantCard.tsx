@@ -95,8 +95,7 @@ export function TenantCard({
       </div>
 
       <div className="mt-2 bg-slate-900 p-2 rounded">
-        <h2 className="text-zinc-300 font-semibold">
-          Upload with the{" "}
+        <div className="text-zinc-300 font-semibold text-sm">
           <a
             href="https://github.com/fetter-io/fetter-rs"
             target="_blank"
@@ -106,7 +105,7 @@ export function TenantCard({
             Fetter
           </a>{" "}
           CLI
-        </h2>
+        </div>
 
         <code
           className="text-zinc-400 text-xs break-all cursor-pointer hover:text-zinc-200 transition-colors leading-tight"
@@ -119,9 +118,9 @@ export function TenantCard({
       </div>
 
       <div className="mt-2 bg-slate-900 p-2 rounded">
-        <h2 className="text-zinc-300 font-semibold">
-          Upload with the Fetter Agent
-        </h2>
+        <div className="text-zinc-300 font-semibold text-sm">
+          Fetter Agent
+        </div>
 
         <div className="flex gap-2 mt-2">
           <button disabled className="button-download-deactivated">
