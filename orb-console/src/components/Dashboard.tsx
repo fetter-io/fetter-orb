@@ -51,7 +51,6 @@ export default function Dashboard() {
   // NOTE: the dashboard is called after the /on_login endpoint is called and the session is created. Thus, the user has been created and they hae at least on tenant.
 
   const { data: session, status } = useSession();
-
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -59,6 +58,8 @@ export default function Dashboard() {
   const tabParam = searchParams?.get("tab") ?? null;
 
   //----------------------------------------------------------------------------
+  // states
+
   const [activeTab, setActiveTabState] = useState<Tab>(() =>
     getTabFromParam(tabParam),
   );
@@ -91,42 +92,41 @@ export default function Dashboard() {
   );
 
   //----------------------------------------------------------------------------
+  // tab management, URL updating
 
+  // keeps internal state consistent with the live URL
   useEffect(() => {
-    const tabFromUrl = getTabFromParam(tabParam);
-    setActiveTabState((prev) => (prev === tabFromUrl ? prev : tabFromUrl));
+    const currentTab = getTabFromParam(tabParam);
+    setActiveTabState((prev) => (prev === currentTab ? prev : currentTab));
 
     if (tabParam && !isValidTab(tabParam)) {
       const params = new URLSearchParams(searchParamsString);
       params.delete("tab");
       const queryString = params.toString();
       const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
-
       if (newUrl) {
+        // replace does not had to browser history
         router.replace(newUrl, { scroll: false });
       }
     }
   }, [tabParam, searchParamsString, pathname, router]);
 
+  // switch tabs: update state, update URL
   const setActiveTab = useCallback(
     (tab: Tab) => {
-      setActiveTabState((prev) => (prev === tab ? prev : tab));
-
       const currentTab = getTabFromParam(tabParam);
       if (currentTab === tab) {
         return;
       }
-
+      // NOTE: not necessary to call setActiveTabState, as it will be done by the useEffect above on router change.
       const params = new URLSearchParams(searchParamsString);
       if (tab === DEFAULT_TAB) {
         params.delete("tab");
       } else {
         params.set("tab", tab);
       }
-
       const queryString = params.toString();
       const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
-
       if (newUrl) {
         router.push(newUrl, { scroll: false });
       }
@@ -310,6 +310,9 @@ export default function Dashboard() {
     shouldFetchPackages,
   ]);
 
+  //----------------------------------------------------------------------------
+  // Validation state and related routines
+
   const shouldValidate =
     selectedTenantId !== null &&
     tenantsState.loading === false &&
@@ -434,9 +437,6 @@ export default function Dashboard() {
       }),
     }).catch((err) => console.error("Failed to save last tenant", err));
   }, [selectedTenantId, session?.user?.user_id]);
-
-  //----------------------------------------------------------------------------
-  // Validation state and related routines
 
   //----------------------------------------------------------------------------
   // Audit updates
