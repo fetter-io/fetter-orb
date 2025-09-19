@@ -10,14 +10,14 @@ interface TabSystemsProps {
   systemTagsState: DataState<SystemTag[]>;
   highlightedSystemTagId: number | null;
   onPackagesClick: (id: number) => void;
-  setActiveTab: (tab: Tab) => void;
+  onTabChange: (tab: Tab) => void;
 }
 
 export function TabSystems({
   systemTagsState,
   highlightedSystemTagId,
   onPackagesClick,
-  setActiveTab,
+  onTabChange,
 }: TabSystemsProps) {
   return (
     <>
@@ -35,7 +35,7 @@ export function TabSystems({
             highlight={tag.id === highlightedSystemTagId}
             onPackagesClick={(id) => {
               onPackagesClick(id);
-              setActiveTab("packages");
+              onTabChange("packages");
             }}
           />
         ))}

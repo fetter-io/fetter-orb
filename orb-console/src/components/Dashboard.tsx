@@ -3,6 +3,7 @@
 // import Image from "next/image";
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { useSession } from "next-auth/react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { Footer } from "@/components/Footer";
 import { useDashboardData } from "@/hooks/useDashboardData";
@@ -29,6 +30,20 @@ import colors from "tailwindcss/colors";
 import { UserMenuDropdown } from "@/components/UserMenuDropdown";
 import { getPackageVulnerabilityScore } from "@/utils/vulnerabilityScore";
 
+const TAB_QUERY_KEY = "tab";
+const DEFAULT_TAB: Tab = "packages";
+const ALL_TABS = [
+  "packages",
+  "vulns",
+  "allow",
+  "systems",
+  "tenant",
+  "account",
+] as const satisfies readonly Tab[];
+
+const isTabValue = (value: string | null): value is Tab =>
+  value !== null && (ALL_TABS as readonly string[]).includes(value);
+
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
@@ -39,7 +54,29 @@ export default function Dashboard() {
   const { data: session, status } = useSession();
 
   //----------------------------------------------------------------------------
-  const [activeTab, setActiveTab] = useState<Tab>("packages");
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const tabParam = searchParams.get(TAB_QUERY_KEY);
+  const activeTab: Tab = isTabValue(tabParam) ? tabParam : DEFAULT_TAB;
+
+  const handleTabChange = useCallback(
+    (tab: Tab) => {
+      if (tab === activeTab) return;
+
+      const params = new URLSearchParams(searchParams.toString());
+      if (tab === DEFAULT_TAB) {
+        params.delete(TAB_QUERY_KEY);
+      } else {
+        params.set(TAB_QUERY_KEY, tab);
+      }
+
+      const queryString = params.toString();
+      router.push(`${pathname}${queryString ? `?${queryString}` : ""}`);
+    },
+    [activeTab, pathname, router, searchParams],
+  );
   const [selectedTenantId, setSelectedTenantId] = useState<number | null>(null);
   const [selectedSystemId, setSelectedSystemId] = useState<number | null>(null);
   const [highlightedSystemTagId, setHighlightedSystemTagId] = useState<
@@ -386,7 +423,7 @@ export default function Dashboard() {
 
   const handleSystemTagClick = (id: number) => {
     setHighlightedSystemTagId(id);
-    setActiveTab("systems");
+    handleTabChange("systems");
 
     setTimeout(() => {
       document
@@ -399,7 +436,7 @@ export default function Dashboard() {
 
   const handleAllowClick = (status: string) => {
     setHighlightedAllowStatus(status);
-    setActiveTab("allow");
+    handleTabChange("allow");
 
     setTimeout(() => {
       document
@@ -412,7 +449,7 @@ export default function Dashboard() {
 
   const handlePackageClick = (key: string) => {
     setHighlightedPackageKey(key);
-    setActiveTab("packages");
+    handleTabChange("packages");
 
     setTimeout(() => {
       document
@@ -426,7 +463,7 @@ export default function Dashboard() {
   // Given a DB package ID
   const handleVulnClick = (id: number) => {
     setHighlightedVulnId(`vuln-pkg-${id}`);
-    setActiveTab("vulns");
+    handleTabChange("vulns");
 
     setTimeout(() => {
       document
@@ -462,7 +499,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <TabSelector activeTab={activeTab} onTabChange={setActiveTab} />
+          <TabSelector activeTab={activeTab} onTabChange={handleTabChange} />
         </div>
       </header>
 
@@ -521,7 +558,7 @@ export default function Dashboard() {
               systemTagsState={systemTagsState}
               highlightedSystemTagId={highlightedSystemTagId}
               onPackagesClick={setSelectedSystemId}
-              setActiveTab={setActiveTab}
+              onTabChange={handleTabChange}
             />
           )}
 
