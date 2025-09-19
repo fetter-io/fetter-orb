@@ -36,6 +36,7 @@ interface TabAllowProps {
   onPackageClick: (key: string) => void;
   onSystemTagClick: (systemTagId: number) => void;
   highlightedAllowStatus: string | null;
+  onAllowClick: (status: string) => void;
 }
 
 export function TabAllow({
@@ -52,6 +53,7 @@ export function TabAllow({
   onPackageClick,
   onSystemTagClick,
   highlightedAllowStatus,
+  onAllowClick,
 }: TabAllowProps) {
   // we extract out the ValidationEntry for each category here
   const baseValidationEntries = useMemo(() => {
@@ -169,7 +171,7 @@ export function TabAllow({
       {validationState.data &&
         packagesState.data &&
         packagesState.data.length > 0 && (
-          <ValidationChart packageCounts={packageCounts} />
+          <ValidationChart packageCounts={packageCounts} onAllowClick={onAllowClick} />
         )}
 
       <AllowListEditor

@@ -554,6 +554,7 @@ export default function Dashboard() {
               onPackageClick={handlePackageClick}
               onSystemTagClick={handleSystemTagClick}
               highlightedAllowStatus={highlightedAllowStatus}
+              onAllowClick={handleAllowClick}
             />
           )}
 

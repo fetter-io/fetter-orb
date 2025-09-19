@@ -25,6 +25,7 @@ export function AllowIcon({
   let bgColor: string;
   let ringColor: string;
   let title: string;
+  let textColor: string;
 
   // Determine status from props or sets
   const resolvedStatus =
@@ -41,24 +42,28 @@ export function AllowIcon({
       bgColor = "bg-gray-700";
       ringColor = "ring-gray-600";
       title = "Misdefined";
+      textColor = "text-red-700";
       break;
     case "unrequired":
       symbol = "!";
       bgColor = "bg-gray-700";
       ringColor = "ring-gray-600";
       title = "Unrequired";
+      textColor = "text-yellow-500";
       break;
     case "missing":
       symbol = "?";
       bgColor = "bg-gray-700";
       ringColor = "ring-gray-600";
       title = "Missing";
+      textColor = "text-orange-500";
       break;
     default:
       symbol = "==";
       bgColor = "bg-gray-700";
       ringColor = "ring-gray-600";
       title = "Allowed";
+      textColor = "text-green-700";
       break;
   }
 
@@ -73,14 +78,14 @@ export function AllowIcon({
   return isClickable ? (
     <button
       onClick={handleClick}
-      className={`w-4 h-4 rounded-xs flex items-center justify-center font-black text-gray-400 text-sm ring-1 transition-colors hover:bg-gray-600 hover:ring-gray-500 cursor-pointer select-none ${bgColor} ${ringColor}`}
+      className={`w-4 h-4 rounded-xs flex items-center justify-center font-black text-sm ring-1 transition-colors hover:bg-gray-600 hover:ring-gray-500 cursor-pointer select-none ${bgColor} ${ringColor} ${textColor}`}
       title={title}
     >
       {symbol}
     </button>
   ) : (
     <div
-      className={`w-4 h-4 rounded-xs flex items-center justify-center font-black text-gray-400 text-sm ring-1 select-none ${bgColor} ${ringColor}`}
+      className={`w-4 h-4 rounded-xs flex items-center justify-center font-black text-gray-400 text-sm ring-1 select-none ${bgColor} ${ringColor} ${textColor}`}
       title={title}
     >
       {symbol}
