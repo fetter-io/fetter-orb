@@ -19,9 +19,13 @@ type ValidationChartProps = {
     misdefined: number;
     allowed: number;
   };
+  onAllowClick?: (status: string) => void;
 };
 
-export function ValidationChart({ packageCounts }: ValidationChartProps) {
+export function ValidationChart({
+  packageCounts,
+  onAllowClick,
+}: ValidationChartProps) {
   const {
     total: totalPackages,
     missing: missingCount,
@@ -39,11 +43,36 @@ export function ValidationChart({ packageCounts }: ValidationChartProps) {
   }
 
   const chartData = [
-    { name: "Missing", count: missingCount, fill: colors.orange[600] },
-    { name: "Misdefined", count: misdefinedCount, fill: colors.red[700] },
-    { name: "Unrequired", count: unrequiredCount, fill: colors.yellow[500] },
-    { name: "Allowed", count: allowedCount, fill: colors.green[700] },
-    { name: "Total", count: totalPackages, fill: colors.gray[600] },
+    {
+      name: "Missing",
+      count: missingCount,
+      fill: colors.orange[600],
+      status: "missing",
+    },
+    {
+      name: "Misdefined",
+      count: misdefinedCount,
+      fill: colors.red[700],
+      status: "misdefined",
+    },
+    {
+      name: "Unrequired",
+      count: unrequiredCount,
+      fill: colors.yellow[500],
+      status: "unrequired",
+    },
+    {
+      name: "Allowed",
+      count: allowedCount,
+      fill: colors.green[700],
+      status: "allowed",
+    },
+    {
+      name: "Total",
+      count: totalPackages,
+      fill: colors.gray[600],
+      status: "total",
+    },
   ];
 
   const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {
@@ -72,6 +101,18 @@ export function ValidationChart({ packageCounts }: ValidationChartProps) {
             <p style={{ margin: 0, color: colors.slate[400] }}>
               {name}: {value} ({pct}%)
             </p>
+            {onAllowClick && name !== "Total" && (
+              <p
+                style={{
+                  margin: 0,
+                  color: colors.slate[500],
+                  fontSize: 9,
+                  fontStyle: "italic",
+                }}
+              >
+                Click to view section
+              </p>
+            )}
           </div>
         );
       }
@@ -115,9 +156,32 @@ export function ValidationChart({ packageCounts }: ValidationChartProps) {
             wrapperStyle={{ outline: "none" }}
             cursor={{ fill: "transparent" }}
           />
-          <Bar dataKey="count" barSize={10} radius={[2, 2, 2, 2]}>
+          <Bar
+            dataKey="count"
+            barSize={10}
+            radius={[2, 2, 2, 2]}
+            onClick={(data) => {
+              if (
+                onAllowClick &&
+                data &&
+                data.status &&
+                data.status !== "total"
+              ) {
+                onAllowClick(data.status);
+              }
+            }}
+          >
             {chartData.map((entry, i) => (
-              <Cell key={`cell-${i}`} fill={entry.fill} />
+              <Cell
+                key={`cell-${i}`}
+                fill={entry.fill}
+                style={{
+                  cursor:
+                    onAllowClick && entry.status !== "total"
+                      ? "pointer"
+                      : "default",
+                }}
+              />
             ))}
           </Bar>
         </BarChart>

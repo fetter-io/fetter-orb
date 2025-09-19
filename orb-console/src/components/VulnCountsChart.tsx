@@ -8,6 +8,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   Cell,
+  CartesianGrid,
 } from "recharts";
 import colors from "tailwindcss/colors";
 
@@ -151,6 +152,12 @@ export function VulnCountsChart({
           data={chartData}
           margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
         >
+          <CartesianGrid
+            strokeDasharray="3 3"
+            stroke={colors.slate[600]}
+            horizontal={true}
+            vertical={false}
+          />
           <XAxis
             dataKey="rangeLabel"
             tick={{ fill: colors.slate[400], fontSize: 10 }}

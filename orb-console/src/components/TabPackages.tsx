@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import { SystemTagSelector } from "@/components/SystemTagSelector";
 import { DashboardStatus } from "@/components/DashboardStatus";
 import { PackageCountsChart } from "@/components/PackageCountsChart";
@@ -29,6 +28,9 @@ interface TabPackagesProps {
   onSystemTagClick: (id: number) => void;
   onVulnClick: (id: number) => void;
   onAllowClick: (status: string) => void;
+  filteredPackages: PackageVersions[];
+  packageSearchTerm: string;
+  setPackageSearchTerm: (term: string) => void;
 }
 
 export function TabPackages({
@@ -44,20 +46,10 @@ export function TabPackages({
   onSystemTagClick,
   onVulnClick,
   onAllowClick,
+  filteredPackages,
+  packageSearchTerm,
+  setPackageSearchTerm,
 }: TabPackagesProps) {
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const packagesFiltered = useMemo(() => {
-    if (!packagesState.data || !searchTerm.trim()) {
-      return packagesState.data || [];
-    }
-
-    const lowerSearchTerm = searchTerm.toLowerCase();
-    return packagesState.data.filter((pkg) =>
-      pkg.name.toLowerCase().includes(lowerSearchTerm),
-    );
-  }, [packagesState.data, searchTerm]);
-
   return (
     <>
       <div className="flex items-center items-end justify-between">
@@ -83,19 +75,19 @@ export function TabPackages({
         <input
           type="text"
           placeholder="Search..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          value={packageSearchTerm}
+          onChange={(e) => setPackageSearchTerm(e.target.value)}
           className="px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-md text-slate-400 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-800"
         />
 
         <div className="flex items-center justify-between py-0 px-1">
           <span className="text-xs text-gray-600">
-            Showing {packagesFiltered.length} of{" "}
+            Showing {filteredPackages.length} of{" "}
             {packagesState.data?.length || 0} packages
           </span>
-          {searchTerm && (
+          {packageSearchTerm && (
             <button
-              onClick={() => setSearchTerm("")}
+              onClick={() => setPackageSearchTerm("")}
               className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
             >
               Show All
@@ -105,7 +97,7 @@ export function TabPackages({
       </div>
 
       <div className="flex flex-col gap-4">
-        {packagesFiltered.map((pkg) => (
+        {filteredPackages.map((pkg) => (
           <PackageVersionsCard
             key={pkg.key}
             pkg={pkg}

@@ -11,6 +11,8 @@ interface TabSystemsProps {
   highlightedSystemTagId: number | null;
   onPackagesClick: (id: number) => void;
   setActiveTab: (tab: Tab) => void;
+  filteredSystems: SystemTag[] | null;
+  setFilteredSystems: (systems: SystemTag[] | null) => void;
 }
 
 export function TabSystems({
@@ -18,17 +20,46 @@ export function TabSystems({
   highlightedSystemTagId,
   onPackagesClick,
   setActiveTab,
+  filteredSystems,
+  setFilteredSystems,
 }: TabSystemsProps) {
+  const handleScatterPointClick = (systems: SystemTag[]) => {
+    // If empty array is passed, clear the filter
+    setFilteredSystems(systems.length > 0 ? systems : null);
+  };
+
+  const isFiltered = !!filteredSystems;
+
   return (
     <>
       <DashboardStatus label="systems" state={systemTagsState} />
 
       {systemTagsState.data && systemTagsState.data.length > 0 && (
-        <SystemStatsChart data={systemTagsState.data} />
+        <div className="mb-2">
+          <SystemStatsChart
+            data={systemTagsState.data}
+            onPointClick={handleScatterPointClick}
+          />
+          <div className="flex items-center justify-between py-0 px-1 mt-1">
+            <span className="text-xs text-gray-600">
+              {isFiltered
+                ? `Showing ${filteredSystems?.length || 0} of ${systemTagsState.data?.length || 0} systems`
+                : `Showing ${systemTagsState.data?.length || 0} systems`}
+            </span>
+            {isFiltered && (
+              <button
+                onClick={() => handleScatterPointClick([])}
+                className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+              >
+                Show All
+              </button>
+            )}
+          </div>
+        </div>
       )}
 
       <div className="flex flex-col gap-4">
-        {systemTagsState.data?.map((tag) => (
+        {(filteredSystems || systemTagsState.data)?.map((tag) => (
           <SystemTagCard
             key={tag.id}
             tag={tag}

@@ -14,6 +14,7 @@ import { SystemTag } from "@/types";
 
 type SystemStatsChartProps = {
   data: SystemTag[];
+  onPointClick?: (systems: SystemTag[]) => void;
 };
 
 type ChartDataPoint = {
@@ -24,7 +25,10 @@ type ChartDataPoint = {
   systems: SystemTag[];
 };
 
-export function SystemStatsChart({ data }: SystemStatsChartProps) {
+export function SystemStatsChart({
+  data,
+  onPointClick,
+}: SystemStatsChartProps) {
   // extract data into ChartDataPoint
   const chartData = useMemo(() => {
     if (!data || data.length === 0) return [];
@@ -191,12 +195,16 @@ export function SystemStatsChart({ data }: SystemStatsChartProps) {
             dataKey="z"
             range={[1, Math.max(40, maxCount)]}
           />
-          <Tooltip
-            content={<CustomTooltip />}
-            wrapperStyle={{ outline: "none" }}
-            cursor={{ strokeDasharray: "1 19" }}
-          />
-          <Scatter name="Systems" data={scatterData}>
+          <Tooltip content={<CustomTooltip />} cursor={false} />
+          <Scatter
+            name="Systems"
+            data={scatterData}
+            onClick={(data) => {
+              if (onPointClick && data && data.point) {
+                onPointClick(data.point.systems);
+              }
+            }}
+          >
             {scatterData.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.color} />
             ))}
