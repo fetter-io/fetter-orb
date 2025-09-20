@@ -22,7 +22,7 @@ import {
 } from "@/types";
 import { DataState } from "@/hooks/useDashboardData";
 
-const VIEWPORT_FRACTION = 0.72; // ~72% of viewport for the list
+const VIEWPORT_FRACTION = 1.0; // ~72% of viewport for the list
 const MIN_LIST_PX = 280; // never smaller than this
 
 interface TabPackagesProps {
@@ -161,7 +161,7 @@ export function TabPackages({
           onChange={(e) => setPackageSearchTerm(e.target.value)}
           className="px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-md text-slate-400 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-800"
         />
-        <div className="flex items-center justify-between py-0 px-1">
+        <div className="flex items-center justify-between px-1">
           <span className="text-xs text-gray-600">
             Showing {safePackages.length} of {packagesState.data?.length || 0}{" "}
             packages
@@ -180,7 +180,7 @@ export function TabPackages({
       {/* Virtualized list */}
       <div className="w-full" style={{ height: listPxHeight }}>
         <Virtuoso
-          style={{ 
+          style={{
             height: listPxHeight,
             // Hide scrollbars
             scrollbarWidth: 'none', /* Firefox */
