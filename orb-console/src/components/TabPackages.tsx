@@ -186,7 +186,7 @@ export function TabPackages({
             scrollbarWidth: 'none', /* Firefox */
             msOverflowStyle: 'none', /* IE and Edge */
           }}
-          className="[&::-webkit-scrollbar]:hidden" /* Chrome, Safari, Opera */
+          className="[&::-webkit-scrollbar]:hidden -mt-2" /* Chrome, Safari, Opera */
           data={data}
           // Use itemContent(index, item) signature to avoid undefined object issues
           itemContent={renderItem}
