@@ -180,7 +180,13 @@ export function TabPackages({
       {/* Virtualized list */}
       <div className="w-full" style={{ height: listPxHeight }}>
         <Virtuoso
-          style={{ height: listPxHeight }}
+          style={{ 
+            height: listPxHeight,
+            // Hide scrollbars
+            scrollbarWidth: 'none', /* Firefox */
+            msOverflowStyle: 'none', /* IE and Edge */
+          }}
+          className="[&::-webkit-scrollbar]:hidden" /* Chrome, Safari, Opera */
           data={data}
           // Use itemContent(index, item) signature to avoid undefined object issues
           itemContent={renderItem}
