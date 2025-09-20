@@ -64,7 +64,10 @@ export function TabPackages({
   setPackageSearchTerm,
 }: TabPackagesProps) {
   // Always work with a defined array
-  const safePackages: PackageVersions[] = filteredPackages ?? [];
+  const safePackages: PackageVersions[] = useMemo(
+    () => filteredPackages ?? [],
+    [filteredPackages],
+  );
 
   // Responsive list height
   const [listPxHeight, setListPxHeight] = useState<number>(() => {
@@ -183,13 +186,18 @@ export function TabPackages({
           style={{
             height: listPxHeight,
             // Hide scrollbars
-            scrollbarWidth: 'none', /* Firefox */
-            msOverflowStyle: 'none', /* IE and Edge */
+            scrollbarWidth: "none" /* Firefox */,
+            msOverflowStyle: "none" /* IE and Edge */,
           }}
           className="[&::-webkit-scrollbar]:hidden -mt-2" /* Chrome, Safari, Opera */
           data={data}
           // Use itemContent(index, item) signature to avoid undefined object issues
-          itemContent={renderItem}
+          itemContent={
+            renderItem as (
+              index: number,
+              item: unknown,
+            ) => React.JSX.Element | null
+          }
           // Optional: a bit more buffer for smoother mobile scroll
           increaseViewportBy={{ top: 200, bottom: 400 }}
         />
