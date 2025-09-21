@@ -73,7 +73,7 @@ export function VulnCard({
   return (
     <div
       id={`vuln-pkg-${package_id}`}
-      className={`p-2 border rounded-lg bg-gray-900 shadow-md text-sm text-gray-200 space-y-2 transition-colors duration-1000
+      className={`p-2 mb-4 border rounded-lg bg-gray-900 shadow-md text-sm text-gray-200 space-y-2 transition-colors duration-1000
         ${
           highlight
             ? "border-blue-500 bg-gray-700"

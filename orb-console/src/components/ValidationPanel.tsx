@@ -1,7 +1,15 @@
+import React, { useCallback } from "react";
+import dynamic from "next/dynamic";
 import { ValidationEntry } from "@/types";
 import { VulnScoreIcon } from "@/components/VulnScoreIcon";
 import { AllowIcon } from "@/components/AllowIcon";
 import { PackageVersionInfo } from "@/components/TabAllow";
+
+// SSR-safe Virtuoso (avoids window access during prerender)
+const Virtuoso = dynamic(
+  () => import("react-virtuoso").then((m) => m.Virtuoso),
+  { ssr: false },
+);
 
 type ValidationPanelProps = {
   validationEntries: {
@@ -37,6 +45,92 @@ export function ValidationPanel({
   idToPackage,
   siteToSystemTag,
 }: ValidationPanelProps) {
+  // Render function for table rows
+  const renderTableRow = useCallback(
+    (label: string, entry: ValidationEntry): React.JSX.Element => {
+      const [id, ds, site] = entry;
+      let displayName: string;
+      let displayVersion: string;
+      let vulnerabilityScore: number;
+      let packageKey: string | null;
+      let canClickPackage: boolean;
+      let systemTagId: number | null;
+      let canClickSite: boolean;
+
+      if (id === -1) {
+        displayName = ds?.[0] ?? "Unknown";
+        displayVersion = ds?.[1] ?? "—";
+        vulnerabilityScore = 0;
+        packageKey = null;
+        canClickPackage = false;
+        systemTagId = null;
+        canClickSite = false;
+      } else {
+        const pkg = idToPackage.get(id);
+        displayName = pkg?.name ?? "Unknown";
+        displayVersion = pkg?.version ?? "—";
+        vulnerabilityScore = vulnerablePackageIds?.get(id) ?? 0;
+        packageKey = pkg?.key ?? null;
+        canClickPackage = !!packageKey && !!onPackageClick;
+        systemTagId = site ? (siteToSystemTag.get(site) ?? null) : null;
+        canClickSite = !!site && !!systemTagId && !!onSystemTagClick;
+      }
+
+      return (
+        <div
+          key={`${label}-${id}-${displayName}-${displayVersion}-${site || "no-site"}`}
+          className="border-t border-slate-800 bg-gray-900 break-all flex w-full"
+        >
+          <div className="px-2 py-1 truncate w-2/6">
+            {canClickPackage ? (
+              <button
+                className="hover:text-gray-300 hover:underline cursor-pointer"
+                onClick={() => onPackageClick!(packageKey!)}
+              >
+                {displayName}
+              </button>
+            ) : (
+              displayName
+            )}
+          </div>
+          <div className="px-2 py-1 w-1/6">{displayVersion}</div>
+          <div className="px-2 py-1 w-1/6">
+            {vulnerabilityScore > 0 && onVulnClick ? (
+              <button
+                title="Vulnerability details"
+                className="border-b border-transparent cursor-pointer"
+                onClick={() => onVulnClick(id)}
+              >
+                <VulnScoreIcon score={vulnerabilityScore} />
+              </button>
+            ) : (
+              <VulnScoreIcon score={vulnerabilityScore} />
+            )}
+          </div>
+          <div className="px-2 py-1 w-2/6">
+            {canClickSite ? (
+              <button
+                className="text-left hover:text-gray-300 hover:underline cursor-pointer"
+                onClick={() => onSystemTagClick!(systemTagId!)}
+              >
+                {site}
+              </button>
+            ) : (
+              (site ?? "—")
+            )}
+          </div>
+        </div>
+      );
+    },
+    [
+      idToPackage,
+      vulnerablePackageIds,
+      onVulnClick,
+      onPackageClick,
+      onSystemTagClick,
+      siteToSystemTag,
+    ],
+  );
   const sortEntriesByPackageName = (entries: ValidationEntry[]) => {
     return entries.sort(([idA], [idB]) => {
       const pkgA = idToPackage.get(idA);
@@ -110,96 +204,47 @@ export function ValidationPanel({
                   }
                 />
               </div>
-              <div className="max-h-80 overflow-y-auto">
-                <table className="table-fixed w-full text-xs text-left text-gray-400">
-                  <thead className="sticky top-0 bg-gray-950 text-gray-500 border-b border-slate-700">
-                    <tr>
-                      <th className="px-2 py-1 w-2/6">Package</th>
-                      <th className="px-2 py-1 w-1/6">Version</th>
-                      <th className="px-2 py-1 w-1/6"></th>
-                      <th className="px-2 py-1 w-2/6">Sites</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {entries.map(([id, ds, site]) => {
-                      let displayName: string;
-                      let displayVersion: string;
-                      let vulnerabilityScore: number;
-                      let packageKey: string | null;
-                      let canClickPackage: boolean;
-                      let systemTagId: number | null;
-                      let canClickSite: boolean;
+              <div className="text-xs text-left text-gray-400">
+                {/* Fixed header */}
+                <div className="bg-gray-950 text-gray-500 sticky top-0">
+                  <table className="table-fixed w-full">
+                    <thead>
+                      <tr>
+                        <th className="px-2 py-1 w-2/6">Package</th>
+                        <th className="px-2 py-1 w-1/6">Version</th>
+                        <th className="px-2 py-1 w-1/6"></th>
+                        <th className="px-2 py-1 w-2/6">Sites</th>
+                      </tr>
+                    </thead>
+                  </table>
+                </div>
 
-                      if (id === -1) {
-                        displayName = ds?.[0] ?? "Unknown";
-                        displayVersion = ds?.[1] ?? "—";
-                        vulnerabilityScore = 0;
-                        packageKey = null;
-                        canClickPackage = false;
-                        systemTagId = null;
-                        canClickSite = false;
-                      } else {
-                        const pkg = idToPackage.get(id);
-                        displayName = pkg?.name ?? "Unknown";
-                        displayVersion = pkg?.version ?? "—";
-                        vulnerabilityScore = vulnerablePackageIds?.get(id) ?? 0;
-                        packageKey = pkg?.key ?? null;
-                        canClickPackage = !!packageKey && !!onPackageClick;
-                        systemTagId = site
-                          ? (siteToSystemTag.get(site) ?? null)
-                          : null;
-                        canClickSite =
-                          !!site && !!systemTagId && !!onSystemTagClick;
+                {/* Virtualized rows */}
+                {entries.length > 0 && (
+                  <div
+                    style={{
+                      height: Math.min(entries.length * 32, 300), // 32px per row, max 300px
+                    }}
+                  >
+                    <Virtuoso
+                      style={{
+                        height: Math.min(entries.length * 32, 300),
+                        scrollbarWidth: "none" /* Firefox */,
+                        msOverflowStyle: "none" /* IE and Edge */,
+                      }}
+                      className="[&::-webkit-scrollbar]:hidden"
+                      data={entries}
+                      itemContent={
+                        ((index: number, entry: ValidationEntry) => {
+                          return renderTableRow(label, entry);
+                        }) as (
+                          index: number,
+                          item: unknown,
+                        ) => React.JSX.Element | null
                       }
-
-                      return (
-                        <tr
-                          key={`${label}-${id}-${displayName}-${displayVersion}-${site || "no-site"}`}
-                          className="border-b border-slate-800 bg-gray-900 break-all"
-                        >
-                          <td className="px-2 py-1 truncate">
-                            {canClickPackage ? (
-                              <button
-                                className="text-left hover:text-gray-300 hover:underline cursor-pointer"
-                                onClick={() => onPackageClick!(packageKey!)}
-                              >
-                                {displayName}
-                              </button>
-                            ) : (
-                              displayName
-                            )}
-                          </td>
-                          <td className="px-2 py-1">{displayVersion}</td>
-                          <td className="px-2 py-1">
-                            {vulnerabilityScore > 0 && onVulnClick ? (
-                              <button
-                                title="Vulnerability details"
-                                className="border-b border-transparent cursor-pointer"
-                                onClick={() => onVulnClick(id)}
-                              >
-                                <VulnScoreIcon score={vulnerabilityScore} />
-                              </button>
-                            ) : (
-                              <VulnScoreIcon score={vulnerabilityScore} />
-                            )}
-                          </td>
-                          <td className="px-2 py-1">
-                            {canClickSite ? (
-                              <button
-                                className="text-left hover:text-gray-300 hover:underline cursor-pointer"
-                                onClick={() => onSystemTagClick!(systemTagId!)}
-                              >
-                                {site}
-                              </button>
-                            ) : (
-                              (site ?? "—")
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                    />
+                  </div>
+                )}
               </div>
             </div>
           );

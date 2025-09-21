@@ -35,7 +35,7 @@ export function PackageVersionsCard({
   return (
     <div
       id={`package-${pkg.key}`}
-      className={`p-2 border rounded-lg shadow-md text-sm w-full transition-colors duration-1000
+      className={`p-2 mb-4 border rounded-lg shadow-md text-sm w-full transition-colors duration-1000
       ${highlight ? "border-blue-500 bg-gray-800" : "border-slate-600 bg-gray-800"}`}
     >
       <div className="flex items-center pr-1">

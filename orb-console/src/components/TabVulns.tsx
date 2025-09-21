@@ -1,11 +1,23 @@
 "use client";
 
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
+
+// SSR-safe Virtuoso (avoids window access during prerender)
+const Virtuoso = dynamic(
+  () => import("react-virtuoso").then((m) => m.Virtuoso),
+  { ssr: false },
+);
+
 import { VulnCard } from "@/components/VulnCard";
 import { SystemTagSelector } from "@/components/SystemTagSelector";
 import { DashboardStatus } from "@/components/DashboardStatus";
 import { VulnCountsChart } from "@/components/VulnCountsChart";
 import { AuditEntry, SystemTag, PackageVersions } from "@/types";
 import { DataState } from "@/hooks/useDashboardData";
+
+const VIEWPORT_FRACTION = 1.0; // 100% of viewport for the list
+const MIN_LIST_PX = 280; // never smaller than this
 
 interface TabVulnsProps {
   auditState: DataState<AuditEntry[]>;
@@ -38,6 +50,62 @@ export function TabVulns({
   setMinVulnScore,
   setMaxVulnScore,
 }: TabVulnsProps) {
+  // Always work with a defined array
+  const safeAuditData: AuditEntry[] = useMemo(
+    () => filteredAuditData ?? [],
+    [filteredAuditData],
+  );
+
+  // Responsive list height
+  const [listPxHeight, setListPxHeight] = useState<number>(() => {
+    if (typeof window === "undefined") return 560; // first paint fallback
+    return Math.max(
+      MIN_LIST_PX,
+      Math.floor(window.innerHeight * VIEWPORT_FRACTION),
+    );
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    let raf = 0;
+    const onResize = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        setListPxHeight(
+          Math.max(
+            MIN_LIST_PX,
+            Math.floor(window.innerHeight * VIEWPORT_FRACTION),
+          ),
+        );
+      });
+    };
+    window.addEventListener("resize", onResize, { passive: true });
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", onResize);
+    };
+  }, []);
+
+  // Stable render function for items
+  const renderItem = useCallback(
+    (index: number, entry: AuditEntry) => {
+      if (!entry) return null;
+      return (
+        <VulnCard
+          key={`vuln-pkg-${entry.package_id}`}
+          record={entry.record}
+          package_id={entry.package_id}
+          highlight={`vuln-pkg-${entry.package_id}` === highlightedVulnId}
+          onPackageClick={onPackageClick}
+          vulnerabilityScore={vulnerablePackageIds.get(entry.package_id) || 0}
+        />
+      );
+    },
+    [highlightedVulnId, onPackageClick, vulnerablePackageIds],
+  );
+
+  // Memoize data reference so Virtuoso can optimize
+  const data = useMemo(() => safeAuditData, [safeAuditData]);
   return (
     <>
       <div className="flex items-center items-end justify-between">
@@ -57,7 +125,7 @@ export function TabVulns({
 
       {/* Vulnerability Distribution Chart */}
       {auditState.data && auditState.data.length > 0 && (
-        <div className="flex flex-col gap-1 pb-2">
+        <div className="flex flex-col gap-1">
           <VulnCountsChart
             data={auditState.data}
             vulnerablePackageIds={vulnerablePackageIds}
@@ -73,9 +141,9 @@ export function TabVulns({
           />
 
           {/* Filter Status and Reset */}
-          <div className="flex items-center justify-between py-0 px-1">
+          <div className="flex items-center justify-between px-1">
             <span className="text-xs text-gray-600">
-              Showing {filteredAuditData.length} vulnerable packages
+              Showing {safeAuditData.length} vulnerable packages
             </span>
             {(minVulnScore > 0 || maxVulnScore < 10) && (
               <button
@@ -92,17 +160,27 @@ export function TabVulns({
         </div>
       )}
 
-      <div className="flex flex-col gap-4">
-        {filteredAuditData.map((entry) => (
-          <VulnCard
-            key={`vuln-pkg-${entry.package_id}`}
-            record={entry.record}
-            package_id={entry.package_id}
-            highlight={`vuln-pkg-${entry.package_id}` === highlightedVulnId}
-            onPackageClick={onPackageClick}
-            vulnerabilityScore={vulnerablePackageIds.get(entry.package_id) || 0}
-          />
-        ))}
+      {/* Virtualized list */}
+      <div className="w-full" style={{ height: listPxHeight }}>
+        <Virtuoso
+          style={{
+            height: listPxHeight,
+            // Hide scrollbars
+            scrollbarWidth: "none" /* Firefox */,
+            msOverflowStyle: "none" /* IE and Edge */,
+          }}
+          className="[&::-webkit-scrollbar]:hidden -mt-2" /* Chrome, Safari, Opera */
+          data={data}
+          // Use itemContent(index, item) signature to avoid undefined object issues
+          itemContent={
+            renderItem as (
+              index: number,
+              item: unknown,
+            ) => React.JSX.Element | null
+          }
+          // Optional: a bit more buffer for smoother mobile scroll
+          increaseViewportBy={{ top: 200, bottom: 400 }}
+        />
       </div>
     </>
   );

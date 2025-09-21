@@ -39,28 +39,28 @@ export function AllowIcon({
   switch (resolvedStatus) {
     case "misdefined":
       symbol = "!=";
-      bgColor = "bg-gray-700";
+      bgColor = "bg-gray-800";
       ringColor = "ring-gray-600";
       title = "Misdefined";
       textColor = "text-red-700";
       break;
     case "unrequired":
       symbol = "!";
-      bgColor = "bg-gray-700";
+      bgColor = "bg-gray-800";
       ringColor = "ring-gray-600";
       title = "Unrequired";
       textColor = "text-yellow-500";
       break;
     case "missing":
       symbol = "?";
-      bgColor = "bg-gray-700";
+      bgColor = "bg-gray-800";
       ringColor = "ring-gray-600";
       title = "Missing";
       textColor = "text-orange-500";
       break;
     default:
       symbol = "==";
-      bgColor = "bg-gray-700";
+      bgColor = "bg-gray-800";
       ringColor = "ring-gray-600";
       title = "Allowed";
       textColor = "text-green-700";
