@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback } from "react";
 import dynamic from "next/dynamic";
 import { ValidationEntry } from "@/types";
 import { VulnScoreIcon } from "@/components/VulnScoreIcon";
@@ -47,11 +47,7 @@ export function ValidationPanel({
 }: ValidationPanelProps) {
   // Render function for table rows
   const renderTableRow = useCallback(
-    (
-      label: string,
-      entry: ValidationEntry,
-      index: number
-    ): React.JSX.Element => {
+    (label: string, entry: ValidationEntry): React.JSX.Element => {
       const [id, ds, site] = entry;
       let displayName: string;
       let displayVersion: string;
@@ -133,7 +129,7 @@ export function ValidationPanel({
       onPackageClick,
       onSystemTagClick,
       siteToSystemTag,
-    ]
+    ],
   );
   const sortEntriesByPackageName = (entries: ValidationEntry[]) => {
     return entries.sort(([idA], [idB]) => {
@@ -225,9 +221,11 @@ export function ValidationPanel({
 
                 {/* Virtualized rows */}
                 {entries.length > 0 && (
-                  <div style={{
-                    height: Math.min(entries.length * 32, 300), // 32px per row, max 300px
-                  }}>
+                  <div
+                    style={{
+                      height: Math.min(entries.length * 32, 300), // 32px per row, max 300px
+                    }}
+                  >
                     <Virtuoso
                       style={{
                         height: Math.min(entries.length * 32, 300),
@@ -236,12 +234,14 @@ export function ValidationPanel({
                       }}
                       className="[&::-webkit-scrollbar]:hidden"
                       data={entries}
-                      itemContent={((index: number, entry: ValidationEntry) => {
-                        return renderTableRow(label, entry, index);
-                      }) as (
-                        index: number,
-                        item: unknown,
-                      ) => React.JSX.Element | null}
+                      itemContent={
+                        ((index: number, entry: ValidationEntry) => {
+                          return renderTableRow(label, entry);
+                        }) as (
+                          index: number,
+                          item: unknown,
+                        ) => React.JSX.Element | null
+                      }
                     />
                   </div>
                 )}
