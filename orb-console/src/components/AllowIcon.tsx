@@ -78,14 +78,14 @@ export function AllowIcon({
   return isClickable ? (
     <button
       onClick={handleClick}
-      className={`w-4 h-4 rounded-xs flex items-center justify-center font-black text-sm ring-1 transition-colors hover:bg-gray-600 hover:ring-gray-500 cursor-pointer select-none ${bgColor} ${ringColor} ${textColor}`}
+      className={`w-4 h-4 flex-shrink-0 overflow-visible text-clip rounded-xs flex items-center justify-center font-black text-sm ring-1 transition-colors hover:bg-gray-600 hover:ring-gray-500 cursor-pointer select-none ${bgColor} ${ringColor} ${textColor}`}
       title={title}
     >
       {symbol}
     </button>
   ) : (
     <div
-      className={`w-4 h-4 rounded-xs flex items-center justify-center font-black text-gray-400 text-sm ring-1 select-none ${bgColor} ${ringColor} ${textColor}`}
+      className={`w-4 h-4 flex-shrink-0 overflow-visible text-clip rounded-xs flex items-center justify-center font-black text-gray-400 text-sm ring-1 select-none ${bgColor} ${ringColor} ${textColor}`}
       title={title}
     >
       {symbol}
