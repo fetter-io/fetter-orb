@@ -544,9 +544,9 @@ export default function Dashboard() {
   return (
     <div className="flex flex-col min-h-screen font-[family-name:var(--font-geist-sans)] bg-gradient-to-b from-slate-950 to-slate-900">
       {/* Frosted header with sticky tab selector */}
-      <header className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur border-b border-slate-700 px-6 pt-4 pb-1">
+      <header className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur border-b border-slate-700 px-6 pt-3 pb-0">
         <div className="max-w-4xl mx-auto flex flex-col gap-1">
-          <div className="relative flex items-center justify-between w-full mb-2">
+          <div className="relative flex items-center justify-between w-full mb-0">
             <div className="flex-shrink-0">
               {tenantsState.data && (
                 <TenantSelector
@@ -556,7 +556,7 @@ export default function Dashboard() {
                 />
               )}
             </div>
-            <div className="absolute left-1/2 transform -translate-x-1/2 flex w-16 h-16">
+            <div className="absolute left-1/2 transform -translate-x-1/2 flex w-12 h-12">
               <Weave fill={colors.slate[600]} className="w-full h-full" />
             </div>
             <div className="flex-shrink-0">

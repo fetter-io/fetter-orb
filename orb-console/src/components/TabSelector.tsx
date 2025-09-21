@@ -19,7 +19,7 @@ export function TabSelector({ activeTab, onTabChange }: TabSelectorProps) {
 
   return (
     <div>
-      <div className="bg-slate-800 rounded-md px-2 py-2">
+      <div className="bg-slate-800 rounded-md px-2 py-0 border border-gray-700">
         <div className="grid grid-cols-6 gap-0 text-gray-600 font-semibold">
           {tabs.map((tab) => (
             <button
