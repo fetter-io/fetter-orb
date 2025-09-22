@@ -146,7 +146,6 @@ export function TabSystems({
               item: unknown,
             ) => React.JSX.Element | null
           }
-          // Optional: a bit more buffer for smoother mobile scroll
           increaseViewportBy={{ top: 200, bottom: 400 }}
         />
       </div>
