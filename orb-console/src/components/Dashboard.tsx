@@ -3,7 +3,7 @@
 // import Image from "next/image";
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { useSession } from "next-auth/react";
-// import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { Footer } from "@/components/Footer";
 import { useDashboardData } from "@/hooks/useDashboardData";
@@ -30,18 +30,18 @@ import colors from "tailwindcss/colors";
 import { UserMenuDropdown } from "@/components/UserMenuDropdown";
 import { getPackageVulnerabilityScore } from "@/utils/vulnerabilityScore";
 
-// const DEFAULT_TAB: Tab = "packages";
+const DEFAULT_TAB: Tab = "packages";
 
-// const isValidTab = (value: string | null): value is Tab =>
-//   value === "packages" ||
-//   value === "systems" ||
-//   value === "allow" ||
-//   value === "vulns" ||
-//   value === "tenant" ||
-//   value === "account";
+const isValidTab = (value: string | null): value is Tab =>
+  value === "packages" ||
+  value === "systems" ||
+  value === "allow" ||
+  value === "vulns" ||
+  value === "tenant" ||
+  value === "account";
 
-// const getTabFromParam = (param: string | null): Tab =>
-//   isValidTab(param) ? param : DEFAULT_TAB;
+const getTabFromParam = (param: string | null): Tab =>
+  isValidTab(param) ? param : DEFAULT_TAB;
 
 //------------------------------------------------------------------------------
 
@@ -51,20 +51,21 @@ export default function Dashboard() {
   // NOTE: the dashboard is called after the /on_login endpoint is called and the session is created. Thus, the user has been created and they hae at least on tenant.
 
   const { data: session, status } = useSession();
-  // const router = useRouter();
-  // const pathname = usePathname();
-  // const searchParams = useSearchParams();
-  // const searchParamsString = searchParams?.toString() ?? "";
-  // const tabParam = searchParams?.get("tab") ?? null;
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const searchParamsString = searchParams?.toString() ?? "";
+  const tabParam = searchParams?.get("tab") ?? null;
 
   //----------------------------------------------------------------------------
   // states
 
-  // const [activeTab, setActiveTabState] = useState<Tab>(() =>
-  //   getTabFromParam(tabParam),
-  // );
+  const [activeTab, setActiveTabState] = useState<Tab>(() =>
+    getTabFromParam(tabParam),
+  );
 
-  const [activeTab, setActiveTab] = useState<Tab>("packages");
+  // const [activeTab, setActiveTab] = useState<Tab>("packages");
+
   const [selectedTenantId, setSelectedTenantId] = useState<number | null>(null);
   const [selectedSystemId, setSelectedSystemId] = useState<number | null>(null);
   const [highlightedSystemTagId, setHighlightedSystemTagId] = useState<
@@ -97,46 +98,48 @@ export default function Dashboard() {
   // tab management, URL updating
 
   // keeps internal state consistent with the live URL
-  // useEffect(() => {
-  //   const currentTab = getTabFromParam(tabParam);
-  //   setActiveTabState((prev) => (prev === currentTab ? prev : currentTab));
+  useEffect(() => {
+    const currentTab = getTabFromParam(tabParam);
+    setActiveTabState((prev) => (prev === currentTab ? prev : currentTab));
 
-  //   if (tabParam && !isValidTab(tabParam)) {
-  //     const params = new URLSearchParams(searchParamsString);
-  //     params.delete("tab");
-  //     const queryString = params.toString();
-  //     const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
-  //     if (newUrl) {
-  //       // replace does not had to browser history
-  //       router.replace(newUrl, { scroll: false });
-  //     }
-  //   }
-  // }, [tabParam, searchParamsString, pathname, router]);
+    if (tabParam && !isValidTab(tabParam)) {
+      const params = new URLSearchParams(searchParamsString);
+      params.delete("tab");
+      const queryString = params.toString();
+      const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
+
+      if (newUrl) {
+        // replace does not add to browser history
+        router.replace(newUrl, { scroll: false });
+      }
+    }
+  }, [tabParam, searchParamsString, pathname, router]);
 
   // switch tabs: update state, update URL
-  // const setActiveTab = useCallback(
-  //   (tab: Tab) => {
-  //     const currentTab = getTabFromParam(tabParam);
-  //     if (currentTab === tab) {
-  //       return;
-  //     }
-  //     // NOTE: not necessary to call setActiveTabState, as it will be done by the useEffect above on router change.
-  //     setActiveTabState((prev) => (prev === tab ? prev : tab));
+  const setActiveTab = useCallback(
+    (tab: Tab) => {
+      const currentTab = getTabFromParam(tabParam);
+      if (currentTab === tab) {
+        return;
+      }
+      // NOTE: not necessary to call setActiveTabState, as it will be done by the useEffect above on router change.
+      // setActiveTabState((prev) => (prev === tab ? prev : tab));
 
-  //     const params = new URLSearchParams(searchParamsString);
-  //     if (tab === DEFAULT_TAB) {
-  //       params.delete("tab");
-  //     } else {
-  //       params.set("tab", tab);
-  //     }
-  //     const queryString = params.toString();
-  //     const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
-  //     if (newUrl) {
-  //       router.push(newUrl, { scroll: false });
-  //     }
-  //   },
-  //   [pathname, router, searchParamsString, tabParam],
-  // );
+      const params = new URLSearchParams(searchParamsString);
+      if (tab === DEFAULT_TAB) {
+        params.delete("tab");
+      } else {
+        params.set("tab", tab);
+      }
+      const queryString = params.toString();
+      const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
+
+      if (newUrl) {
+        router.push(newUrl, { scroll: false });
+      }
+    },
+    [pathname, router, searchParamsString, tabParam],
+  );
 
   //----------------------------------------------------------------------------
 
