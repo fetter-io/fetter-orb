@@ -136,9 +136,10 @@ export const TabSystems = forwardRef<TabSystemsHandle, TabSystemsProps>(
             // Allow time for tab transition, then scroll smoothly
             setTimeout(() => {
               if (virtuosoRef.current) {
-                // Calculate offset to center the item better
-                const offsetIndex = Math.max(0, index - 1); // Show 1 item above the target
-                virtuosoRef.current.scrollToIndex(offsetIndex);
+                virtuosoRef.current.scrollToIndex({
+                  index,
+                  align: "center",
+                });
               }
             }, 150); // Small delay to ensure tab is visible
           }
@@ -193,7 +194,7 @@ export const TabSystems = forwardRef<TabSystemsHandle, TabSystemsProps>(
                 item: unknown,
               ) => React.JSX.Element | null
             }
-            increaseViewportBy={{ top: 200, bottom: 400 }}
+            increaseViewportBy={{ top: 200, bottom: 200 }}
           />
         </div>
       </>

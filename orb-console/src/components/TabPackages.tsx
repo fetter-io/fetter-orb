@@ -159,8 +159,10 @@ export const TabPackages = forwardRef<TabPackagesHandle, TabPackagesProps>(
             // Allow time for tab transition, then scroll smoothly
             setTimeout(() => {
               if (virtuosoRef.current) {
-                const offsetIndex = Math.max(0, index - 1);
-                virtuosoRef.current.scrollToIndex(offsetIndex);
+                virtuosoRef.current.scrollToIndex({
+                  index,
+                  align: "center",
+                });
               }
             }, 150); // Small delay to ensure tab is visible
           }
@@ -240,8 +242,7 @@ export const TabPackages = forwardRef<TabPackagesHandle, TabPackagesProps>(
                 item: unknown,
               ) => React.JSX.Element | null
             }
-            // Optional: a bit more buffer for smoother mobile scroll
-            increaseViewportBy={{ top: 200, bottom: 400 }}
+            increaseViewportBy={{ top: 200, bottom: 200 }}
           />
         </div>
       </>
