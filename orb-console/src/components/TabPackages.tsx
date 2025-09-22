@@ -22,8 +22,8 @@ import {
 } from "@/types";
 import { DataState } from "@/hooks/useDashboardData";
 
-const VIEWPORT_FRACTION = 1.0; // ~72% of viewport for the list
-const MIN_LIST_PX = 280; // never smaller than this
+const VIEWPORT_FRACTION = 1.0;
+const MIN_LIST_PX = 280;
 
 interface TabPackagesProps {
   packagesState: DataState<PackageVersions[]>;
