@@ -21,10 +21,10 @@ import {
 import { TenantSelector } from "@/components/TenantSelector";
 import { TabTenant } from "@/components/TabTenant";
 import { TabAccount } from "@/components/TabAccount";
-import { TabVulns } from "@/components/TabVulns";
-import { TabPackages } from "@/components/TabPackages";
+import { TabVulns, TabVulnsHandle } from "@/components/TabVulns";
+import { TabPackages, TabPackagesHandle } from "@/components/TabPackages";
 import { TabAllow } from "@/components/TabAllow";
-import { TabSystems } from "@/components/TabSystems";
+import { TabSystems, TabSystemsHandle } from "@/components/TabSystems";
 import { Weave } from "@/components/Weave";
 import colors from "tailwindcss/colors";
 import { UserMenuDropdown } from "@/components/UserMenuDropdown";
@@ -93,6 +93,11 @@ export default function Dashboard() {
   const [lastPackageDataHash, setLastPackageDataHash] = useState<string | null>(
     null,
   );
+
+  // Ref for TabPackages to control Virtuoso scrolling
+  const tabPackagesRef = useRef<TabPackagesHandle>(null);
+  const tabVulnsRef = useRef<TabVulnsHandle>(null);
+  const tabSystemsRef = useRef<TabSystemsHandle>(null);
 
   //----------------------------------------------------------------------------
   // tab management, URL updating
@@ -490,10 +495,9 @@ export default function Dashboard() {
     setHighlightedSystemTagId(id);
     setActiveTab("systems");
 
+    // Use Virtuoso scrolling instead of DOM scrollIntoView
     setTimeout(() => {
-      document
-        .getElementById(`system-tag-${id}`)
-        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+      tabSystemsRef.current?.scrollToSystemTag(id);
 
       setTimeout(() => setHighlightedSystemTagId(null), 3000);
     }, 100);
@@ -518,10 +522,8 @@ export default function Dashboard() {
     setActiveTab("packages");
 
     setTimeout(() => {
-      document
-        .getElementById(`package-${key}`)
-        ?.scrollIntoView({ behavior: "smooth", block: "center" });
-
+      // Use Virtuoso's scrollToPackage method instead of scrollIntoView
+      tabPackagesRef.current?.scrollToPackage(key);
       setTimeout(() => setHighlightedPackageKey(null), 3000);
     }, 100);
   };
@@ -533,11 +535,9 @@ export default function Dashboard() {
     setHighlightedVulnId(`vuln-pkg-${id}`);
     setActiveTab("vulns");
 
+    // Use Virtuoso scrolling instead of DOM scrollIntoView
     setTimeout(() => {
-      document
-        .getElementById(`vuln-pkg-${id}`)
-        ?.scrollIntoView({ behavior: "smooth", block: "center" });
-
+      tabVulnsRef.current?.scrollToVuln(`vuln-pkg-${id}`);
       setTimeout(() => setHighlightedVulnId(null), 3000);
     }, 100);
   };
@@ -576,6 +576,7 @@ export default function Dashboard() {
         <div className="max-w-4xl mx-auto flex flex-col gap-4">
           {activeTab === "packages" && (
             <TabPackages
+              ref={tabPackagesRef}
               packagesState={packagesState}
               packageCountsState={packageCountsState}
               systemTagsState={systemTagsState}
@@ -596,6 +597,7 @@ export default function Dashboard() {
 
           {activeTab === "vulns" && (
             <TabVulns
+              ref={tabVulnsRef}
               auditState={auditState}
               selectedSystemId={selectedSystemId}
               setSelectedSystemId={setSelectedSystemId}
@@ -633,6 +635,7 @@ export default function Dashboard() {
 
           {activeTab === "systems" && (
             <TabSystems
+              ref={tabSystemsRef}
               systemTagsState={systemTagsState}
               highlightedSystemTagId={highlightedSystemTagId}
               onPackagesClick={setSelectedSystemId}
