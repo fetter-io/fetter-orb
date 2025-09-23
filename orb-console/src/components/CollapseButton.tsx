@@ -15,7 +15,7 @@ export function CollapseButton({
       className={`text-gray-400 hover:text-white cursor-pointer ${className}`}
       onClick={onToggle}
     >
-      {isExpanded ? "▾" : "▸"}
+      {isExpanded ? "▼" : "▶"}
     </button>
   );
 }

@@ -123,9 +123,20 @@ export const TabVulns = forwardRef<TabVulnsHandle, TabVulnsProps>(
             onPackageClick={onPackageClick}
             vulnerabilityScore={vulnerablePackageIds.get(entry.package_id) || 0}
             isExpanded={expandedVulnCards.has(entry.package_id)}
-            onToggle={(isExpanded) =>
-              onVulnCardToggle(entry.package_id, isExpanded)
-            }
+            onToggle={(isExpanded) => {
+              onVulnCardToggle(entry.package_id, isExpanded);
+              // If expanding the last item, scroll to ensure it's fully visible
+              if (isExpanded && index === safeAuditData.length - 1) {
+                setTimeout(() => {
+                  if (virtuosoRef.current) {
+                    virtuosoRef.current.scrollToIndex({
+                      index: safeAuditData.length - 1,
+                      align: 'end'
+                    });
+                  }
+                }, 100); // Small delay to allow expansion to complete
+              }
+            }}
           />
         );
       },
@@ -135,6 +146,7 @@ export const TabVulns = forwardRef<TabVulnsHandle, TabVulnsProps>(
         vulnerablePackageIds,
         expandedVulnCards,
         onVulnCardToggle,
+        safeAuditData.length,
       ],
     );
 
@@ -237,6 +249,10 @@ export const TabVulns = forwardRef<TabVulnsHandle, TabVulnsProps>(
               ) => React.JSX.Element | null
             }
             increaseViewportBy={{ top: 200, bottom: 200 }}
+            followOutput="auto"
+            components={{
+              Footer: () => <div style={{ height: '50px' }} />
+            }}
           />
         </div>
       </>
