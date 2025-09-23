@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { VulnRecord, CvssDetail } from "@/types";
 import { VulnScoreIcon } from "@/components/VulnScoreIcon";
 import { CollapseButton } from "@/components/CollapseButton";
