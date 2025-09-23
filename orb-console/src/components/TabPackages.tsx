@@ -1,7 +1,16 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import dynamic from "next/dynamic";
+import type { VirtuosoHandle } from "react-virtuoso";
 
 // SSR-safe Virtuoso (avoids window access during prerender)
 const Virtuoso = dynamic(
@@ -25,6 +34,10 @@ import { DataState } from "@/hooks/useDashboardData";
 const VIEWPORT_FRACTION = 1.0;
 const MIN_LIST_PX = 280;
 
+export interface TabPackagesHandle {
+  scrollToPackage: (packageKey: string) => void;
+}
+
 interface TabPackagesProps {
   packagesState: DataState<PackageVersions[]>;
   packageCountsState: DataState<PackageCountsRecord[]>;
@@ -46,162 +59,193 @@ interface TabPackagesProps {
   setPackageSearchTerm: (term: string) => void;
 }
 
-export function TabPackages({
-  packagesState,
-  packageCountsState,
-  systemTagsState,
-  auditState,
-  selectedSystemId,
-  setSelectedSystemId,
-  highlightedPackageKey,
-  vulnerablePackageIds,
-  validationSets,
-  onSystemTagClick,
-  onVulnClick,
-  onAllowClick,
-  filteredPackages,
-  packageSearchTerm,
-  setPackageSearchTerm,
-}: TabPackagesProps) {
-  // Always work with a defined array
-  const safePackages: PackageVersions[] = useMemo(
-    () => filteredPackages ?? [],
-    [filteredPackages],
-  );
-
-  // Responsive list height
-  const [listPxHeight, setListPxHeight] = useState<number>(() => {
-    if (typeof window === "undefined") return 560; // first paint fallback
-    return Math.max(
-      MIN_LIST_PX,
-      Math.floor(window.innerHeight * VIEWPORT_FRACTION),
-    );
-  });
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    let raf = 0;
-    const onResize = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        setListPxHeight(
-          Math.max(
-            MIN_LIST_PX,
-            Math.floor(window.innerHeight * VIEWPORT_FRACTION),
-          ),
-        );
-      });
-    };
-    window.addEventListener("resize", onResize, { passive: true });
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("resize", onResize);
-    };
-  }, []);
-
-  // Stable render function for items
-  const renderItem = useCallback(
-    (index: number, pkg: PackageVersions) => {
-      if (!pkg) return null;
-      return (
-        <PackageVersionsCard
-          pkg={pkg}
-          onTagClick={onSystemTagClick}
-          onVulnClick={onVulnClick}
-          highlight={pkg.key === highlightedPackageKey}
-          vulnerablePackageIds={vulnerablePackageIds}
-          validationSets={validationSets}
-          onAllowClick={onAllowClick}
-        />
-      );
-    },
-    [
-      onSystemTagClick,
-      onVulnClick,
-      onAllowClick,
+export const TabPackages = forwardRef<TabPackagesHandle, TabPackagesProps>(
+  function TabPackages(
+    {
+      packagesState,
+      packageCountsState,
+      systemTagsState,
+      auditState,
+      selectedSystemId,
+      setSelectedSystemId,
       highlightedPackageKey,
       vulnerablePackageIds,
       validationSets,
-    ],
-  );
+      onSystemTagClick,
+      onVulnClick,
+      onAllowClick,
+      filteredPackages,
+      packageSearchTerm,
+      setPackageSearchTerm,
+    },
+    ref,
+  ) {
+    // Virtuoso ref for scrolling control
+    const virtuosoRef = useRef<VirtuosoHandle>(null);
 
-  // Memoize data reference so Virtuoso can optimize
-  const data = useMemo(() => safePackages, [safePackages]);
+    // Always work with a defined array
+    const safePackages: PackageVersions[] = useMemo(
+      () => filteredPackages ?? [],
+      [filteredPackages],
+    );
 
-  return (
-    <>
-      <div className="flex items-end justify-between">
-        <div className="flex">
-          <SystemTagSelector
-            selectedId={selectedSystemId}
-            onChange={setSelectedSystemId}
-            systemTags={systemTagsState.data ?? undefined}
-            packageCount={packagesState.data?.length ?? 0}
-            vulnCount={auditState.data?.length ?? 0}
+    // Responsive list height
+    const [listPxHeight, setListPxHeight] = useState<number>(() => {
+      if (typeof window === "undefined") return 560; // first paint fallback
+      return Math.max(
+        MIN_LIST_PX,
+        Math.floor(window.innerHeight * VIEWPORT_FRACTION),
+      );
+    });
+
+    useEffect(() => {
+      if (typeof window === "undefined") return;
+      let raf = 0;
+      const onResize = () => {
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => {
+          setListPxHeight(
+            Math.max(
+              MIN_LIST_PX,
+              Math.floor(window.innerHeight * VIEWPORT_FRACTION),
+            ),
+          );
+        });
+      };
+      window.addEventListener("resize", onResize, { passive: true });
+      return () => {
+        cancelAnimationFrame(raf);
+        window.removeEventListener("resize", onResize);
+      };
+    }, []);
+
+    // Stable render function for items
+    const renderItem = useCallback(
+      (index: number, pkg: PackageVersions) => {
+        if (!pkg) return null;
+        return (
+          <PackageVersionsCard
+            pkg={pkg}
+            onTagClick={onSystemTagClick}
+            onVulnClick={onVulnClick}
+            highlight={pkg.key === highlightedPackageKey}
+            vulnerablePackageIds={vulnerablePackageIds}
+            validationSets={validationSets}
+            onAllowClick={onAllowClick}
+          />
+        );
+      },
+      [
+        onSystemTagClick,
+        onVulnClick,
+        onAllowClick,
+        highlightedPackageKey,
+        vulnerablePackageIds,
+        validationSets,
+      ],
+    );
+
+    // Memoize data reference so Virtuoso can optimize
+    const data = useMemo(() => safePackages, [safePackages]);
+
+    // Expose scroll function to parent component
+    useImperativeHandle(
+      ref,
+      () => ({
+        scrollToPackage: (packageKey: string) => {
+          const index = safePackages.findIndex((pkg) => pkg.key === packageKey);
+          console.log("Scrolling to package:", packageKey, "at index:", index);
+          if (index !== -1 && virtuosoRef.current) {
+            // Allow time for tab transition, then scroll smoothly
+            setTimeout(() => {
+              if (virtuosoRef.current) {
+                virtuosoRef.current.scrollToIndex({
+                  index,
+                  align: "center",
+                });
+              }
+            }, 150); // Small delay to ensure tab is visible
+          }
+        },
+      }),
+      [safePackages],
+    );
+
+    return (
+      <>
+        <div className="flex items-end justify-between">
+          <div className="flex">
+            <SystemTagSelector
+              selectedId={selectedSystemId}
+              onChange={setSelectedSystemId}
+              systemTags={systemTagsState.data ?? undefined}
+              packageCount={packagesState.data?.length ?? 0}
+              vulnCount={auditState.data?.length ?? 0}
+            />
+          </div>
+          <div className="flex">
+            <DashboardStatus label="packages" state={packagesState} />
+          </div>
+        </div>
+
+        {packageCountsState.data && packageCountsState.data.length > 0 && (
+          <div
+            style={{
+              contentVisibility: "auto",
+              containIntrinsicSize: "420px 1px",
+            }}
+          >
+            <PackageCountsChart data={packageCountsState.data} />
+          </div>
+        )}
+
+        <div className="flex flex-col gap-2">
+          <input
+            type="text"
+            placeholder="Search..."
+            value={packageSearchTerm}
+            onChange={(e) => setPackageSearchTerm(e.target.value)}
+            className="px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-md text-slate-400 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-800"
+          />
+          <div className="flex items-center justify-between px-1">
+            <span className="text-xs text-gray-600">
+              Showing {safePackages.length} of {packagesState.data?.length || 0}{" "}
+              packages
+            </span>
+            {packageSearchTerm && (
+              <button
+                onClick={() => setPackageSearchTerm("")}
+                className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+              >
+                Show All
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Virtualized list */}
+        <div className="w-full" style={{ height: listPxHeight }}>
+          <Virtuoso
+            ref={virtuosoRef}
+            style={{
+              height: listPxHeight,
+              // Hide scrollbars
+              scrollbarWidth: "none" /* Firefox */,
+              msOverflowStyle: "none" /* IE and Edge */,
+            }}
+            className="[&::-webkit-scrollbar]:hidden -mt-2" /* Chrome, Safari, Opera */
+            data={data}
+            // Use itemContent(index, item) signature to avoid undefined object issues
+            itemContent={
+              renderItem as (
+                index: number,
+                item: unknown,
+              ) => React.JSX.Element | null
+            }
+            increaseViewportBy={{ top: 200, bottom: 200 }}
           />
         </div>
-        <div className="flex">
-          <DashboardStatus label="packages" state={packagesState} />
-        </div>
-      </div>
-
-      {packageCountsState.data && packageCountsState.data.length > 0 && (
-        <div
-          style={{
-            contentVisibility: "auto",
-            containIntrinsicSize: "420px 1px",
-          }}
-        >
-          <PackageCountsChart data={packageCountsState.data} />
-        </div>
-      )}
-
-      <div className="flex flex-col gap-2">
-        <input
-          type="text"
-          placeholder="Search..."
-          value={packageSearchTerm}
-          onChange={(e) => setPackageSearchTerm(e.target.value)}
-          className="px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-md text-slate-400 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-800"
-        />
-        <div className="flex items-center justify-between px-1">
-          <span className="text-xs text-gray-600">
-            Showing {safePackages.length} of {packagesState.data?.length || 0}{" "}
-            packages
-          </span>
-          {packageSearchTerm && (
-            <button
-              onClick={() => setPackageSearchTerm("")}
-              className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
-            >
-              Show All
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Virtualized list */}
-      <div className="w-full" style={{ height: listPxHeight }}>
-        <Virtuoso
-          style={{
-            height: listPxHeight,
-            // Hide scrollbars
-            scrollbarWidth: "none" /* Firefox */,
-            msOverflowStyle: "none" /* IE and Edge */,
-          }}
-          className="[&::-webkit-scrollbar]:hidden -mt-2" /* Chrome, Safari, Opera */
-          data={data}
-          // Use itemContent(index, item) signature to avoid undefined object issues
-          itemContent={
-            renderItem as (
-              index: number,
-              item: unknown,
-            ) => React.JSX.Element | null
-          }
-          // Optional: a bit more buffer for smoother mobile scroll
-          increaseViewportBy={{ top: 200, bottom: 400 }}
-        />
-      </div>
-    </>
-  );
-}
+      </>
+    );
+  },
+);

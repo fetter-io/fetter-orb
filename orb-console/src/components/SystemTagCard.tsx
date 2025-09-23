@@ -22,7 +22,7 @@ export function SystemTagCard({
         }`}
     >
       {/* Basic system tag info */}
-      <p className="mb-2">
+      <p>
         <span className="text-gray-500">User: </span>
         <span>{tag.username}</span>
       </p>
@@ -95,7 +95,7 @@ export function SystemTagCard({
       </div>
 
       {/* Scrollable site_packages table */}
-      <div className="my-2 h-32 overflow-y-auto border-t border-slate-700">
+      <div className="mt-2 h-32 overflow-y-auto border-t border-slate-700">
         <table className="w-full text-xs text-left text-gray-400">
           <thead className="sticky top-0 bg-gray-950 text-gray-500 border-b border-slate-700">
             <tr>

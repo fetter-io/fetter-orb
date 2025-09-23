@@ -193,7 +193,7 @@ export function SystemStatsChart({
           <ZAxis
             type="number"
             dataKey="z"
-            range={[1, Math.max(40, maxCount)]}
+            range={[1, Math.max(50, maxCount)]}
           />
           <Tooltip content={<CustomTooltip />} cursor={false} />
           <Scatter
