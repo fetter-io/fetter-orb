@@ -150,9 +150,6 @@ export const TabVulns = forwardRef<TabVulnsHandle, TabVulnsProps>(
       ],
     );
 
-    // // Memoize data reference so Virtuoso can optimize
-    // const data = useMemo(() => safeAuditData, [safeAuditData]);
-
     // Expose scroll function to parent component
     useImperativeHandle(
       ref,

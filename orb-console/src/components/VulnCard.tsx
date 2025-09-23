@@ -34,12 +34,7 @@ const processCvssDetails = (cvssDetails: CvssDetail[], vulnId: string) => {
           className="text-slate-400 hover:underline break-all px-2 py-1 text-sm flex items-center gap-1"
         >
           <VulnScoreIcon score={cvss.score} />
-          <span>
-            (
-            {cvss.severity.charAt(0).toUpperCase() +
-              cvss.severity.slice(1).toLowerCase()}
-            ):{" "}
-          </span>
+          <span> </span>
           {href ? (
             <a
               href={href}
@@ -81,7 +76,7 @@ export function VulnCard({
   return (
     <div
       id={`vuln-pkg-${package_id}`}
-      className={`p-2 mb-4 border rounded-sm bg-gray-900 shadow-md text-sm text-gray-200 space-y-2 transition-colors duration-1000
+      className={`p-2 mb-2 border rounded-sm bg-gray-900 shadow-md text-sm text-gray-200 space-y-2 transition-colors duration-1000
         ${
           highlight
             ? "border-blue-500 bg-gray-700"
