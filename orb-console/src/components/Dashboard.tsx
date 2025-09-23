@@ -519,7 +519,7 @@ export default function Dashboard() {
     setTimeout(() => {
       tabSystemsRef.current?.scrollToSystemTag(id);
 
-      setTimeout(() => setHighlightedSystemTagId(null), 3000);
+      setTimeout(() => setHighlightedSystemTagId(null), 5000);
     }, 100);
   };
 
@@ -531,7 +531,7 @@ export default function Dashboard() {
     setTimeout(() => {
       // Virtuoso
       tabPackagesRef.current?.scrollToPackage(key);
-      setTimeout(() => setHighlightedPackageKey(null), 3000);
+      setTimeout(() => setHighlightedPackageKey(null), 5000);
     }, 100);
   };
 
@@ -544,7 +544,7 @@ export default function Dashboard() {
     // Use Virtuoso scrolling instead of DOM scrollIntoView
     setTimeout(() => {
       tabVulnsRef.current?.scrollToVuln(`vuln-pkg-${id}`);
-      setTimeout(() => setHighlightedVulnId(null), 3000);
+      setTimeout(() => setHighlightedVulnId(null), 5000);
     }, 100);
   };
 
@@ -557,7 +557,7 @@ export default function Dashboard() {
         .getElementById(`validation-section-${status}`)
         ?.scrollIntoView({ behavior: "smooth", block: "center" });
 
-      setTimeout(() => setHighlightedAllowStatus(null), 3000);
+      setTimeout(() => setHighlightedAllowStatus(null), 5000);
     }, 100);
   };
 

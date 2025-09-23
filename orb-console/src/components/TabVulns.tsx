@@ -131,7 +131,7 @@ export const TabVulns = forwardRef<TabVulnsHandle, TabVulnsProps>(
                   if (virtuosoRef.current) {
                     virtuosoRef.current.scrollToIndex({
                       index: safeAuditData.length - 1,
-                      align: 'end'
+                      align: "end",
                     });
                   }
                 }, 100); // Small delay to allow expansion to complete
@@ -251,7 +251,7 @@ export const TabVulns = forwardRef<TabVulnsHandle, TabVulnsProps>(
             increaseViewportBy={{ top: 200, bottom: 200 }}
             followOutput="auto"
             components={{
-              Footer: () => <div style={{ height: '50px' }} />
+              Footer: () => <div style={{ height: "50px" }} />,
             }}
           />
         </div>
