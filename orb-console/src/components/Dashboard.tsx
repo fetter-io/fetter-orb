@@ -99,6 +99,26 @@ export default function Dashboard() {
   const tabVulnsRef = useRef<TabVulnsHandle>(null);
   const tabSystemsRef = useRef<TabSystemsHandle>(null);
 
+  // Track expanded state for VulnCards by package_id
+  const [expandedVulnCards, setExpandedVulnCards] = useState<Set<number>>(
+    new Set(),
+  );
+
+  const handleVulnCardToggle = useCallback(
+    (packageId: number, isExpanded: boolean) => {
+      setExpandedVulnCards((prev) => {
+        const newSet = new Set(prev);
+        if (isExpanded) {
+          newSet.add(packageId);
+        } else {
+          newSet.delete(packageId);
+        }
+        return newSet;
+      });
+    },
+    [],
+  );
+
   //----------------------------------------------------------------------------
   // tab management, URL updating
 
@@ -495,7 +515,7 @@ export default function Dashboard() {
     setHighlightedSystemTagId(id);
     setActiveTab("systems");
 
-      // Virtuoso
+    // Virtuoso
     setTimeout(() => {
       tabSystemsRef.current?.scrollToSystemTag(id);
 
@@ -540,7 +560,6 @@ export default function Dashboard() {
       setTimeout(() => setHighlightedAllowStatus(null), 3000);
     }, 100);
   };
-
 
   //----------------------------------------------------------------------------
 
@@ -611,6 +630,8 @@ export default function Dashboard() {
               maxVulnScore={maxVulnScore}
               setMinVulnScore={setMinVulnScore}
               setMaxVulnScore={setMaxVulnScore}
+              expandedVulnCards={expandedVulnCards}
+              onVulnCardToggle={handleVulnCardToggle}
             />
           )}
 

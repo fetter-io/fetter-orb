@@ -42,6 +42,8 @@ interface TabVulnsProps {
   maxVulnScore: number;
   setMinVulnScore: (score: number) => void;
   setMaxVulnScore: (score: number) => void;
+  expandedVulnCards: Set<number>;
+  onVulnCardToggle: (packageId: number, isExpanded: boolean) => void;
 }
 
 export interface TabVulnsHandle {
@@ -64,6 +66,8 @@ export const TabVulns = forwardRef<TabVulnsHandle, TabVulnsProps>(
       maxVulnScore,
       setMinVulnScore,
       setMaxVulnScore,
+      expandedVulnCards,
+      onVulnCardToggle,
     },
     ref,
   ) {
@@ -118,10 +122,20 @@ export const TabVulns = forwardRef<TabVulnsHandle, TabVulnsProps>(
             highlight={`vuln-pkg-${entry.package_id}` === highlightedVulnId}
             onPackageClick={onPackageClick}
             vulnerabilityScore={vulnerablePackageIds.get(entry.package_id) || 0}
+            isExpanded={expandedVulnCards.has(entry.package_id)}
+            onToggle={(isExpanded) =>
+              onVulnCardToggle(entry.package_id, isExpanded)
+            }
           />
         );
       },
-      [highlightedVulnId, onPackageClick, vulnerablePackageIds],
+      [
+        highlightedVulnId,
+        onPackageClick,
+        vulnerablePackageIds,
+        expandedVulnCards,
+        onVulnCardToggle,
+      ],
     );
 
     // // Memoize data reference so Virtuoso can optimize

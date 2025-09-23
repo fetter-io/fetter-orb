@@ -9,12 +9,14 @@ export function VulnScoreIcon({ score }: VulnScoreIconProps) {
     <div
       className={`w-5 h-5 rounded-full flex items-center justify-center text-gray-200 text-xs font-semibold ring-1 ring-gray-700 ${
         score >= 9.0
-          ? "bg-red-600"
-          : score >= 7.0
-            ? "bg-orange-500"
-            : score >= 4.0
-              ? "bg-yellow-600"
-              : "bg-green-600"
+          ? "bg-red-800"
+          : score >= 8.0
+            ? "bg-red-600"
+            : score >= 7.0
+              ? "bg-orange-500"
+              : score >= 4.0
+                ? "bg-yellow-800"
+                : "bg-yellow-600"
       }`}
       title={`CVSS ${score}`}
     >
