@@ -495,11 +495,36 @@ export default function Dashboard() {
     setHighlightedSystemTagId(id);
     setActiveTab("systems");
 
-    // Use Virtuoso scrolling instead of DOM scrollIntoView
+      // Virtuoso
     setTimeout(() => {
       tabSystemsRef.current?.scrollToSystemTag(id);
 
       setTimeout(() => setHighlightedSystemTagId(null), 3000);
+    }, 100);
+  };
+
+  const handlePackageClick = (key: string) => {
+    setPackageSearchTerm(""); // clear a search
+    setHighlightedPackageKey(key);
+    setActiveTab("packages");
+
+    setTimeout(() => {
+      // Virtuoso
+      tabPackagesRef.current?.scrollToPackage(key);
+      setTimeout(() => setHighlightedPackageKey(null), 3000);
+    }, 100);
+  };
+
+  const handleVulnClick = (id: number) => {
+    setMinVulnScore(0);
+    setMaxVulnScore(10);
+    setHighlightedVulnId(`vuln-pkg-${id}`);
+    setActiveTab("vulns");
+
+    // Use Virtuoso scrolling instead of DOM scrollIntoView
+    setTimeout(() => {
+      tabVulnsRef.current?.scrollToVuln(`vuln-pkg-${id}`);
+      setTimeout(() => setHighlightedVulnId(null), 3000);
     }, 100);
   };
 
@@ -516,31 +541,6 @@ export default function Dashboard() {
     }, 100);
   };
 
-  const handlePackageClick = (key: string) => {
-    setPackageSearchTerm(""); // clear a search
-    setHighlightedPackageKey(key);
-    setActiveTab("packages");
-
-    setTimeout(() => {
-      // Use Virtuoso's scrollToPackage method instead of scrollIntoView
-      tabPackagesRef.current?.scrollToPackage(key);
-      setTimeout(() => setHighlightedPackageKey(null), 3000);
-    }, 100);
-  };
-
-  // Given a DB package ID
-  const handleVulnClick = (id: number) => {
-    setMinVulnScore(0);
-    setMaxVulnScore(10);
-    setHighlightedVulnId(`vuln-pkg-${id}`);
-    setActiveTab("vulns");
-
-    // Use Virtuoso scrolling instead of DOM scrollIntoView
-    setTimeout(() => {
-      tabVulnsRef.current?.scrollToVuln(`vuln-pkg-${id}`);
-      setTimeout(() => setHighlightedVulnId(null), 3000);
-    }, 100);
-  };
 
   //----------------------------------------------------------------------------
 

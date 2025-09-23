@@ -117,23 +117,13 @@ export const TabSystems = forwardRef<TabSystemsHandle, TabSystemsProps>(
       [highlightedSystemTagId, onPackagesClick, setActiveTab],
     );
 
-    // Memoize data reference so Virtuoso can optimize
-    const data = useMemo(() => safeSystems, [safeSystems]);
-
     // Expose scroll function to parent component
     useImperativeHandle(
       ref,
       () => ({
         scrollToSystemTag: (systemTagId: number) => {
           const index = safeSystems.findIndex((tag) => tag.id === systemTagId);
-          console.log(
-            "Scrolling to system tag:",
-            systemTagId,
-            "at index:",
-            index,
-          );
           if (index !== -1 && virtuosoRef.current) {
-            // Allow time for tab transition, then scroll smoothly
             setTimeout(() => {
               if (virtuosoRef.current) {
                 virtuosoRef.current.scrollToIndex({
@@ -182,11 +172,11 @@ export const TabSystems = forwardRef<TabSystemsHandle, TabSystemsProps>(
             ref={virtuosoRef}
             style={{
               height: listPxHeight,
-              scrollbarWidth: "none" /* Firefox */,
-              msOverflowStyle: "none" /* IE and Edge */,
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
             }}
-            className="[&::-webkit-scrollbar]:hidden -mt-2" /* Chrome, Safari, Opera */
-            data={data}
+            className="[&::-webkit-scrollbar]:hidden -mt-2"
+            data={safeSystems}
             // Use itemContent(index, item) signature to avoid undefined object issues
             itemContent={
               renderItem as (

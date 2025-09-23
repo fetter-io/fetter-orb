@@ -146,7 +146,7 @@ export const TabPackages = forwardRef<TabPackagesHandle, TabPackagesProps>(
     );
 
     // Memoize data reference so Virtuoso can optimize
-    const data = useMemo(() => safePackages, [safePackages]);
+    // const data = useMemo(() => safePackages, [safePackages]);
 
     // Expose scroll function to parent component
     useImperativeHandle(
@@ -154,9 +154,7 @@ export const TabPackages = forwardRef<TabPackagesHandle, TabPackagesProps>(
       () => ({
         scrollToPackage: (packageKey: string) => {
           const index = safePackages.findIndex((pkg) => pkg.key === packageKey);
-          console.log("Scrolling to package:", packageKey, "at index:", index);
           if (index !== -1 && virtuosoRef.current) {
-            // Allow time for tab transition, then scroll smoothly
             setTimeout(() => {
               if (virtuosoRef.current) {
                 virtuosoRef.current.scrollToIndex({
@@ -229,12 +227,11 @@ export const TabPackages = forwardRef<TabPackagesHandle, TabPackagesProps>(
             ref={virtuosoRef}
             style={{
               height: listPxHeight,
-              // Hide scrollbars
-              scrollbarWidth: "none" /* Firefox */,
-              msOverflowStyle: "none" /* IE and Edge */,
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
             }}
-            className="[&::-webkit-scrollbar]:hidden -mt-2" /* Chrome, Safari, Opera */
-            data={data}
+            className="[&::-webkit-scrollbar]:hidden -mt-2"
+            data={safePackages}
             // Use itemContent(index, item) signature to avoid undefined object issues
             itemContent={
               renderItem as (

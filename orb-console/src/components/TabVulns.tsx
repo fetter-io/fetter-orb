@@ -124,8 +124,8 @@ export const TabVulns = forwardRef<TabVulnsHandle, TabVulnsProps>(
       [highlightedVulnId, onPackageClick, vulnerablePackageIds],
     );
 
-    // Memoize data reference so Virtuoso can optimize
-    const data = useMemo(() => safeAuditData, [safeAuditData]);
+    // // Memoize data reference so Virtuoso can optimize
+    // const data = useMemo(() => safeAuditData, [safeAuditData]);
 
     // Expose scroll function to parent component
     useImperativeHandle(
@@ -135,9 +135,7 @@ export const TabVulns = forwardRef<TabVulnsHandle, TabVulnsProps>(
           const index = safeAuditData.findIndex(
             (entry) => `vuln-pkg-${entry.package_id}` === vulnId,
           );
-          console.log("Scrolling to vuln:", vulnId, "at index:", index);
           if (index !== -1 && virtuosoRef.current) {
-            // Allow time for tab transition, then scroll smoothly
             setTimeout(() => {
               if (virtuosoRef.current) {
                 virtuosoRef.current.scrollToIndex({
@@ -212,12 +210,11 @@ export const TabVulns = forwardRef<TabVulnsHandle, TabVulnsProps>(
             ref={virtuosoRef}
             style={{
               height: listPxHeight,
-              // Hide scrollbars
-              scrollbarWidth: "none" /* Firefox */,
-              msOverflowStyle: "none" /* IE and Edge */,
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
             }}
-            className="[&::-webkit-scrollbar]:hidden -mt-2" /* Chrome, Safari, Opera */
-            data={data}
+            className="[&::-webkit-scrollbar]:hidden -mt-2"
+            data={safeAuditData}
             // Use itemContent(index, item) signature to avoid undefined object issues
             itemContent={
               renderItem as (
