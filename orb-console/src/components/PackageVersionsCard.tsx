@@ -1,6 +1,7 @@
 import { PackageVersions } from "@/types";
 import { VulnScoreIcon } from "@/components/VulnScoreIcon";
 import { AllowIcon } from "@/components/AllowIcon";
+import { CollapseButton } from "@/components/CollapseButton";
 
 type PackageVersionsCardProps = {
   pkg: PackageVersions;
@@ -13,6 +14,8 @@ type PackageVersionsCardProps = {
     misdefined: Set<number>;
   };
   onAllowClick?: (status: string) => void;
+  isExpanded: boolean;
+  onToggle: (isExpanded: boolean) => void;
 };
 // ...
 export function PackageVersionsCard({
@@ -23,41 +26,93 @@ export function PackageVersionsCard({
   vulnerablePackageIds,
   validationSets,
   onAllowClick,
+  isExpanded,
+  onToggle,
 }: PackageVersionsCardProps) {
-  const vulnCount = vulnerablePackageIds
-    ? pkg.data.reduce(
-        (acc, e) => acc + (vulnerablePackageIds.has(e.package_id) ? 1 : 0),
-        0,
-      )
-    : 0;
-  const hasAnyVuln = vulnCount > 0;
+
+  // Determine unique validation statuses for this package
+  const uniqueValidationStatuses = validationSets ? (() => {
+    const statuses = new Set<string>();
+
+    pkg.data.forEach(entry => {
+      if (validationSets.misdefined.has(entry.package_id)) {
+        statuses.add('misdefined');
+      } else if (validationSets.unrequired.has(entry.package_id)) {
+        statuses.add('unrequired');
+      } else {
+        statuses.add('allowed');
+      }
+    });
+
+    return Array.from(statuses);
+  })() : [];
+
+  // Determine unique vulnerability scores for this package
+  const uniqueVulnScores = vulnerablePackageIds ? (() => {
+    const scores = new Set<number>();
+
+    pkg.data.forEach(entry => {
+      const score = vulnerablePackageIds.get(entry.package_id);
+      if (score && score > 0) {
+        scores.add(score);
+      }
+    });
+
+    return Array.from(scores).sort((a, b) => b - a); // Sort descending (highest first)
+  })() : [];
 
   return (
     <div
       id={`package-${pkg.key}`}
-      className={`p-2 mb-4 border rounded-lg shadow-md text-sm w-full transition-colors duration-1000
+      className={`p-2 mb-2 border rounded-sm shadow-md text-sm w-full transition-colors duration-1000
       ${highlight ? "border-blue-500 bg-gray-800" : "border-slate-600 bg-gray-800"}`}
     >
       <div className="flex items-center pr-1">
-        <h3 className="font-bold text-white ml-1 mb-2 flex items-center gap-2 w-5/6">
+        <h3 className="font-bold text-white flex items-center gap-2 w-5/6">
+          <CollapseButton
+            isExpanded={isExpanded}
+            onToggle={() => onToggle(!isExpanded)}
+            className="ml-0"
+          />
           <span className="truncate">{pkg.name}</span>
-        </h3>
-        <div className="w-1/6 flex justify-end">
-          {hasAnyVuln && (
-            <span
-              title={`${vulnCount} vulnerable ${vulnCount === 1 ? "version" : "versions"}`}
-              aria-label="Vulnerable versions present"
-              className="inline-flex items-center text-yellow-400"
-            >
-              ⚠️
-            </span>
+          {uniqueValidationStatuses.length > 0 && (
+            <div className="flex gap-2 ml-0">
+              {uniqueValidationStatuses.map(status => (
+                <AllowIcon
+                  key={status}
+                  status={status as "allowed" | "unrequired" | "misdefined"}
+                  {...(onAllowClick && { onAllowClick })}
+                />
+              ))}
+            </div>
           )}
+        </h3>
+        <div className="w-1/6 flex justify-end gap-1">
+          {uniqueVulnScores.map(score => (
+            <button
+              key={score}
+              title="Vulnerability details"
+              className="border-b border-transparent cursor-pointer"
+              onClick={() => {
+                // Find the first package_id with this score and trigger onVulnClick
+                const entry = pkg.data.find(e =>
+                  vulnerablePackageIds?.get(e.package_id) === score
+                );
+                if (entry) {
+                  onVulnClick?.(entry.package_id);
+                }
+              }}
+            >
+              <VulnScoreIcon score={score} />
+            </button>
+          ))}
         </div>
       </div>
-      <div
-        className="max-h-56 overflow-y-auto border-t border-slate-700"
-        aria-label={`${pkg.name} versions`}
-      >
+      {isExpanded && (
+        <div
+          className="mt-2 border-t border-slate-700"
+          aria-label={`${pkg.name} versions`}
+        >
         <table className="w-full text-xs text-left text-gray-400 table-fixed">
           <thead className="sticky top-0 bg-gray-950 text-gray-500 border-b border-slate-700">
             <tr>
@@ -130,7 +185,8 @@ export function PackageVersionsCard({
             })}
           </tbody>
         </table>
-      </div>
+        </div>
+      )}
     </div>
   );
 }

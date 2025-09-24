@@ -57,6 +57,8 @@ interface TabPackagesProps {
   filteredPackages: PackageVersions[] | undefined;
   packageSearchTerm: string;
   setPackageSearchTerm: (term: string) => void;
+  expandedPackageCards: Set<string>;
+  onPackageCardToggle: (packageKey: string, isExpanded: boolean) => void;
 }
 
 export const TabPackages = forwardRef<TabPackagesHandle, TabPackagesProps>(
@@ -77,6 +79,8 @@ export const TabPackages = forwardRef<TabPackagesHandle, TabPackagesProps>(
       filteredPackages,
       packageSearchTerm,
       setPackageSearchTerm,
+      expandedPackageCards,
+      onPackageCardToggle,
     },
     ref,
   ) {
@@ -132,6 +136,8 @@ export const TabPackages = forwardRef<TabPackagesHandle, TabPackagesProps>(
             vulnerablePackageIds={vulnerablePackageIds}
             validationSets={validationSets}
             onAllowClick={onAllowClick}
+            isExpanded={expandedPackageCards.has(pkg.key)}
+            onToggle={(isExpanded) => onPackageCardToggle(pkg.key, isExpanded)}
           />
         );
       },
@@ -142,11 +148,10 @@ export const TabPackages = forwardRef<TabPackagesHandle, TabPackagesProps>(
         highlightedPackageKey,
         vulnerablePackageIds,
         validationSets,
+        expandedPackageCards,
+        onPackageCardToggle,
       ],
     );
-
-    // Memoize data reference so Virtuoso can optimize
-    // const data = useMemo(() => safePackages, [safePackages]);
 
     // Expose scroll function to parent component
     useImperativeHandle(
