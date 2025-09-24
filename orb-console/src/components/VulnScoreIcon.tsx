@@ -40,7 +40,7 @@ export function VulnScoreIcon({ score }: VulnScoreIconProps) {
 
   return (
     <div
-      className="w-5 h-5 rounded-full flex items-center justify-center text-gray-200 text-xs font-semibold ring-1 ring-gray-700"
+      className="w-5 h-5 rounded-full flex items-center justify-center text-gray-200 text-xs font-semibold ring-1 ring-gray-700 select-none"
       style={{ backgroundColor }}
       title={`CVSS ${score}`}
     >

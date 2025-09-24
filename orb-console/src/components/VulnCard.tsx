@@ -33,10 +33,10 @@ const processCvssDetails = (cvssDetails: CvssDetail[], vulnId: string) => {
           key={`${vulnId}-cvss-${i}`}
           className="text-slate-400 hover:underline break-all px-2 py-1 text-sm flex items-center"
         >
-          <div className="w-1/6 flex justify-left">
+          <div className="flex justify-left pr-2">
             <VulnScoreIcon score={cvss.score} />
           </div>
-          <div className="w-5/6">
+          <div className="">
             {href ? (
               <a
                 href={href}

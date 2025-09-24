@@ -128,7 +128,7 @@ export const TabSystems = forwardRef<TabSystemsHandle, TabSystemsProps>(
               if (virtuosoRef.current) {
                 virtuosoRef.current.scrollToIndex({
                   index,
-                  align: "center",
+                  align: "start", // start, end, center
                 });
               }
             }, 150); // Small delay to ensure tab is visible

@@ -120,19 +120,24 @@ export default function Dashboard() {
   );
 
   // Track expanded state for PackageVersionsCards by package key
-  const [expandedPackageCards, setExpandedPackageCards] = useState<Set<string>>(new Set());
+  const [expandedPackageCards, setExpandedPackageCards] = useState<Set<string>>(
+    new Set(),
+  );
 
-  const handlePackageCardToggle = useCallback((packageKey: string, isExpanded: boolean) => {
-    setExpandedPackageCards(prev => {
-      const newSet = new Set(prev);
-      if (isExpanded) {
-        newSet.add(packageKey);
-      } else {
-        newSet.delete(packageKey);
-      }
-      return newSet;
-    });
-  }, []);
+  const handlePackageCardToggle = useCallback(
+    (packageKey: string, isExpanded: boolean) => {
+      setExpandedPackageCards((prev) => {
+        const newSet = new Set(prev);
+        if (isExpanded) {
+          newSet.add(packageKey);
+        } else {
+          newSet.delete(packageKey);
+        }
+        return newSet;
+      });
+    },
+    [],
+  );
 
   //----------------------------------------------------------------------------
   // tab management, URL updating

@@ -137,7 +137,20 @@ export const TabPackages = forwardRef<TabPackagesHandle, TabPackagesProps>(
             validationSets={validationSets}
             onAllowClick={onAllowClick}
             isExpanded={expandedPackageCards.has(pkg.key)}
-            onToggle={(isExpanded) => onPackageCardToggle(pkg.key, isExpanded)}
+            onToggle={(isExpanded) => {
+              onPackageCardToggle(pkg.key, isExpanded);
+              // If expanding the last item, scroll to ensure it's fully visible
+              if (isExpanded && index === safePackages.length - 1) {
+                setTimeout(() => {
+                  if (virtuosoRef.current) {
+                    virtuosoRef.current.scrollToIndex({
+                      index: safePackages.length - 1,
+                      align: "center",
+                    });
+                  }
+                }, 100); // Small delay to allow expansion to complete
+              }
+            }}
           />
         );
       },
@@ -164,7 +177,7 @@ export const TabPackages = forwardRef<TabPackagesHandle, TabPackagesProps>(
               if (virtuosoRef.current) {
                 virtuosoRef.current.scrollToIndex({
                   index,
-                  align: "center",
+                  align: "start", // just for last
                 });
               }
             }, 150); // Small delay to ensure tab is visible
