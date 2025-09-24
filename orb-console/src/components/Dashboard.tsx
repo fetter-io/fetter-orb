@@ -99,6 +99,26 @@ export default function Dashboard() {
   const tabVulnsRef = useRef<TabVulnsHandle>(null);
   const tabSystemsRef = useRef<TabSystemsHandle>(null);
 
+  // Track expanded state for VulnCards by package_id
+  const [expandedVulnCards, setExpandedVulnCards] = useState<Set<number>>(
+    new Set(),
+  );
+
+  const handleVulnCardToggle = useCallback(
+    (packageId: number, isExpanded: boolean) => {
+      setExpandedVulnCards((prev) => {
+        const newSet = new Set(prev);
+        if (isExpanded) {
+          newSet.add(packageId);
+        } else {
+          newSet.delete(packageId);
+        }
+        return newSet;
+      });
+    },
+    [],
+  );
+
   //----------------------------------------------------------------------------
   // tab management, URL updating
 
@@ -495,11 +515,36 @@ export default function Dashboard() {
     setHighlightedSystemTagId(id);
     setActiveTab("systems");
 
-    // Use Virtuoso scrolling instead of DOM scrollIntoView
+    // Virtuoso
     setTimeout(() => {
       tabSystemsRef.current?.scrollToSystemTag(id);
 
-      setTimeout(() => setHighlightedSystemTagId(null), 3000);
+      setTimeout(() => setHighlightedSystemTagId(null), 5000);
+    }, 100);
+  };
+
+  const handlePackageClick = (key: string) => {
+    setPackageSearchTerm(""); // clear a search
+    setHighlightedPackageKey(key);
+    setActiveTab("packages");
+
+    setTimeout(() => {
+      // Virtuoso
+      tabPackagesRef.current?.scrollToPackage(key);
+      setTimeout(() => setHighlightedPackageKey(null), 5000);
+    }, 100);
+  };
+
+  const handleVulnClick = (id: number) => {
+    setMinVulnScore(0);
+    setMaxVulnScore(10);
+    setHighlightedVulnId(`vuln-pkg-${id}`);
+    setActiveTab("vulns");
+
+    // Use Virtuoso scrolling instead of DOM scrollIntoView
+    setTimeout(() => {
+      tabVulnsRef.current?.scrollToVuln(`vuln-pkg-${id}`);
+      setTimeout(() => setHighlightedVulnId(null), 5000);
     }, 100);
   };
 
@@ -512,33 +557,7 @@ export default function Dashboard() {
         .getElementById(`validation-section-${status}`)
         ?.scrollIntoView({ behavior: "smooth", block: "center" });
 
-      setTimeout(() => setHighlightedAllowStatus(null), 3000);
-    }, 100);
-  };
-
-  const handlePackageClick = (key: string) => {
-    setPackageSearchTerm(""); // clear a search
-    setHighlightedPackageKey(key);
-    setActiveTab("packages");
-
-    setTimeout(() => {
-      // Use Virtuoso's scrollToPackage method instead of scrollIntoView
-      tabPackagesRef.current?.scrollToPackage(key);
-      setTimeout(() => setHighlightedPackageKey(null), 3000);
-    }, 100);
-  };
-
-  // Given a DB package ID
-  const handleVulnClick = (id: number) => {
-    setMinVulnScore(0);
-    setMaxVulnScore(10);
-    setHighlightedVulnId(`vuln-pkg-${id}`);
-    setActiveTab("vulns");
-
-    // Use Virtuoso scrolling instead of DOM scrollIntoView
-    setTimeout(() => {
-      tabVulnsRef.current?.scrollToVuln(`vuln-pkg-${id}`);
-      setTimeout(() => setHighlightedVulnId(null), 3000);
+      setTimeout(() => setHighlightedAllowStatus(null), 5000);
     }, 100);
   };
 
@@ -611,6 +630,8 @@ export default function Dashboard() {
               maxVulnScore={maxVulnScore}
               setMinVulnScore={setMinVulnScore}
               setMaxVulnScore={setMaxVulnScore}
+              expandedVulnCards={expandedVulnCards}
+              onVulnCardToggle={handleVulnCardToggle}
             />
           )}
 

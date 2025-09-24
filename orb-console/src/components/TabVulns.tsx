@@ -42,6 +42,8 @@ interface TabVulnsProps {
   maxVulnScore: number;
   setMinVulnScore: (score: number) => void;
   setMaxVulnScore: (score: number) => void;
+  expandedVulnCards: Set<number>;
+  onVulnCardToggle: (packageId: number, isExpanded: boolean) => void;
 }
 
 export interface TabVulnsHandle {
@@ -64,6 +66,8 @@ export const TabVulns = forwardRef<TabVulnsHandle, TabVulnsProps>(
       maxVulnScore,
       setMinVulnScore,
       setMaxVulnScore,
+      expandedVulnCards,
+      onVulnCardToggle,
     },
     ref,
   ) {
@@ -106,6 +110,20 @@ export const TabVulns = forwardRef<TabVulnsHandle, TabVulnsProps>(
       };
     }, []);
 
+    // Scroll to top on first load to ensure first items are visible
+    useEffect(() => {
+      if (safeAuditData.length > 0 && virtuosoRef.current) {
+        setTimeout(() => {
+          if (virtuosoRef.current) {
+            virtuosoRef.current.scrollToIndex({
+              index: 0,
+              align: "center",
+            });
+          }
+        }, 100); // Small delay to ensure component is rendered
+      }
+    }, [safeAuditData.length]); // Only run when data length changes
+
     // Stable render function for items
     const renderItem = useCallback(
       (index: number, entry: AuditEntry) => {
@@ -118,14 +136,33 @@ export const TabVulns = forwardRef<TabVulnsHandle, TabVulnsProps>(
             highlight={`vuln-pkg-${entry.package_id}` === highlightedVulnId}
             onPackageClick={onPackageClick}
             vulnerabilityScore={vulnerablePackageIds.get(entry.package_id) || 0}
+            isExpanded={expandedVulnCards.has(entry.package_id)}
+            onToggle={(isExpanded) => {
+              onVulnCardToggle(entry.package_id, isExpanded);
+              // If expanding the last item, scroll to ensure it's fully visible
+              if (isExpanded && index === safeAuditData.length - 1) {
+                setTimeout(() => {
+                  if (virtuosoRef.current) {
+                    virtuosoRef.current.scrollToIndex({
+                      index: safeAuditData.length - 1,
+                      align: "end",
+                    });
+                  }
+                }, 100); // Small delay to allow expansion to complete
+              }
+            }}
           />
         );
       },
-      [highlightedVulnId, onPackageClick, vulnerablePackageIds],
+      [
+        highlightedVulnId,
+        onPackageClick,
+        vulnerablePackageIds,
+        expandedVulnCards,
+        onVulnCardToggle,
+        safeAuditData.length,
+      ],
     );
-
-    // Memoize data reference so Virtuoso can optimize
-    const data = useMemo(() => safeAuditData, [safeAuditData]);
 
     // Expose scroll function to parent component
     useImperativeHandle(
@@ -135,9 +172,7 @@ export const TabVulns = forwardRef<TabVulnsHandle, TabVulnsProps>(
           const index = safeAuditData.findIndex(
             (entry) => `vuln-pkg-${entry.package_id}` === vulnId,
           );
-          console.log("Scrolling to vuln:", vulnId, "at index:", index);
           if (index !== -1 && virtuosoRef.current) {
-            // Allow time for tab transition, then scroll smoothly
             setTimeout(() => {
               if (virtuosoRef.current) {
                 virtuosoRef.current.scrollToIndex({
@@ -212,12 +247,11 @@ export const TabVulns = forwardRef<TabVulnsHandle, TabVulnsProps>(
             ref={virtuosoRef}
             style={{
               height: listPxHeight,
-              // Hide scrollbars
-              scrollbarWidth: "none" /* Firefox */,
-              msOverflowStyle: "none" /* IE and Edge */,
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
             }}
-            className="[&::-webkit-scrollbar]:hidden -mt-2" /* Chrome, Safari, Opera */
-            data={data}
+            className="[&::-webkit-scrollbar]:hidden -mt-2"
+            data={safeAuditData}
             // Use itemContent(index, item) signature to avoid undefined object issues
             itemContent={
               renderItem as (
@@ -226,6 +260,10 @@ export const TabVulns = forwardRef<TabVulnsHandle, TabVulnsProps>(
               ) => React.JSX.Element | null
             }
             increaseViewportBy={{ top: 200, bottom: 200 }}
+            followOutput="auto"
+            components={{
+              Footer: () => <div style={{ height: "50px" }} />,
+            }}
           />
         </div>
       </>
