@@ -81,12 +81,14 @@ export default function Dashboard() {
     null,
   );
   // Two-layer filtering: chart-based filtering + display filtering for handleSystemTagClick
-  const [filteredSystemsForDisplay, setFilteredSystemsForDisplay] = useState<SystemTag[] | null>(null);
+  const [filteredSystemsForDisplay, setFilteredSystemsForDisplay] = useState<
+    SystemTag[] | null
+  >(null);
   // Chart-based filtering (first layer) - renamed from filteredSystems for clarity
-  const [chartFilteredSystems, setChartFilteredSystems] = useState<SystemTag[] | null>(
-    null,
-  );
-  
+  const [chartFilteredSystems, setChartFilteredSystems] = useState<
+    SystemTag[] | null
+  >(null);
+
   // Final filtered systems (second layer)
   const filteredSystems = useMemo(() => {
     // If we have a display filter, use that; otherwise use chart-filtered systems
@@ -102,7 +104,6 @@ export default function Dashboard() {
   const [lastPackageDataHash, setLastPackageDataHash] = useState<string | null>(
     null,
   );
-
 
   // Track expanded state for VulnCards by package_id
   const [expandedVulnCards, setExpandedVulnCards] = useState<Set<number>>(
@@ -145,11 +146,15 @@ export default function Dashboard() {
   );
 
   // Two-layer filtering: search-based filtering + display filtering for handlePackageClick
-  const [filteredPackagesForDisplay, setFilteredPackagesForDisplay] = useState<PackageVersions[] | null>(null);
-  
+  const [filteredPackagesForDisplay, setFilteredPackagesForDisplay] = useState<
+    PackageVersions[] | null
+  >(null);
+
   // Two-layer filtering: score-based filtering + display filtering for handleVulnClick
-  const [filteredVulnsForDisplay, setFilteredVulnsForDisplay] = useState<AuditEntry[] | null>(null);
-  
+  const [filteredVulnsForDisplay, setFilteredVulnsForDisplay] = useState<
+    AuditEntry[] | null
+  >(null);
+
   //----------------------------------------------------------------------------
   // tab management, URL updating
 
@@ -560,9 +565,11 @@ export default function Dashboard() {
   const handleSystemTagClick = (id: number) => {
     setHighlightedSystemTagId(id);
     setActiveTab("systems");
-    
+
     // Filter to show only the target system by id (exact match)
-    const targetSystem = systemTagsState.data?.find(system => system.id === id);
+    const targetSystem = systemTagsState.data?.find(
+      (system) => system.id === id,
+    );
     if (targetSystem) {
       setFilteredSystemsForDisplay([targetSystem]);
     }
@@ -571,7 +578,7 @@ export default function Dashboard() {
 
     // Scroll to top of the window to ensure the filtered system is visible
     setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: "smooth" });
       setTimeout(() => {
         setHighlightedSystemTagId(null);
       }, 2000);
@@ -581,16 +588,16 @@ export default function Dashboard() {
   const handlePackageClick = (key: string) => {
     setHighlightedPackageKey(key);
     setActiveTab("packages");
-    
+
     // Expand the target package
-    setExpandedPackageCards(prev => {
+    setExpandedPackageCards((prev) => {
       const newSet = new Set(prev);
       newSet.add(key);
       return newSet;
     });
-    
+
     // Filter to show only the target package by key (exact match)
-    const targetPackage = packagesState.data?.find(pkg => pkg.key === key);
+    const targetPackage = packagesState.data?.find((pkg) => pkg.key === key);
     if (targetPackage) {
       setFilteredPackagesForDisplay([targetPackage]);
     }
@@ -599,7 +606,7 @@ export default function Dashboard() {
 
     // Scroll to top of the window to ensure the filtered package is visible
     setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: "smooth" });
       setTimeout(() => {
         setHighlightedPackageKey(null);
       }, 2000); // Reduced from 5000ms to 2000ms since we're scrolling to show it
@@ -609,16 +616,18 @@ export default function Dashboard() {
   const handleVulnClick = (id: number) => {
     setHighlightedVulnId(`vuln-pkg-${id}`);
     setActiveTab("vulns");
-    
+
     // Expand the target vulnerability card
-    setExpandedVulnCards(prev => {
+    setExpandedVulnCards((prev) => {
       const newSet = new Set(prev);
       newSet.add(id);
       return newSet;
     });
-    
+
     // Filter to show only the target vulnerability by package_id (exact match)
-    const targetVuln = auditState.data?.find(entry => entry.package_id === id);
+    const targetVuln = auditState.data?.find(
+      (entry) => entry.package_id === id,
+    );
     if (targetVuln) {
       setFilteredVulnsForDisplay([targetVuln]);
     }
@@ -628,7 +637,7 @@ export default function Dashboard() {
 
     // Scroll to top of the window to ensure the filtered vulnerability is visible
     setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: "smooth" });
       setTimeout(() => {
         setHighlightedVulnId(null);
       }, 2000);
