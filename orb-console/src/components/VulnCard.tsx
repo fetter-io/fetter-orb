@@ -31,22 +31,25 @@ const processCvssDetails = (cvssDetails: CvssDetail[], vulnId: string) => {
       return (
         <div
           key={`${vulnId}-cvss-${i}`}
-          className="text-slate-400 hover:underline break-all px-2 py-1 text-sm flex items-center gap-1"
+          className="text-slate-400 hover:underline break-all px-2 py-1 text-sm flex items-center"
         >
-          <VulnScoreIcon score={cvss.score} />
-          <span> </span>
-          {href ? (
-            <a
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-slate-400 hover:underline break-all"
-            >
-              {cvss.vector}
-            </a>
-          ) : (
-            <span>{cvss.vector}</span>
-          )}
+          <div className="w-1/6 flex justify-left">
+            <VulnScoreIcon score={cvss.score} />
+          </div>
+          <div className="w-5/6">
+            {href ? (
+              <a
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-slate-400 hover:underline break-all"
+              >
+                {cvss.vector}
+              </a>
+            ) : (
+              <span>{cvss.vector}</span>
+            )}
+          </div>
         </div>
       );
     });
@@ -88,7 +91,7 @@ export function VulnCard({
           <CollapseButton
             isExpanded={isExpanded}
             onToggle={() => onToggle(!isExpanded)}
-            className="ml-2"
+            className="ml-0"
           />
           <h3 className="text-white font-semibold text-base truncate">
             {pkg.name}
@@ -134,10 +137,10 @@ export function VulnCard({
               <div className="text-gray-400 space-y-1">
                 {vuln.cvss_details && vuln.cvss_details.length > 0 && (
                   <div className="mt-1">
-                    <span className="ml-7 text-slate-400 text-sm font-semibold block mb-1 mt-2">
-                      CVSS Details
+                    <span className="text-slate-400 text-sm text-right font-semibold block mb-1 mt-2">
+                      CVSS
                     </span>
-                    <div className="ml-6 grid grid-cols-1 bg-slate-900 rounded-sm overflow-hidden divide-y divide-slate-700">
+                    <div className="grid grid-cols-1 bg-slate-900 rounded-sm overflow-hidden divide-y divide-slate-700">
                       {processCvssDetails(vuln.cvss_details, id)}
                     </div>
                   </div>
@@ -145,10 +148,10 @@ export function VulnCard({
 
                 {vuln.references.length > 0 && (
                   <div className="mt-1">
-                    <span className="ml-7 text-slate-400 text-sm font-semibold block mb-1 mt-2">
+                    <span className="text-slate-400 text-sm text-right font-semibold block mb-1 mt-2">
                       References
                     </span>
-                    <div className="ml-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 bg-slate-900 rounded-sm overflow-hidden">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 bg-slate-900 rounded-sm overflow-hidden">
                       {vuln.references.map((ref, i) => {
                         let hostname = "";
                         try {
