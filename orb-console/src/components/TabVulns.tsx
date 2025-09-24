@@ -110,6 +110,20 @@ export const TabVulns = forwardRef<TabVulnsHandle, TabVulnsProps>(
       };
     }, []);
 
+    // Scroll to top on first load to ensure first items are visible
+    useEffect(() => {
+      if (safeAuditData.length > 0 && virtuosoRef.current) {
+        setTimeout(() => {
+          if (virtuosoRef.current) {
+            virtuosoRef.current.scrollToIndex({
+              index: 0,
+              align: "center",
+            });
+          }
+        }, 100); // Small delay to ensure component is rendered
+      }
+    }, [safeAuditData.length]); // Only run when data length changes
+
     // Stable render function for items
     const renderItem = useCallback(
       (index: number, entry: AuditEntry) => {
