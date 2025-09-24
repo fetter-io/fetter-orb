@@ -24,7 +24,7 @@ import { TabAccount } from "@/components/TabAccount";
 import { TabVulns } from "@/components/TabVulns";
 import { TabPackages } from "@/components/TabPackages";
 import { TabAllow } from "@/components/TabAllow";
-import { TabSystems, TabSystemsHandle } from "@/components/TabSystems";
+import { TabSystems } from "@/components/TabSystems";
 import { Weave } from "@/components/Weave";
 import colors from "tailwindcss/colors";
 import { UserMenuDropdown } from "@/components/UserMenuDropdown";
@@ -80,9 +80,18 @@ export default function Dashboard() {
   const [highlightedVulnId, setHighlightedVulnId] = useState<string | null>(
     null,
   );
-  const [filteredSystems, setFilteredSystems] = useState<SystemTag[] | null>(
+  // Two-layer filtering: chart-based filtering + display filtering for handleSystemTagClick
+  const [filteredSystemsForDisplay, setFilteredSystemsForDisplay] = useState<SystemTag[] | null>(null);
+  // Chart-based filtering (first layer) - renamed from filteredSystems for clarity
+  const [chartFilteredSystems, setChartFilteredSystems] = useState<SystemTag[] | null>(
     null,
   );
+  
+  // Final filtered systems (second layer)
+  const filteredSystems = useMemo(() => {
+    // If we have a display filter, use that; otherwise use chart-filtered systems
+    return filteredSystemsForDisplay || chartFilteredSystems;
+  }, [filteredSystemsForDisplay, chartFilteredSystems]);
   const [minVulnScore, setMinVulnScore] = useState<number>(0);
   const [maxVulnScore, setMaxVulnScore] = useState<number>(10);
   const [packageSearchTerm, setPackageSearchTerm] = useState<string>("");
@@ -94,8 +103,6 @@ export default function Dashboard() {
     null,
   );
 
-  // Ref for TabSystems to control Virtuoso scrolling
-  const tabSystemsRef = useRef<TabSystemsHandle>(null);
 
   // Track expanded state for VulnCards by package_id
   const [expandedVulnCards, setExpandedVulnCards] = useState<Set<number>>(
@@ -142,7 +149,7 @@ export default function Dashboard() {
   
   // Two-layer filtering: score-based filtering + display filtering for handleVulnClick
   const [filteredVulnsForDisplay, setFilteredVulnsForDisplay] = useState<AuditEntry[] | null>(null);
-
+  
   //----------------------------------------------------------------------------
   // tab management, URL updating
 
@@ -551,15 +558,23 @@ export default function Dashboard() {
   // These methods support on click actions that change the currently active tab
 
   const handleSystemTagClick = (id: number) => {
-    setFilteredSystems(null);
     setHighlightedSystemTagId(id);
     setActiveTab("systems");
+    
+    // Filter to show only the target system by id (exact match)
+    const targetSystem = systemTagsState.data?.find(system => system.id === id);
+    if (targetSystem) {
+      setFilteredSystemsForDisplay([targetSystem]);
+    }
+    // Clear chart-based filter since we're showing a specific system
+    setChartFilteredSystems(null);
 
-    // Virtuoso
+    // Scroll to top of the window to ensure the filtered system is visible
     setTimeout(() => {
-      tabSystemsRef.current?.scrollToSystemTag(id);
-
-      setTimeout(() => setHighlightedSystemTagId(null), 5000);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setTimeout(() => {
+        setHighlightedSystemTagId(null);
+      }, 2000);
     }, 100);
   };
 
@@ -732,13 +747,15 @@ export default function Dashboard() {
 
           {activeTab === "systems" && (
             <TabSystems
-              ref={tabSystemsRef}
               systemTagsState={systemTagsState}
               highlightedSystemTagId={highlightedSystemTagId}
               onPackagesClick={setSelectedSystemId}
               setActiveTab={setActiveTab}
               filteredSystems={filteredSystems}
-              setFilteredSystems={setFilteredSystems}
+              chartFilteredSystems={chartFilteredSystems}
+              setChartFilteredSystems={setChartFilteredSystems}
+              filteredSystemsForDisplay={filteredSystemsForDisplay}
+              setFilteredSystemsForDisplay={setFilteredSystemsForDisplay}
             />
           )}
 

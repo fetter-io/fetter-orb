@@ -5,12 +5,8 @@ import React, {
   useEffect,
   useMemo,
   useState,
-  useRef,
-  forwardRef,
-  useImperativeHandle,
 } from "react";
 import dynamic from "next/dynamic";
-import type { VirtuosoHandle } from "react-virtuoso";
 
 // SSR-safe Virtuoso (avoids window access during prerender)
 const Virtuoso = dynamic(
@@ -27,40 +23,40 @@ import { DataState } from "@/hooks/useDashboardData";
 const VIEWPORT_FRACTION = 1.0;
 const MIN_LIST_PX = 280;
 
-export interface TabSystemsHandle {
-  scrollToSystemTag: (systemTagId: number) => void;
-}
-
 interface TabSystemsProps {
   systemTagsState: DataState<SystemTag[]>;
   highlightedSystemTagId: number | null;
   onPackagesClick: (id: number) => void;
   setActiveTab: (tab: Tab) => void;
   filteredSystems: SystemTag[] | null;
-  setFilteredSystems: (systems: SystemTag[] | null) => void;
+  chartFilteredSystems: SystemTag[] | null;
+  setChartFilteredSystems: (systems: SystemTag[] | null) => void;
+  filteredSystemsForDisplay: SystemTag[] | null;
+  setFilteredSystemsForDisplay: (systems: SystemTag[] | null) => void;
 }
 
-export const TabSystems = forwardRef<TabSystemsHandle, TabSystemsProps>(
-  function TabSystems(
-    {
-      systemTagsState,
-      highlightedSystemTagId,
-      onPackagesClick,
-      setActiveTab,
-      filteredSystems,
-      setFilteredSystems,
-    },
-    ref,
-  ) {
-    // Virtuoso ref for scrolling control
-    const virtuosoRef = useRef<VirtuosoHandle>(null);
+export function TabSystems({
+  systemTagsState,
+  highlightedSystemTagId,
+  onPackagesClick,
+  setActiveTab,
+  filteredSystems,
+  chartFilteredSystems,
+  setChartFilteredSystems,
+  filteredSystemsForDisplay,
+  setFilteredSystemsForDisplay,
+}: TabSystemsProps) {
 
     const handleScatterPointClick = (systems: SystemTag[]) => {
+      // Clear display filter when interacting with chart
+      if (filteredSystemsForDisplay) {
+        setFilteredSystemsForDisplay(null);
+      }
       // If empty array is passed, clear the filter
-      setFilteredSystems(systems.length > 0 ? systems : null);
+      setChartFilteredSystems(systems.length > 0 ? systems : null);
     };
 
-    const isFiltered = !!filteredSystems;
+    const isFiltered = !!(chartFilteredSystems || filteredSystemsForDisplay);
 
     // Always work with a defined array
     const safeSystems: SystemTag[] = useMemo(
@@ -117,26 +113,6 @@ export const TabSystems = forwardRef<TabSystemsHandle, TabSystemsProps>(
       [highlightedSystemTagId, onPackagesClick, setActiveTab],
     );
 
-    // Expose scroll function to parent component
-    useImperativeHandle(
-      ref,
-      () => ({
-        scrollToSystemTag: (systemTagId: number) => {
-          const index = safeSystems.findIndex((tag) => tag.id === systemTagId);
-          if (index !== -1 && virtuosoRef.current) {
-            setTimeout(() => {
-              if (virtuosoRef.current) {
-                virtuosoRef.current.scrollToIndex({
-                  index,
-                  align: "start", // start, end, center
-                });
-              }
-            }, 150); // Small delay to ensure tab is visible
-          }
-        },
-      }),
-      [safeSystems],
-    );
 
     return (
       <>
@@ -151,12 +127,15 @@ export const TabSystems = forwardRef<TabSystemsHandle, TabSystemsProps>(
             <div className="flex items-center justify-between py-0 px-1 mt-1">
               <span className="text-xs text-gray-600">
                 {isFiltered
-                  ? `Showing ${filteredSystems?.length || 0} of ${systemTagsState.data?.length || 0} systems`
+                  ? `Showing ${safeSystems?.length || 0} of ${systemTagsState.data?.length || 0} systems`
                   : `Showing ${systemTagsState.data?.length || 0} systems`}
               </span>
               {isFiltered && (
                 <button
-                  onClick={() => handleScatterPointClick([])}
+                  onClick={() => {
+                    setChartFilteredSystems(null);
+                    setFilteredSystemsForDisplay(null);
+                  }}
                   className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
                 >
                   Show All
@@ -169,7 +148,6 @@ export const TabSystems = forwardRef<TabSystemsHandle, TabSystemsProps>(
         {/* Virtualized list */}
         <div className="w-full" style={{ height: listPxHeight }}>
           <Virtuoso
-            ref={virtuosoRef}
             style={{
               height: listPxHeight,
               scrollbarWidth: "none",
@@ -189,5 +167,4 @@ export const TabSystems = forwardRef<TabSystemsHandle, TabSystemsProps>(
         </div>
       </>
     );
-  },
-);
+}
