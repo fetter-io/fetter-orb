@@ -22,7 +22,7 @@ import { TenantSelector } from "@/components/TenantSelector";
 import { TabTenant } from "@/components/TabTenant";
 import { TabAccount } from "@/components/TabAccount";
 import { TabVulns, TabVulnsHandle } from "@/components/TabVulns";
-import { TabPackages, TabPackagesHandle } from "@/components/TabPackages";
+import { TabPackages } from "@/components/TabPackages";
 import { TabAllow } from "@/components/TabAllow";
 import { TabSystems, TabSystemsHandle } from "@/components/TabSystems";
 import { Weave } from "@/components/Weave";
@@ -95,7 +95,6 @@ export default function Dashboard() {
   );
 
   // Ref for TabPackages to control Virtuoso scrolling
-  const tabPackagesRef = useRef<TabPackagesHandle>(null);
   const tabVulnsRef = useRef<TabVulnsHandle>(null);
   const tabSystemsRef = useRef<TabSystemsHandle>(null);
 
@@ -138,6 +137,9 @@ export default function Dashboard() {
     },
     [],
   );
+
+  // Two-layer filtering: search-based filtering + display filtering for handlePackageClick
+  const [filteredPackagesForDisplay, setFilteredPackagesForDisplay] = useState<PackageVersions[] | null>(null);
 
   //----------------------------------------------------------------------------
   // tab management, URL updating
@@ -515,10 +517,14 @@ export default function Dashboard() {
     });
   }, [auditState.data, vulnerablePackageIds, minVulnScore, maxVulnScore]);
 
-  // Filter packages by search term
-  const filteredPackages = useMemo(() => {
-    if (!packagesState.data || !packageSearchTerm.trim()) {
-      return packagesState.data || [];
+  // Search-based filtering (first layer)
+  const searchFilteredPackages = useMemo(() => {
+    if (!packagesState.data) {
+      return [];
+    }
+
+    if (!packageSearchTerm.trim()) {
+      return packagesState.data;
     }
 
     const lowerSearchTerm = packageSearchTerm.toLowerCase();
@@ -526,6 +532,12 @@ export default function Dashboard() {
       pkg.name.toLowerCase().includes(lowerSearchTerm),
     );
   }, [packagesState.data, packageSearchTerm]);
+
+  // Final filtered packages (second layer)
+  const filteredPackages = useMemo(() => {
+    // If we have a display filter, use that; otherwise use search-filtered packages
+    return filteredPackagesForDisplay || searchFilteredPackages;
+  }, [filteredPackagesForDisplay, searchFilteredPackages]);
 
   //----------------------------------------------------------------------------
   // These methods support on click actions that change the currently active tab
@@ -544,15 +556,27 @@ export default function Dashboard() {
   };
 
   const handlePackageClick = (key: string) => {
-    setPackageSearchTerm(""); // clear a search
     setHighlightedPackageKey(key);
     setActiveTab("packages");
+    
+    // Expand the target package
+    setExpandedPackageCards(prev => {
+      const newSet = new Set(prev);
+      newSet.add(key);
+      return newSet;
+    });
+    
+    // Filter to show only the target package by key (exact match)
+    const targetPackage = packagesState.data?.find(pkg => pkg.key === key);
+    if (targetPackage) {
+      setFilteredPackagesForDisplay([targetPackage]);
+    }
+    // Clear any existing search term since we're showing a specific package
+    setPackageSearchTerm("");
 
     setTimeout(() => {
-      // Virtuoso
-      tabPackagesRef.current?.scrollToPackage(key);
-      setTimeout(() => setHighlightedPackageKey(null), 5000);
-    }, 100);
+      setHighlightedPackageKey(null);
+    }, 5000);
   };
 
   const handleVulnClick = (id: number) => {
@@ -615,7 +639,6 @@ export default function Dashboard() {
         <div className="max-w-4xl mx-auto flex flex-col gap-4">
           {activeTab === "packages" && (
             <TabPackages
-              ref={tabPackagesRef}
               packagesState={packagesState}
               packageCountsState={packageCountsState}
               systemTagsState={systemTagsState}
@@ -631,6 +654,8 @@ export default function Dashboard() {
               filteredPackages={filteredPackages}
               packageSearchTerm={packageSearchTerm}
               setPackageSearchTerm={setPackageSearchTerm}
+              filteredPackagesForDisplay={filteredPackagesForDisplay}
+              setFilteredPackagesForDisplay={setFilteredPackagesForDisplay}
               expandedPackageCards={expandedPackageCards}
               onPackageCardToggle={handlePackageCardToggle}
             />

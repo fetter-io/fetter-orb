@@ -5,12 +5,8 @@ import React, {
   useEffect,
   useMemo,
   useState,
-  useRef,
-  forwardRef,
-  useImperativeHandle,
 } from "react";
 import dynamic from "next/dynamic";
-import type { VirtuosoHandle } from "react-virtuoso";
 
 // SSR-safe Virtuoso (avoids window access during prerender)
 const Virtuoso = dynamic(
@@ -34,9 +30,6 @@ import { DataState } from "@/hooks/useDashboardData";
 const VIEWPORT_FRACTION = 1.0;
 const MIN_LIST_PX = 280;
 
-export interface TabPackagesHandle {
-  scrollToPackage: (packageKey: string) => void;
-}
 
 interface TabPackagesProps {
   packagesState: DataState<PackageVersions[]>;
@@ -59,33 +52,31 @@ interface TabPackagesProps {
   setPackageSearchTerm: (term: string) => void;
   expandedPackageCards: Set<string>;
   onPackageCardToggle: (packageKey: string, isExpanded: boolean) => void;
+  filteredPackagesForDisplay: PackageVersions[] | null;
+  setFilteredPackagesForDisplay: (packages: PackageVersions[] | null) => void;
 }
 
-export const TabPackages = forwardRef<TabPackagesHandle, TabPackagesProps>(
-  function TabPackages(
-    {
-      packagesState,
-      packageCountsState,
-      systemTagsState,
-      auditState,
-      selectedSystemId,
-      setSelectedSystemId,
-      highlightedPackageKey,
-      vulnerablePackageIds,
-      validationSets,
-      onSystemTagClick,
-      onVulnClick,
-      onAllowClick,
-      filteredPackages,
-      packageSearchTerm,
-      setPackageSearchTerm,
-      expandedPackageCards,
-      onPackageCardToggle,
-    },
-    ref,
-  ) {
-    // Virtuoso ref for scrolling control
-    const virtuosoRef = useRef<VirtuosoHandle>(null);
+export function TabPackages({
+  packagesState,
+  packageCountsState,
+  systemTagsState,
+  auditState,
+  selectedSystemId,
+  setSelectedSystemId,
+  highlightedPackageKey,
+  vulnerablePackageIds,
+  validationSets,
+  onSystemTagClick,
+  onVulnClick,
+  onAllowClick,
+  filteredPackages,
+  packageSearchTerm,
+  setPackageSearchTerm,
+  expandedPackageCards,
+  onPackageCardToggle,
+  filteredPackagesForDisplay,
+  setFilteredPackagesForDisplay,
+}: TabPackagesProps) {
 
     // Always work with a defined array
     const safePackages: PackageVersions[] = useMemo(
@@ -137,20 +128,7 @@ export const TabPackages = forwardRef<TabPackagesHandle, TabPackagesProps>(
             validationSets={validationSets}
             onAllowClick={onAllowClick}
             isExpanded={expandedPackageCards.has(pkg.key)}
-            onToggle={(isExpanded) => {
-              onPackageCardToggle(pkg.key, isExpanded);
-              // If expanding the last item, scroll to ensure it's fully visible
-              if (isExpanded && index === safePackages.length - 1) {
-                setTimeout(() => {
-                  if (virtuosoRef.current) {
-                    virtuosoRef.current.scrollToIndex({
-                      index: safePackages.length - 1,
-                      align: "center",
-                    });
-                  }
-                }, 100); // Small delay to allow expansion to complete
-              }
-            }}
+            onToggle={(isExpanded) => onPackageCardToggle(pkg.key, isExpanded)}
           />
         );
       },
@@ -166,26 +144,6 @@ export const TabPackages = forwardRef<TabPackagesHandle, TabPackagesProps>(
       ],
     );
 
-    // Expose scroll function to parent component
-    useImperativeHandle(
-      ref,
-      () => ({
-        scrollToPackage: (packageKey: string) => {
-          const index = safePackages.findIndex((pkg) => pkg.key === packageKey);
-          if (index !== -1 && virtuosoRef.current) {
-            setTimeout(() => {
-              if (virtuosoRef.current) {
-                virtuosoRef.current.scrollToIndex({
-                  index,
-                  align: "start", // just for last
-                });
-              }
-            }, 150); // Small delay to ensure tab is visible
-          }
-        },
-      }),
-      [safePackages],
-    );
 
     return (
       <>
@@ -228,9 +186,12 @@ export const TabPackages = forwardRef<TabPackagesHandle, TabPackagesProps>(
               Showing {safePackages.length} of {packagesState.data?.length || 0}{" "}
               packages
             </span>
-            {packageSearchTerm && (
+            {(packageSearchTerm || filteredPackagesForDisplay) && (
               <button
-                onClick={() => setPackageSearchTerm("")}
+                onClick={() => {
+                  setPackageSearchTerm("");
+                  setFilteredPackagesForDisplay(null);
+                }}
                 className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
               >
                 Show All
@@ -242,7 +203,6 @@ export const TabPackages = forwardRef<TabPackagesHandle, TabPackagesProps>(
         {/* Virtualized list */}
         <div className="w-full" style={{ height: listPxHeight }}>
           <Virtuoso
-            ref={virtuosoRef}
             style={{
               height: listPxHeight,
               scrollbarWidth: "none",
@@ -262,5 +222,4 @@ export const TabPackages = forwardRef<TabPackagesHandle, TabPackagesProps>(
         </div>
       </>
     );
-  },
-);
+}
