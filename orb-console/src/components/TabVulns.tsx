@@ -5,12 +5,8 @@ import React, {
   useEffect,
   useMemo,
   useState,
-  useRef,
-  forwardRef,
-  useImperativeHandle,
 } from "react";
 import dynamic from "next/dynamic";
-import type { VirtuosoHandle } from "react-virtuoso";
 
 // SSR-safe Virtuoso (avoids window access during prerender)
 const Virtuoso = dynamic(
@@ -48,35 +44,25 @@ interface TabVulnsProps {
   setFilteredVulnsForDisplay: (vulns: AuditEntry[] | null) => void;
 }
 
-export interface TabVulnsHandle {
-  scrollToVuln: (vulnId: string) => void;
-}
-
-export const TabVulns = forwardRef<TabVulnsHandle, TabVulnsProps>(
-  function TabVulns(
-    {
-      auditState,
-      selectedSystemId,
-      setSelectedSystemId,
-      systemTagsState,
-      packagesState,
-      highlightedVulnId,
-      onPackageClick,
-      filteredAuditData,
-      vulnerablePackageIds,
-      minVulnScore,
-      maxVulnScore,
-      setMinVulnScore,
-      setMaxVulnScore,
-      expandedVulnCards,
-      onVulnCardToggle,
-      filteredVulnsForDisplay,
-      setFilteredVulnsForDisplay,
-    },
-    ref,
-  ) {
-    // Virtuoso ref for scrolling control
-    const virtuosoRef = useRef<VirtuosoHandle>(null);
+export function TabVulns({
+  auditState,
+  selectedSystemId,
+  setSelectedSystemId,
+  systemTagsState,
+  packagesState,
+  highlightedVulnId,
+  onPackageClick,
+  filteredAuditData,
+  vulnerablePackageIds,
+  minVulnScore,
+  maxVulnScore,
+  setMinVulnScore,
+  setMaxVulnScore,
+  expandedVulnCards,
+  onVulnCardToggle,
+  filteredVulnsForDisplay,
+  setFilteredVulnsForDisplay,
+}: TabVulnsProps) {
 
     // Always work with a defined array
     const safeAuditData: AuditEntry[] = useMemo(
@@ -114,19 +100,6 @@ export const TabVulns = forwardRef<TabVulnsHandle, TabVulnsProps>(
       };
     }, []);
 
-    // Scroll to top on first load to ensure first items are visible
-    useEffect(() => {
-      if (safeAuditData.length > 0 && virtuosoRef.current) {
-        setTimeout(() => {
-          if (virtuosoRef.current) {
-            virtuosoRef.current.scrollToIndex({
-              index: 0,
-              align: "start",
-            });
-          }
-        }, 100); // Small delay to ensure component is rendered
-      }
-    }, [safeAuditData.length]); // Only run when data length changes
 
     // Stable render function for items
     const renderItem = useCallback(
@@ -143,17 +116,6 @@ export const TabVulns = forwardRef<TabVulnsHandle, TabVulnsProps>(
             isExpanded={expandedVulnCards.has(entry.package_id)}
             onToggle={(isExpanded) => {
               onVulnCardToggle(entry.package_id, isExpanded);
-              // If expanding the last item, scroll to ensure it's fully visible
-              if (isExpanded && index === safeAuditData.length - 1) {
-                setTimeout(() => {
-                  if (virtuosoRef.current) {
-                    virtuosoRef.current.scrollToIndex({
-                      index: safeAuditData.length - 1,
-                      align: "center",
-                    });
-                  }
-                }, 100); // Small delay to allow expansion to complete
-              }
             }}
           />
         );
@@ -164,32 +126,9 @@ export const TabVulns = forwardRef<TabVulnsHandle, TabVulnsProps>(
         vulnerablePackageIds,
         expandedVulnCards,
         onVulnCardToggle,
-        safeAuditData.length,
       ],
     );
 
-    // Expose scroll function to parent component
-    useImperativeHandle(
-      ref,
-      () => ({
-        scrollToVuln: (vulnId: string) => {
-          const index = safeAuditData.findIndex(
-            (entry) => `vuln-pkg-${entry.package_id}` === vulnId,
-          );
-          if (index !== -1 && virtuosoRef.current) {
-            setTimeout(() => {
-              if (virtuosoRef.current) {
-                virtuosoRef.current.scrollToIndex({
-                  index,
-                  align: "start", // start, end, center
-                });
-              }
-            }, 150); // Small delay to ensure tab is visible
-          }
-        },
-      }),
-      [safeAuditData],
-    );
 
     return (
       <>
@@ -253,7 +192,6 @@ export const TabVulns = forwardRef<TabVulnsHandle, TabVulnsProps>(
         {/* Virtualized list */}
         <div className="w-full" style={{ height: listPxHeight }}>
           <Virtuoso
-            ref={virtuosoRef}
             style={{
               height: listPxHeight,
               scrollbarWidth: "none",
@@ -277,5 +215,4 @@ export const TabVulns = forwardRef<TabVulnsHandle, TabVulnsProps>(
         </div>
       </>
     );
-  },
-);
+}

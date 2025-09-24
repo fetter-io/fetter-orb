@@ -21,7 +21,7 @@ import {
 import { TenantSelector } from "@/components/TenantSelector";
 import { TabTenant } from "@/components/TabTenant";
 import { TabAccount } from "@/components/TabAccount";
-import { TabVulns, TabVulnsHandle } from "@/components/TabVulns";
+import { TabVulns } from "@/components/TabVulns";
 import { TabPackages } from "@/components/TabPackages";
 import { TabAllow } from "@/components/TabAllow";
 import { TabSystems, TabSystemsHandle } from "@/components/TabSystems";
@@ -94,8 +94,7 @@ export default function Dashboard() {
     null,
   );
 
-  // Ref for TabPackages to control Virtuoso scrolling
-  const tabVulnsRef = useRef<TabVulnsHandle>(null);
+  // Ref for TabSystems to control Virtuoso scrolling
   const tabSystemsRef = useRef<TabSystemsHandle>(null);
 
   // Track expanded state for VulnCards by package_id
@@ -692,7 +691,6 @@ export default function Dashboard() {
 
           {activeTab === "vulns" && (
             <TabVulns
-              ref={tabVulnsRef}
               auditState={auditState}
               selectedSystemId={selectedSystemId}
               setSelectedSystemId={setSelectedSystemId}
