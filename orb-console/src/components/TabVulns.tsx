@@ -117,7 +117,7 @@ export const TabVulns = forwardRef<TabVulnsHandle, TabVulnsProps>(
           if (virtuosoRef.current) {
             virtuosoRef.current.scrollToIndex({
               index: 0,
-              align: "center",
+              align: "start",
             });
           }
         }, 100); // Small delay to ensure component is rendered
@@ -145,7 +145,7 @@ export const TabVulns = forwardRef<TabVulnsHandle, TabVulnsProps>(
                   if (virtuosoRef.current) {
                     virtuosoRef.current.scrollToIndex({
                       index: safeAuditData.length - 1,
-                      align: "end",
+                      align: "center",
                     });
                   }
                 }, 100); // Small delay to allow expansion to complete
@@ -177,7 +177,7 @@ export const TabVulns = forwardRef<TabVulnsHandle, TabVulnsProps>(
               if (virtuosoRef.current) {
                 virtuosoRef.current.scrollToIndex({
                   index,
-                  align: "center",
+                  align: "start", // start, end, center
                 });
               }
             }, 150); // Small delay to ensure tab is visible

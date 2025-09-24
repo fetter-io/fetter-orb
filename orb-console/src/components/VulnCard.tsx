@@ -33,10 +33,10 @@ const processCvssDetails = (cvssDetails: CvssDetail[], vulnId: string) => {
           key={`${vulnId}-cvss-${i}`}
           className="text-slate-400 hover:underline break-all px-2 py-1 text-sm flex items-center"
         >
-          <div className="w-1/6 flex justify-left">
+          <div className="flex justify-left pr-2">
             <VulnScoreIcon score={cvss.score} />
           </div>
-          <div className="w-5/6">
+          <div className="">
             {href ? (
               <a
                 href={href}
@@ -79,7 +79,7 @@ export function VulnCard({
   return (
     <div
       id={`vuln-pkg-${package_id}`}
-      className={`p-2 mb-2 border rounded-sm bg-gray-800 shadow-md text-sm text-gray-200 space-y-2 transition-colors duration-1000
+      className={`p-2 mb-2 border rounded-sm bg-gray-800 shadow-md text-gray-200 transition-colors duration-1000
         ${
           highlight
             ? "border-blue-500 bg-gray-700"
@@ -93,13 +93,13 @@ export function VulnCard({
             onToggle={() => onToggle(!isExpanded)}
             className="ml-0"
           />
-          <h3 className="text-white font-semibold text-base truncate">
+          <h3 className="text-white font-semibold text-base truncate text-sm">
             {pkg.name}
           </h3>
           <span className="text-gray-400 text-sm">{pkg.version}</span>
           <button
             title="Package details"
-            className="border-b border-transparent hover:border-blue-400 cursor-pointer"
+            className="border-b border-transparent hover:border-blue-400 cursor-pointer text-sm"
             onClick={() => onPackageClick?.(pkg.key)}
           >
             📦
@@ -117,7 +117,7 @@ export function VulnCard({
 
           return (
             <div key={id} className="pt-2 mt-2 space-y-2">
-              <p className="font-semibold text-slate-300">
+              <p className="font-semibold text-slate-300 ml-1">
                 <a
                   href={`https://osv.dev/vulnerability/${vuln.id}`}
                   target="_blank"
@@ -137,7 +137,7 @@ export function VulnCard({
               <div className="text-gray-400 space-y-1">
                 {vuln.cvss_details && vuln.cvss_details.length > 0 && (
                   <div className="mt-1">
-                    <span className="text-slate-400 text-sm text-right font-semibold block mb-1 mt-2">
+                    <span className="text-slate-400 text-sm font-semibold block ml-1 mb-1 mt-2">
                       CVSS
                     </span>
                     <div className="grid grid-cols-1 bg-slate-900 rounded-sm overflow-hidden divide-y divide-slate-700">
@@ -148,7 +148,7 @@ export function VulnCard({
 
                 {vuln.references.length > 0 && (
                   <div className="mt-1">
-                    <span className="text-slate-400 text-sm text-right font-semibold block mb-1 mt-2">
+                    <span className="text-slate-400 text-sm font-semibold block ml-1 mb-1 mt-2">
                       References
                     </span>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 bg-slate-900 rounded-sm overflow-hidden">
