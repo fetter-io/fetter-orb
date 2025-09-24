@@ -140,6 +140,9 @@ export default function Dashboard() {
 
   // Two-layer filtering: search-based filtering + display filtering for handlePackageClick
   const [filteredPackagesForDisplay, setFilteredPackagesForDisplay] = useState<PackageVersions[] | null>(null);
+  
+  // Two-layer filtering: score-based filtering + display filtering for handleVulnClick
+  const [filteredVulnsForDisplay, setFilteredVulnsForDisplay] = useState<AuditEntry[] | null>(null);
 
   //----------------------------------------------------------------------------
   // tab management, URL updating
@@ -507,8 +510,8 @@ export default function Dashboard() {
     return scoreMap;
   }, [auditState.data]);
 
-  // Filter audit data by vulnerability score range
-  const filteredAuditData = useMemo(() => {
+  // Score-based filtering (first layer)
+  const scoreFilteredAuditData = useMemo(() => {
     if (!auditState.data) return [];
 
     return auditState.data.filter((entry) => {
@@ -516,6 +519,12 @@ export default function Dashboard() {
       return score >= minVulnScore && score <= maxVulnScore;
     });
   }, [auditState.data, vulnerablePackageIds, minVulnScore, maxVulnScore]);
+
+  // Final filtered audit data (second layer)
+  const filteredAuditData = useMemo(() => {
+    // If we have a display filter, use that; otherwise use score-filtered audit data
+    return filteredVulnsForDisplay || scoreFilteredAuditData;
+  }, [filteredVulnsForDisplay, scoreFilteredAuditData]);
 
   // Search-based filtering (first layer)
   const searchFilteredPackages = useMemo(() => {
@@ -574,21 +583,41 @@ export default function Dashboard() {
     // Clear any existing search term since we're showing a specific package
     setPackageSearchTerm("");
 
+    // Scroll to top of the window to ensure the filtered package is visible
     setTimeout(() => {
-      setHighlightedPackageKey(null);
-    }, 5000);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setTimeout(() => {
+        setHighlightedPackageKey(null);
+      }, 2000); // Reduced from 5000ms to 2000ms since we're scrolling to show it
+    }, 100);
   };
 
   const handleVulnClick = (id: number) => {
-    setMinVulnScore(0);
-    setMaxVulnScore(10);
     setHighlightedVulnId(`vuln-pkg-${id}`);
     setActiveTab("vulns");
+    
+    // Expand the target vulnerability card
+    setExpandedVulnCards(prev => {
+      const newSet = new Set(prev);
+      newSet.add(id);
+      return newSet;
+    });
+    
+    // Filter to show only the target vulnerability by package_id (exact match)
+    const targetVuln = auditState.data?.find(entry => entry.package_id === id);
+    if (targetVuln) {
+      setFilteredVulnsForDisplay([targetVuln]);
+    }
+    // Reset score filters since we're showing a specific vulnerability
+    setMinVulnScore(0);
+    setMaxVulnScore(10);
 
-    // Use Virtuoso scrolling instead of DOM scrollIntoView
+    // Scroll to top of the window to ensure the filtered vulnerability is visible
     setTimeout(() => {
-      tabVulnsRef.current?.scrollToVuln(`vuln-pkg-${id}`);
-      setTimeout(() => setHighlightedVulnId(null), 5000);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setTimeout(() => {
+        setHighlightedVulnId(null);
+      }, 2000);
     }, 100);
   };
 
@@ -672,6 +701,8 @@ export default function Dashboard() {
               highlightedVulnId={highlightedVulnId}
               onPackageClick={handlePackageClick}
               filteredAuditData={filteredAuditData}
+              filteredVulnsForDisplay={filteredVulnsForDisplay}
+              setFilteredVulnsForDisplay={setFilteredVulnsForDisplay}
               vulnerablePackageIds={vulnerablePackageIds}
               minVulnScore={minVulnScore}
               maxVulnScore={maxVulnScore}

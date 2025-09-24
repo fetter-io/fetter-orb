@@ -44,6 +44,8 @@ interface TabVulnsProps {
   setMaxVulnScore: (score: number) => void;
   expandedVulnCards: Set<number>;
   onVulnCardToggle: (packageId: number, isExpanded: boolean) => void;
+  filteredVulnsForDisplay: AuditEntry[] | null;
+  setFilteredVulnsForDisplay: (vulns: AuditEntry[] | null) => void;
 }
 
 export interface TabVulnsHandle {
@@ -68,6 +70,8 @@ export const TabVulns = forwardRef<TabVulnsHandle, TabVulnsProps>(
       setMaxVulnScore,
       expandedVulnCards,
       onVulnCardToggle,
+      filteredVulnsForDisplay,
+      setFilteredVulnsForDisplay,
     },
     ref,
   ) {
@@ -213,6 +217,10 @@ export const TabVulns = forwardRef<TabVulnsHandle, TabVulnsProps>(
               minVulnScore={minVulnScore}
               maxVulnScore={maxVulnScore}
               onFilterChange={(minBin, maxBin) => {
+                // Clear display filter when interacting with chart
+                if (filteredVulnsForDisplay) {
+                  setFilteredVulnsForDisplay(null);
+                }
                 // Convert bin indices to scores, handling the special case for bin 9
                 const minScore = minBin;
                 const maxScore = maxBin >= 9 ? maxBin + 1.0 : maxBin + 0.99;
@@ -226,11 +234,12 @@ export const TabVulns = forwardRef<TabVulnsHandle, TabVulnsProps>(
               <span className="text-xs text-gray-600">
                 Showing {safeAuditData.length} vulnerable packages
               </span>
-              {(minVulnScore > 0 || maxVulnScore < 10) && (
+              {(minVulnScore > 0 || maxVulnScore < 10 || filteredVulnsForDisplay) && (
                 <button
                   onClick={() => {
                     setMinVulnScore(0);
                     setMaxVulnScore(10);
+                    setFilteredVulnsForDisplay(null);
                   }}
                   className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
                 >
