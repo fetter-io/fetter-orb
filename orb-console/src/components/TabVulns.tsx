@@ -173,6 +173,10 @@ export function TabVulns({
                   setMinVulnScore(0);
                   setMaxVulnScore(10);
                   setFilteredVulnsForDisplay(null);
+                  // Collapse all expanded vuln cards
+                  expandedVulnCards.forEach((packageId) => {
+                    onVulnCardToggle(packageId, false);
+                  });
                 }}
                 className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
               >

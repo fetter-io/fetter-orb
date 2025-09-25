@@ -189,6 +189,10 @@ export function TabPackages({
               onClick={() => {
                 setPackageSearchTerm("");
                 setFilteredPackagesForDisplay(null);
+                // Collapse all expanded package cards
+                expandedPackageCards.forEach((packageKey) => {
+                  onPackageCardToggle(packageKey, false);
+                });
               }}
               className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
             >
