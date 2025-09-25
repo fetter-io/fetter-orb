@@ -137,7 +137,7 @@ export function ValidationChart({
           <XAxis
             type="number"
             allowDecimals={false}
-            tick={{ fill: colors.slate[400], fontSize: 10 }}
+            tick={{ fill: colors.slate[400], fontSize: 12 }}
             axisLine={{ stroke: colors.slate[600] }}
             tickLine={{ stroke: colors.slate[600] }}
             domain={[0, "dataMax"]}
@@ -150,6 +150,7 @@ export function ValidationChart({
             tick={{ fill: colors.slate[400], fontSize: 12 }}
             axisLine={{ stroke: colors.slate[600] }}
             tickLine={{ stroke: colors.slate[600] }}
+            interval={0} // Force showing all labels
           />
           <Tooltip
             content={<CustomTooltip />}
@@ -158,7 +159,7 @@ export function ValidationChart({
           />
           <Bar
             dataKey="count"
-            barSize={10}
+            barSize={8}
             radius={[2, 2, 2, 2]}
             onClick={(data) => {
               if (
