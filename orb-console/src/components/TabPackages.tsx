@@ -170,7 +170,13 @@ export function TabPackages({
           type="text"
           placeholder="Search..."
           value={packageSearchTerm}
-          onChange={(e) => setPackageSearchTerm(e.target.value)}
+          onChange={(e) => {
+            setPackageSearchTerm(e.target.value);
+            // Clear filtered display when user starts searching
+            if (filteredPackagesForDisplay && e.target.value.trim()) {
+              setFilteredPackagesForDisplay(null);
+            }
+          }}
           className="px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-md text-slate-400 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-800"
         />
         <div className="flex items-center justify-between px-1">
