@@ -122,7 +122,7 @@ export function ValidationChart({
 
   return (
     <div
-      className="h-50 bg-slate-900 rounded-md p-2 border border-slate-700"
+      className="h-40 bg-slate-900 rounded-md p-2 border border-slate-700"
       aria-label="Validation summary (horizontal bars)"
     >
       <ResponsiveContainer width="100%" height="100%">

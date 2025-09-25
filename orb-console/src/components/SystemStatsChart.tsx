@@ -150,7 +150,7 @@ export function SystemStatsChart({
 
   if (!data || data.length === 0) {
     return (
-      <div className="h-50 bg-slate-900 rounded-md pt-2 border border-slate-700 flex items-center justify-center">
+      <div className="h-40 bg-slate-900 rounded-md pt-2 border border-slate-700 flex items-center justify-center">
         <p className="text-slate-500 text-sm">No system data to display</p>
       </div>
     );
@@ -158,7 +158,7 @@ export function SystemStatsChart({
 
   // need to replace 400 with the maximum count of each Pint
   return (
-    <div className="h-50 bg-slate-900 rounded-md pt-2 border border-slate-700">
+    <div className="h-40 bg-slate-900 rounded-md pt-2 border border-slate-700">
       <ResponsiveContainer width="100%" height="100%">
         <ScatterChart
           margin={{ top: 0, right: 12, bottom: 0, left: 8 }}
