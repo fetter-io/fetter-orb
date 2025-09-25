@@ -21,10 +21,10 @@ import {
 import { TenantSelector } from "@/components/TenantSelector";
 import { TabTenant } from "@/components/TabTenant";
 import { TabAccount } from "@/components/TabAccount";
-import { TabVulns, TabVulnsHandle } from "@/components/TabVulns";
-import { TabPackages, TabPackagesHandle } from "@/components/TabPackages";
+import { TabVulns } from "@/components/TabVulns";
+import { TabPackages } from "@/components/TabPackages";
 import { TabAllow } from "@/components/TabAllow";
-import { TabSystems, TabSystemsHandle } from "@/components/TabSystems";
+import { TabSystems } from "@/components/TabSystems";
 import { Weave } from "@/components/Weave";
 import colors from "tailwindcss/colors";
 import { UserMenuDropdown } from "@/components/UserMenuDropdown";
@@ -80,9 +80,20 @@ export default function Dashboard() {
   const [highlightedVulnId, setHighlightedVulnId] = useState<string | null>(
     null,
   );
-  const [filteredSystems, setFilteredSystems] = useState<SystemTag[] | null>(
-    null,
-  );
+  // Two-layer filtering: chart-based filtering + display filtering for handleSystemTagClick
+  const [filteredSystemsForDisplay, setFilteredSystemsForDisplay] = useState<
+    SystemTag[] | null
+  >(null);
+  // Chart-based filtering (first layer) - renamed from filteredSystems for clarity
+  const [chartFilteredSystems, setChartFilteredSystems] = useState<
+    SystemTag[] | null
+  >(null);
+
+  // Final filtered systems (second layer)
+  const filteredSystems = useMemo(() => {
+    // If we have a display filter, use that; otherwise use chart-filtered systems
+    return filteredSystemsForDisplay || chartFilteredSystems;
+  }, [filteredSystemsForDisplay, chartFilteredSystems]);
   const [minVulnScore, setMinVulnScore] = useState<number>(0);
   const [maxVulnScore, setMaxVulnScore] = useState<number>(10);
   const [packageSearchTerm, setPackageSearchTerm] = useState<string>("");
@@ -93,11 +104,6 @@ export default function Dashboard() {
   const [lastPackageDataHash, setLastPackageDataHash] = useState<string | null>(
     null,
   );
-
-  // Ref for TabPackages to control Virtuoso scrolling
-  const tabPackagesRef = useRef<TabPackagesHandle>(null);
-  const tabVulnsRef = useRef<TabVulnsHandle>(null);
-  const tabSystemsRef = useRef<TabSystemsHandle>(null);
 
   // Track expanded state for VulnCards by package_id
   const [expandedVulnCards, setExpandedVulnCards] = useState<Set<number>>(
@@ -138,6 +144,16 @@ export default function Dashboard() {
     },
     [],
   );
+
+  // Two-layer filtering: search-based filtering + display filtering for handlePackageClick
+  const [filteredPackagesForDisplay, setFilteredPackagesForDisplay] = useState<
+    PackageVersions[] | null
+  >(null);
+
+  // Two-layer filtering: score-based filtering + display filtering for handleVulnClick
+  const [filteredVulnsForDisplay, setFilteredVulnsForDisplay] = useState<
+    AuditEntry[] | null
+  >(null);
 
   //----------------------------------------------------------------------------
   // tab management, URL updating
@@ -505,8 +521,8 @@ export default function Dashboard() {
     return scoreMap;
   }, [auditState.data]);
 
-  // Filter audit data by vulnerability score range
-  const filteredAuditData = useMemo(() => {
+  // Score-based filtering (first layer)
+  const scoreFilteredAuditData = useMemo(() => {
     if (!auditState.data) return [];
 
     return auditState.data.filter((entry) => {
@@ -515,10 +531,20 @@ export default function Dashboard() {
     });
   }, [auditState.data, vulnerablePackageIds, minVulnScore, maxVulnScore]);
 
-  // Filter packages by search term
-  const filteredPackages = useMemo(() => {
-    if (!packagesState.data || !packageSearchTerm.trim()) {
-      return packagesState.data || [];
+  // Final filtered audit data (second layer)
+  const filteredAuditData = useMemo(() => {
+    // If we have a display filter, use that; otherwise use score-filtered audit data
+    return filteredVulnsForDisplay || scoreFilteredAuditData;
+  }, [filteredVulnsForDisplay, scoreFilteredAuditData]);
+
+  // Search-based filtering (first layer)
+  const searchFilteredPackages = useMemo(() => {
+    if (!packagesState.data) {
+      return [];
+    }
+
+    if (!packageSearchTerm.trim()) {
+      return packagesState.data;
     }
 
     const lowerSearchTerm = packageSearchTerm.toLowerCase();
@@ -527,44 +553,94 @@ export default function Dashboard() {
     );
   }, [packagesState.data, packageSearchTerm]);
 
+  // Final filtered packages (second layer)
+  const filteredPackages = useMemo(() => {
+    // If we have a display filter, use that; otherwise use search-filtered packages
+    return filteredPackagesForDisplay || searchFilteredPackages;
+  }, [filteredPackagesForDisplay, searchFilteredPackages]);
+
   //----------------------------------------------------------------------------
   // These methods support on click actions that change the currently active tab
 
   const handleSystemTagClick = (id: number) => {
-    setFilteredSystems(null);
     setHighlightedSystemTagId(id);
     setActiveTab("systems");
 
-    // Virtuoso
-    setTimeout(() => {
-      tabSystemsRef.current?.scrollToSystemTag(id);
+    // Filter to show only the target system by id (exact match)
+    const targetSystem = systemTagsState.data?.find(
+      (system) => system.id === id,
+    );
+    if (targetSystem) {
+      setFilteredSystemsForDisplay([targetSystem]);
+    }
+    // Clear chart-based filter since we're showing a specific system
+    setChartFilteredSystems(null);
 
-      setTimeout(() => setHighlightedSystemTagId(null), 5000);
+    // Scroll to top of the window to ensure the filtered system is visible
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      setTimeout(() => {
+        setHighlightedSystemTagId(null);
+      }, 2000);
     }, 100);
   };
 
   const handlePackageClick = (key: string) => {
-    setPackageSearchTerm(""); // clear a search
     setHighlightedPackageKey(key);
     setActiveTab("packages");
 
+    // Expand the target package
+    setExpandedPackageCards((prev) => {
+      const newSet = new Set(prev);
+      newSet.add(key);
+      return newSet;
+    });
+
+    // Filter to show only the target package by key (exact match)
+    const targetPackage = packagesState.data?.find((pkg) => pkg.key === key);
+    if (targetPackage) {
+      setFilteredPackagesForDisplay([targetPackage]);
+    }
+    // Clear any existing search term since we're showing a specific package
+    setPackageSearchTerm("");
+
+    // Scroll to top of the window to ensure the filtered package is visible
     setTimeout(() => {
-      // Virtuoso
-      tabPackagesRef.current?.scrollToPackage(key);
-      setTimeout(() => setHighlightedPackageKey(null), 5000);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      setTimeout(() => {
+        setHighlightedPackageKey(null);
+      }, 2000); // Reduced from 5000ms to 2000ms since we're scrolling to show it
     }, 100);
   };
 
   const handleVulnClick = (id: number) => {
-    setMinVulnScore(0);
-    setMaxVulnScore(10);
     setHighlightedVulnId(`vuln-pkg-${id}`);
     setActiveTab("vulns");
 
-    // Use Virtuoso scrolling instead of DOM scrollIntoView
+    // Expand the target vulnerability card
+    setExpandedVulnCards((prev) => {
+      const newSet = new Set(prev);
+      newSet.add(id);
+      return newSet;
+    });
+
+    // Filter to show only the target vulnerability by package_id (exact match)
+    const targetVuln = auditState.data?.find(
+      (entry) => entry.package_id === id,
+    );
+    if (targetVuln) {
+      setFilteredVulnsForDisplay([targetVuln]);
+    }
+    // Reset score filters since we're showing a specific vulnerability
+    setMinVulnScore(0);
+    setMaxVulnScore(10);
+
+    // Scroll to top of the window to ensure the filtered vulnerability is visible
     setTimeout(() => {
-      tabVulnsRef.current?.scrollToVuln(`vuln-pkg-${id}`);
-      setTimeout(() => setHighlightedVulnId(null), 5000);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      setTimeout(() => {
+        setHighlightedVulnId(null);
+      }, 2000);
     }, 100);
   };
 
@@ -615,7 +691,6 @@ export default function Dashboard() {
         <div className="max-w-4xl mx-auto flex flex-col gap-4">
           {activeTab === "packages" && (
             <TabPackages
-              ref={tabPackagesRef}
               packagesState={packagesState}
               packageCountsState={packageCountsState}
               systemTagsState={systemTagsState}
@@ -631,6 +706,8 @@ export default function Dashboard() {
               filteredPackages={filteredPackages}
               packageSearchTerm={packageSearchTerm}
               setPackageSearchTerm={setPackageSearchTerm}
+              filteredPackagesForDisplay={filteredPackagesForDisplay}
+              setFilteredPackagesForDisplay={setFilteredPackagesForDisplay}
               expandedPackageCards={expandedPackageCards}
               onPackageCardToggle={handlePackageCardToggle}
             />
@@ -638,7 +715,6 @@ export default function Dashboard() {
 
           {activeTab === "vulns" && (
             <TabVulns
-              ref={tabVulnsRef}
               auditState={auditState}
               selectedSystemId={selectedSystemId}
               setSelectedSystemId={setSelectedSystemId}
@@ -647,6 +723,8 @@ export default function Dashboard() {
               highlightedVulnId={highlightedVulnId}
               onPackageClick={handlePackageClick}
               filteredAuditData={filteredAuditData}
+              filteredVulnsForDisplay={filteredVulnsForDisplay}
+              setFilteredVulnsForDisplay={setFilteredVulnsForDisplay}
               vulnerablePackageIds={vulnerablePackageIds}
               minVulnScore={minVulnScore}
               maxVulnScore={maxVulnScore}
@@ -678,13 +756,15 @@ export default function Dashboard() {
 
           {activeTab === "systems" && (
             <TabSystems
-              ref={tabSystemsRef}
               systemTagsState={systemTagsState}
               highlightedSystemTagId={highlightedSystemTagId}
               onPackagesClick={setSelectedSystemId}
               setActiveTab={setActiveTab}
               filteredSystems={filteredSystems}
-              setFilteredSystems={setFilteredSystems}
+              chartFilteredSystems={chartFilteredSystems}
+              setChartFilteredSystems={setChartFilteredSystems}
+              filteredSystemsForDisplay={filteredSystemsForDisplay}
+              setFilteredSystemsForDisplay={setFilteredSystemsForDisplay}
             />
           )}
 
