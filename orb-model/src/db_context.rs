@@ -3,9 +3,10 @@ use chrono::{DateTime, Utc};
 use std::env;
 
 use fetter::{
-    AuditReport, CliAnchor, CvssFilter, DepManifest, DirectURL, FlagCacheRefresh, FlagLog,
-    LockFile, Package, PathShared, ResultDynError, ScanFS, SystemTag, Tableable, UreqClientLive,
-    ValidationExplain, ValidationFlags, ValidationReport, VcsInfo, VersionSpec,
+    path_cache, AuditReport, CacheConfig, CliAnchor, CvssFilter, DepManifest, DirectURL,
+    FlagCacheRefresh, FlagLog, LockFile, Package, PathShared, ResultDynError, ScanFS, SystemTag,
+    Tableable, UreqClientLive, ValidationExplain, ValidationFlags, ValidationReport, VcsInfo,
+    VersionSpec,
 };
 
 use serde::{Deserialize, Serialize};
@@ -1283,11 +1284,14 @@ impl DBContext {
         let client = Arc::new(UreqClientLive);
         // NOTE: as we defer updating audit data unless (a) user explicitly asks for it or (b) shouldAuditUpdate is true (packages change / duration limit passed), we may not need to use cache_dur here, which will use file-based caching on the back-end
         let cache_dur = Duration::from_secs(0);
+        let cache_dir = path_cache(true).expect("Could not create path");
+        let cache_config = CacheConfig::new(cache_dur, &cache_dir);
+
         let audit = AuditReport::from_packages(
             client,
             &packages,
             FlagCacheRefresh(false), // keep vuln-level caches
-            cache_dur,
+            cache_config,
             FlagLog(false),
             CvssFilter::All,
         );

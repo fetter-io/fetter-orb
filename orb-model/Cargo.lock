@@ -570,9 +570,9 @@ checksum = "37909eebbb50d72f9059c3b6d82c0463f2ff062c9e95845c43a6c9c0355411be"
 
 [[package]]
 name = "fetter"
-version = "2.5.0"
+version = "2.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8cfea2d7f9313777cd166ba69e6ca8e66aeb2ec5b6a2fccf58b82024327ee512"
+checksum = "2406f08a0dc4487304e425212d02131188135230882984fb49bf5eed547e0e7b"
 dependencies = [
  "clap",
  "crossterm",
