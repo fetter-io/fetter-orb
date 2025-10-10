@@ -130,6 +130,7 @@ pub struct DBContext {
     suffix: Option<String>,
     pub default_ping_limit: i32,
     pub default_tenant_limit: i32,
+    cache_config: CacheConfig,
     salt: String,
 }
 
@@ -147,11 +148,17 @@ impl DBContext {
 
         let salt = env::var("TENANT_SECRET").unwrap_or_else(|_| "".to_string());
 
+        // NOTE: as we defer updating audit data unless (a) user explicitly asks for it or (b) shouldAuditUpdate is true (packages change / duration limit passed), we may not need to use cache_dur here, which will use file-based caching on the back-end
+        let cache_dur = Duration::from_secs(0);
+        let cache_dir = path_cache(true).expect("Could not create path");
+        let cache_config = CacheConfig::new(cache_dur, cache_dir);
+
         Self {
             pool,
             suffix,
             default_ping_limit,
             default_tenant_limit,
+            cache_config,
             salt,
         }
     }
@@ -1280,18 +1287,13 @@ impl DBContext {
             let empty: Vec<Value> = vec![];
             return Ok(json!(empty));
         }
-
         let client = Arc::new(UreqClientLive);
-        // NOTE: as we defer updating audit data unless (a) user explicitly asks for it or (b) shouldAuditUpdate is true (packages change / duration limit passed), we may not need to use cache_dur here, which will use file-based caching on the back-end
-        let cache_dur = Duration::from_secs(0);
-        let cache_dir = path_cache(true).expect("Could not create path");
-        let cache_config = CacheConfig::new(cache_dur, cache_dir);
 
         let audit = AuditReport::from_packages(
             client,
             &packages,
             FlagCacheRefresh(false), // keep vuln-level caches
-            cache_config,
+            self.cache_config.clone(),
             FlagLog(false),
             CvssFilter::All,
         );
