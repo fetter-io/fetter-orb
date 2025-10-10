@@ -24,7 +24,6 @@ use serde_json::json;
 use serde_json::Value;
 use std::env;
 use std::net::SocketAddr;
-use std::str::FromStr;
 use std::sync::Arc;
 use tokio::net::TcpListener;
 use tower::ServiceBuilder;
