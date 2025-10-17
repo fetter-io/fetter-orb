@@ -552,6 +552,44 @@ impl DBContext {
         Ok(result.rows_affected() > 0)
     }
 
+    pub async fn tenant_set_ping_limit(
+        &self,
+        tenant_id: i32,
+        user_id: Option<Uuid>,
+        ping_limit: i32,
+    ) -> Result<bool, sqlx::Error> {
+        let table_name = self.get_table("tenant");
+
+        // If user_id is provided, verify ownership
+        if let Some(user_id) = user_id {
+            let check_query = format!("SELECT created_by FROM {table_name} WHERE id = $1");
+
+            if let Some(row) = sqlx::query(&check_query)
+                .bind(tenant_id)
+                .fetch_optional(&self.pool)
+                .await?
+            {
+                let created_by: Uuid = row.get("created_by");
+                if created_by != user_id {
+                    return Ok(false); // User is not authorized to modify this tenant
+                }
+            } else {
+                return Ok(false); // Tenant not found
+            }
+        }
+
+        // Update the tenant ping_limit
+        let update_query = format!("UPDATE {table_name} SET ping_limit = $1 WHERE id = $2");
+
+        let result = sqlx::query(&update_query)
+            .bind(ping_limit)
+            .bind(tenant_id)
+            .execute(&self.pool)
+            .await?;
+
+        Ok(result.rows_affected() > 0)
+    }
+
     pub async fn count_recent_pings_for_tenant(
         &self,
         tenant_id: i32,

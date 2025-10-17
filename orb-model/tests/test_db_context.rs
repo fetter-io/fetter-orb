@@ -863,6 +863,102 @@ async fn test_tenant_rename() {
 }
 
 #[tokio::test]
+async fn test_tenant_set_ping_limit() {
+    let pool = get_db_pool().await;
+    let ctx = DBContext::new(pool, Some("test_tenant_set_ping_limit".into()));
+    ctx.tables_drop().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
+
+    // Create two users with different github_ids
+    let user1_id = ctx
+        .user_tenant_init("user1", 1, "user1@example.com", "User One")
+        .await
+        .unwrap();
+    let user2_id = ctx
+        .user_tenant_init("user2", 2, "user2@example.com", "User Two")
+        .await
+        .unwrap();
+
+    // Create a tenant owned by user1
+    let tenant = Tenant {
+        key: "test-tenant".to_string(),
+        name: "Test Tenant".to_string(),
+        ping_limit: 10,
+        created_by: user1_id,
+    };
+    let tenant_id = ctx.tenant_insert_or_get(&tenant).await.unwrap();
+
+    // Assign the owner to the tenant so they can access it via get_tenants
+    ctx.tenant_assign_user(tenant_id, user1_id).await.unwrap();
+
+    // Test 1: Owner can set the ping limit
+    let result = ctx
+        .tenant_set_ping_limit(tenant_id, Some(user1_id), 50)
+        .await
+        .unwrap();
+    assert!(result, "Owner should be able to set the ping limit");
+
+    // Verify the ping limit was changed
+    let tenants = ctx.get_tenants(Some(user1_id)).await.unwrap();
+    let updated_tenant = tenants
+        .iter()
+        .find(|(id, _)| *id == tenant_id)
+        .map(|(_, t)| t)
+        .expect("Tenant should exist");
+    assert_eq!(updated_tenant.ping_limit, 50);
+
+    // Test 2: Non-owner cannot set the ping limit
+    let result = ctx
+        .tenant_set_ping_limit(tenant_id, Some(user2_id), 100)
+        .await
+        .unwrap();
+    assert!(
+        !result,
+        "Non-owner should not be able to set the ping limit"
+    );
+
+    // Verify the ping limit was not changed
+    let tenants = ctx.get_tenants(Some(user1_id)).await.unwrap();
+    let unchanged_tenant = tenants
+        .iter()
+        .find(|(id, _)| *id == tenant_id)
+        .map(|(_, t)| t)
+        .expect("Tenant should exist");
+    assert_eq!(unchanged_tenant.ping_limit, 50); // Should still be 50
+
+    // Test 3: Set ping limit without user_id (no authorization check)
+    let result = ctx
+        .tenant_set_ping_limit(tenant_id, None, 200)
+        .await
+        .unwrap();
+    assert!(
+        result,
+        "Setting ping limit should succeed when no user_id is provided"
+    );
+
+    // Verify the ping limit was changed
+    let tenants = ctx.get_tenants(Some(user1_id)).await.unwrap();
+    let admin_updated_tenant = tenants
+        .iter()
+        .find(|(id, _)| *id == tenant_id)
+        .map(|(_, t)| t)
+        .expect("Tenant should exist");
+    assert_eq!(admin_updated_tenant.ping_limit, 200);
+
+    // Test 4: Set ping limit for non-existent tenant
+    let result = ctx
+        .tenant_set_ping_limit(99999, Some(user1_id), 500)
+        .await
+        .unwrap();
+    assert!(
+        !result,
+        "Setting ping limit for non-existent tenant should return false"
+    );
+
+    ctx.tables_drop().await.unwrap();
+}
+
+#[tokio::test]
 async fn test_get_users_a() {
     let pool = get_db_pool().await;
     let ctx = DBContext::new(pool, Some("test_get_users_a".into()));
