@@ -577,10 +577,7 @@ impl DBContext {
                 return Ok(false); // Tenant not found
             }
         }
-
-        // Update the tenant ping_limit
         let update_query = format!("UPDATE {table_name} SET ping_limit = $1 WHERE id = $2");
-
         let result = sqlx::query(&update_query)
             .bind(ping_limit)
             .bind(tenant_id)
