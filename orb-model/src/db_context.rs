@@ -1617,6 +1617,38 @@ impl DBContext {
         Ok(())
     }
 
+    pub async fn get_users(&self) -> Result<Vec<User>, sqlx::Error> {
+        let user_table = self.get_table("users");
+
+        let query = format!(
+            r#"
+            SELECT id, github_login, github_id, email, name, tenant_limit, term_accepted, created_at
+            FROM {user_table}
+            ORDER BY created_at DESC
+            "#
+        );
+
+        let rows = sqlx::query(&query).fetch_all(&self.pool).await?;
+
+        let result = rows
+            .into_iter()
+            .map(|row| User {
+                id: row.get("id"),
+                github_login: row.get("github_login"),
+                github_id: row.get("github_id"),
+                email: row.get("email"),
+                name: row.get("name"),
+                tenant_limit: row.get("tenant_limit"),
+                term_accepted: row.get("term_accepted"),
+                created_at: row
+                    .get::<chrono::DateTime<chrono::Utc>, _>("created_at")
+                    .to_rfc3339(),
+            })
+            .collect();
+
+        Ok(result)
+    }
+
     pub async fn get_next_tenant_key(&self, user_id: Uuid) -> Result<String, sqlx::Error> {
         let tenant_table = self.get_table("tenant");
 

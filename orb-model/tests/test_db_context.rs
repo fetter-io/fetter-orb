@@ -861,3 +861,106 @@ async fn test_tenant_rename() {
 
     ctx.tables_drop().await.unwrap();
 }
+
+#[tokio::test]
+async fn test_get_users_a() {
+    let pool = get_db_pool().await;
+    let ctx = DBContext::new(pool, Some("test_get_users_a".into()));
+    ctx.tables_drop().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
+
+    // Create multiple users
+    let user1_id = ctx
+        .user_tenant_init("alice", 100, "alice@example.com", "Alice Smith")
+        .await
+        .unwrap();
+    let user2_id = ctx
+        .user_tenant_init("bob", 200, "bob@example.com", "Bob Jones")
+        .await
+        .unwrap();
+    let user3_id = ctx
+        .user_tenant_init("charlie", 300, "charlie@example.com", "Charlie Brown")
+        .await
+        .unwrap();
+
+    // Get all users
+    let users = ctx.get_users().await.unwrap();
+
+    // Should have 3 users
+    assert_eq!(users.len(), 3);
+
+    // Verify user data - find each user by github_login
+    let alice = users
+        .iter()
+        .find(|u| u.github_login == "alice")
+        .expect("Alice should exist");
+    assert_eq!(alice.id, user1_id);
+    assert_eq!(alice.github_id, 100);
+    assert_eq!(alice.email, Some("alice@example.com".to_string()));
+    assert_eq!(alice.name, Some("Alice Smith".to_string()));
+    assert_eq!(alice.term_accepted, false);
+
+    let bob = users
+        .iter()
+        .find(|u| u.github_login == "bob")
+        .expect("Bob should exist");
+    assert_eq!(bob.id, user2_id);
+    assert_eq!(bob.github_id, 200);
+    assert_eq!(bob.email, Some("bob@example.com".to_string()));
+    assert_eq!(bob.name, Some("Bob Jones".to_string()));
+
+    let charlie = users
+        .iter()
+        .find(|u| u.github_login == "charlie")
+        .expect("Charlie should exist");
+    assert_eq!(charlie.id, user3_id);
+    assert_eq!(charlie.github_id, 300);
+    assert_eq!(charlie.email, Some("charlie@example.com".to_string()));
+    assert_eq!(charlie.name, Some("Charlie Brown".to_string()));
+
+    ctx.tables_drop().await.unwrap();
+}
+
+#[tokio::test]
+async fn test_get_users_b() {
+    let pool = get_db_pool().await;
+    let ctx = DBContext::new(pool, Some("test_get_users_empty".into()));
+    ctx.tables_drop().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
+
+    // Get users when table is empty
+    let users = ctx.get_users().await.unwrap();
+    assert_eq!(users.len(), 0);
+
+    ctx.tables_drop().await.unwrap();
+}
+
+#[tokio::test]
+async fn test_get_users_c() {
+    let pool = get_db_pool().await;
+    let ctx = DBContext::new(pool, Some("test_get_users_after_term_accepted".into()));
+    ctx.tables_drop().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
+
+    // Create a user
+    let user_id = ctx
+        .user_tenant_init("test_user", 999, "test@example.com", "Test User")
+        .await
+        .unwrap();
+
+    // Initially, term_accepted should be false
+    let users_before = ctx.get_users().await.unwrap();
+    assert_eq!(users_before.len(), 1);
+    assert_eq!(users_before[0].term_accepted, false);
+
+    // Accept terms
+    ctx.user_set_term_accepted(user_id).await.unwrap();
+
+    // Now term_accepted should be true
+    let users_after = ctx.get_users().await.unwrap();
+    assert_eq!(users_after.len(), 1);
+    assert_eq!(users_after[0].term_accepted, true);
+    assert_eq!(users_after[0].github_login, "test_user");
+
+    ctx.tables_drop().await.unwrap();
+}
