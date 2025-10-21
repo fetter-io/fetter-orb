@@ -988,7 +988,18 @@ impl DBContext {
         Ok(json!(summary))
     }
 
-    /// Return a time line of package counts, either for a single SystemTag or a moving aggregation of all last scanned counts.
+    /// Return a timeline of unique package counts.
+    ///
+    /// For a single SystemTag: returns the count of distinct packages on that system over time.
+    ///
+    /// For multiple SystemTags: maintains a running state of each system's package set (by package_id).
+    /// When any system pings:
+    ///  - Updates that system's package set in the state HashMap
+    ///  - Counts unique packages across ALL systems' latest known package sets
+    ///  - This gives the count of unique packages across all systems at each point in time
+    ///
+    /// Note: This counts unique package_ids, not unique (name, version) combinations. The same
+    /// package version on different systems will have the same package_id and only be counted once.
     pub async fn package_counts(
         &self,
         system_tag_id: Option<i32>,
@@ -1048,29 +1059,29 @@ impl DBContext {
         }
 
         // Multi-tag case with partitioned row limiting
+        // Get package_ids instead of counts so we can compute unique packages
         let query = format!(
             r#"
         WITH ranked_scans AS (
             SELECT
+                pi.id as ping_id,
                 pi.timestamp,
                 pi.system_tag_id,
-                COUNT(DISTINCT ms.package_id) AS package_count,
                 ROW_NUMBER() OVER (
                     PARTITION BY pi.system_tag_id
                     ORDER BY pi.timestamp DESC
                 ) AS rank
-            FROM {monitor_scan_table} ms
-            JOIN {ping_table} pi ON ms.ping_id = pi.id
+            FROM {ping_table} pi
             WHERE pi.scanned = true
             {tenant_filter}
-            GROUP BY pi.timestamp, pi.system_tag_id
         ),
         filtered AS (
-            SELECT * FROM ranked_scans WHERE rank <= $1
+            SELECT ping_id, timestamp, system_tag_id FROM ranked_scans WHERE rank <= $1
         )
-        SELECT timestamp, system_tag_id, package_count
-        FROM filtered
-        ORDER BY timestamp ASC
+        SELECT f.timestamp, f.system_tag_id, ms.package_id
+        FROM filtered f
+        JOIN {monitor_scan_table} ms ON ms.ping_id = f.ping_id
+        ORDER BY f.timestamp ASC
         "#,
             tenant_filter = if tenant_id.is_some() {
                 format!(
@@ -1089,16 +1100,16 @@ impl DBContext {
 
         let rows = sqlx::query_with(&query, args).fetch_all(&self.pool).await?;
 
-        // grouping and aggregation
-        type VecSTCount = Vec<(i32, i64)>;
-        let mut timestamp_groups: Vec<(DateTime<Utc>, VecSTCount)> = Vec::new();
+        // Group by timestamp and system_tag, collecting package_ids
+        type VecPackageIds = Vec<i32>;
+        let mut timestamp_groups: Vec<(DateTime<Utc>, HashMap<i32, VecPackageIds>)> = Vec::new();
         let mut group_ts: Option<DateTime<Utc>> = None;
-        let mut group: VecSTCount = Vec::new();
+        let mut group: HashMap<i32, VecPackageIds> = HashMap::new();
 
         for row in rows {
             let ts: DateTime<Utc> = row.get("timestamp");
             let tag_id: i32 = row.get("system_tag_id");
-            let count: i64 = row.get("package_count");
+            let package_id: i32 = row.get("package_id");
 
             match group_ts {
                 Some(gts) if ts != gts => {
@@ -1110,23 +1121,30 @@ impl DBContext {
                 }
                 _ => {}
             }
-            group.push((tag_id, count));
+            group.entry(tag_id).or_default().push(package_id);
         }
 
         if let Some(ts) = group_ts {
             timestamp_groups.push((ts, group));
         }
 
-        // accumulate state and compute running totals
-        let mut st_to_count_latest: HashMap<i32, i64> = HashMap::new();
+        // accumulate state and compute running totals of unique packages
+        let mut st_to_packages_latest: HashMap<i32, HashSet<i32>> = HashMap::new();
         let mut ts_counts: Vec<(DateTime<Utc>, i64)> = Vec::new();
 
         for (ts, updates) in timestamp_groups {
-            for (tag_id, count) in updates {
-                st_to_count_latest.insert(tag_id, count);
+            for (tag_id, package_ids) in updates {
+                // Update this system's package set
+                let package_set: HashSet<i32> = package_ids.into_iter().collect();
+                st_to_packages_latest.insert(tag_id, package_set);
             }
-            let sum: i64 = st_to_count_latest.values().sum();
-            ts_counts.push((ts, sum));
+            // Count unique packages across all systems
+            let all_packages: HashSet<i32> = st_to_packages_latest
+                .values()
+                .flat_map(|set| set.iter().copied())
+                .collect();
+            let count = all_packages.len() as i64;
+            ts_counts.push((ts, count));
         }
 
         let mut result = Vec::new();
