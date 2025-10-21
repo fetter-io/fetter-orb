@@ -1114,19 +1114,21 @@ impl DBContext {
             let package_id: i32 = row.get("package_id");
 
             // When timestamp changes, finalize the previous timestamp
-            if current_ts.is_some() && current_ts != Some(ts) {
-                // Update global state with packages from systems that pinged
-                for (tag_id, package_set) in current_packages.drain() {
-                    st_to_packages_latest.insert(tag_id, package_set);
+            if let Some(prev_ts) = current_ts {
+                if prev_ts != ts {
+                    // Update global state with packages from systems that pinged
+                    for (tag_id, package_set) in current_packages.drain() {
+                        st_to_packages_latest.insert(tag_id, package_set);
+                    }
+                    // Count unique packages across all systems by computing the union size
+                    let count = st_to_packages_latest
+                        .values()
+                        .flatten()
+                        .copied()
+                        .collect::<HashSet<i32>>()
+                        .len() as i64;
+                    ts_counts.push((prev_ts, count));
                 }
-                // Count unique packages across all systems by computing the union size
-                let count = st_to_packages_latest
-                    .values()
-                    .flatten()
-                    .copied()
-                    .collect::<HashSet<i32>>()
-                    .len() as i64;
-                ts_counts.push((current_ts.unwrap(), count));
             }
 
             // Accumulate packages for the current timestamp
