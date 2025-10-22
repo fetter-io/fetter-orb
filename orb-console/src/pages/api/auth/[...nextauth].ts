@@ -16,6 +16,9 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, profile, account }) {
       const onLoginEndpoint = `${process.env.PRIVATE_ORB_MODEL}/on_login`;
       // using `${process.env.NEXT_PUBLIC_ORB_MODEL}/on_login` causes the auth to get stuck
+      console.log("account:", account);
+      console.log("profile:", profile);
+      console.log("token:", token);
 
       if (account && profile && account.provider === "github") {
         const gh = profile as {
@@ -24,25 +27,6 @@ export const authOptions: NextAuthOptions = {
           email?: string;
           name?: string;
         };
-        // temp logging:
-        // Check granted OAuth scopes (see if user:email was included)
-        try {
-          const scopeResp = await fetch("https://api.github.com/user", {
-            headers: { Authorization: `token ${account.access_token}` },
-          });
-          console.log("[auth] X-OAuth-Scopes:", scopeResp.headers.get("x-oauth-scopes"));
-
-          // Fetch explicit emails list
-          const emailResp = await fetch("https://api.github.com/user/emails", {
-            headers: { Authorization: `token ${account.access_token}` },
-          });
-          const emails = await emailResp.json();
-          console.log("[auth] GitHub /user/emails response:", emails);
-        } catch (err) {
-          console.error("[auth] Error fetching user scopes/emails:", err);
-        }
-        // --- End temporary debug logging ---
-
 
         // NOTE: must add headers as we are not using NEXT_PUBLIC_ORB_MODEL
         const res = await fetch(onLoginEndpoint, {
@@ -59,6 +43,9 @@ export const authOptions: NextAuthOptions = {
             name: gh.name,
           }),
         });
+
+        console.log("res from backend:", res);
+
         if (!res.ok)
           throw new Error(`on_login failed: ${res.status} ${res.statusText}`);
 
