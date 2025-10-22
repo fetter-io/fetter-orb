@@ -239,8 +239,8 @@ pub async fn get_audit(
 pub struct OnLoginParams {
     pub github_login: String,
     pub github_id: i32,
-    pub email: String,
-    pub name: String,
+    pub email: String, // NOTE: front end must normalize to empty string
+    pub name: String,  // NOTE: front end must normalize to empty string
 }
 
 pub async fn post_on_login(

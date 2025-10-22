@@ -16,17 +16,21 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, profile, account }) {
       const onLoginEndpoint = `${process.env.PRIVATE_ORB_MODEL}/on_login`;
       // using `${process.env.NEXT_PUBLIC_ORB_MODEL}/on_login` causes the auth to get stuck
-      console.log("account:", account);
-      console.log("profile:", profile);
-      console.log("token:", token);
+      // console.log("account:", account);
+      // console.log("profile:", profile);
+      // console.log("token:", token);
 
       if (account && profile && account.provider === "github") {
         const gh = profile as {
           login: string; // github_login
           id: number; // github_id
-          email?: string;
-          name?: string;
+          email?: string | null;
+          name?: string | null;
         };
+
+        // Github might provide these as null, however the backend must have strings
+        const email = gh.email?.trim().toLowerCase() ?? "";
+        const name = gh.name?.trim() ?? "";
 
         // NOTE: must add headers as we are not using NEXT_PUBLIC_ORB_MODEL
         const res = await fetch(onLoginEndpoint, {
@@ -39,12 +43,12 @@ export const authOptions: NextAuthOptions = {
           body: JSON.stringify({
             github_login: gh.login,
             github_id: gh.id,
-            email: gh.email,
-            name: gh.name,
+            email,
+            name,
           }),
         });
 
-        console.log("res from backend:", res);
+        // console.log("res from backend:", res);
 
         if (!res.ok)
           throw new Error(`on_login failed: ${res.status} ${res.statusText}`);
