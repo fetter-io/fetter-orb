@@ -24,6 +24,26 @@ export const authOptions: NextAuthOptions = {
           email?: string;
           name?: string;
         };
+        // temp logging:
+        // Check granted OAuth scopes (see if user:email was included)
+        try {
+          const scopeResp = await fetch("https://api.github.com/user", {
+            headers: { Authorization: `token ${account.access_token}` },
+          });
+          console.log("[auth] X-OAuth-Scopes:", scopeResp.headers.get("x-oauth-scopes"));
+
+          // Fetch explicit emails list
+          const emailResp = await fetch("https://api.github.com/user/emails", {
+            headers: { Authorization: `token ${account.access_token}` },
+          });
+          const emails = await emailResp.json();
+          console.log("[auth] GitHub /user/emails response:", emails);
+        } catch (err) {
+          console.error("[auth] Error fetching user scopes/emails:", err);
+        }
+        // --- End temporary debug logging ---
+
+
         // NOTE: must add headers as we are not using NEXT_PUBLIC_ORB_MODEL
         const res = await fetch(onLoginEndpoint, {
           method: "POST",
