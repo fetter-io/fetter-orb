@@ -2,6 +2,7 @@ use fetter::Package;
 use fetter::PathShared;
 use fetter::ScanFS;
 use fetter::SystemTag;
+use serde_json::Value;
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
@@ -343,6 +344,147 @@ async fn test_package_counts_b() {
         post1,
         r#"[["2025-07-18T23:23:45.131879Z","2025-07-19T01:47:43.072574Z",130],["2025-07-19T01:47:43.072574Z","2025-07-19T01:50:56.387136Z",27],["2025-07-19T01:50:56.387136Z",null,149]]"#
     );
+}
+
+#[tokio::test]
+async fn test_package_counts_c() {
+    let pool = get_db_pool().await;
+    let ctx = DBContext::new(pool, Some("test_package_counts_c".into()));
+    ctx.tables_drop().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
+
+    use std::time::{Duration, UNIX_EPOCH};
+    let user_id = ctx
+        .user_tenant_init("foo", 0, "foo@foo.com", "Foo")
+        .await
+        .unwrap();
+    let t = Tenant::from_key("team-test", user_id);
+    let tenant_id = ctx.tenant_insert_or_get(&t).await.unwrap();
+
+    let st = fetter::SystemTag {
+        username: "testuser".to_string(),
+        hostname: "testhost".to_string(),
+        os_name: "linux".to_string(),
+        os_version: "5.10.0".to_string(),
+        architecture: "x86_64".to_string(),
+        logical_cores: 8,
+    };
+    let st_id = ctx.system_tag_insert_or_get(tenant_id, &st).await.unwrap();
+
+    let site = fetter::PathShared::from("/usr/lib/python/site-packages");
+    let site_id = ctx.site_packages_insert_or_get(site).await.unwrap();
+
+    let mut package_ids = vec![];
+    for i in 1..=5 {
+        let pkg = fetter::Package {
+            name: format!("testpkg{}", i),
+            key: format!("testpkg{}", i),
+            version: fetter::VersionSpec::new("1.0.0"),
+            direct_url: None,
+        };
+        let pkg_id = ctx.package_insert_or_get(&pkg).await.unwrap();
+        package_ids.push(pkg_id);
+    }
+
+    // Define table names with suffix for this test
+    let ping_table = "ping_test_package_counts_c";
+    let monitor_scan_table = "monitor_scan_test_package_counts_c";
+
+    let ts1 = UNIX_EPOCH + Duration::from_secs(1000);
+
+    let ping1_id: i32 = sqlx::query_scalar(&format!(
+        "INSERT INTO {} (system_tag_id, timestamp, scanned) VALUES ($1, $2, $3) RETURNING id",
+        ping_table
+    ))
+    .bind(st_id)
+    .bind(chrono::DateTime::<chrono::Utc>::from(ts1))
+    .bind(true)
+    .fetch_one(&ctx.pool)
+    .await
+    .unwrap();
+
+    for pkg_id in &package_ids {
+        sqlx::query(&format!(
+            "INSERT INTO {} (ping_id, package_id, site_packages_id) VALUES ($1, $2, $3)",
+            monitor_scan_table
+        ))
+        .bind(ping1_id)
+        .bind(pkg_id)
+        .bind(site_id)
+        .execute(&ctx.pool)
+        .await
+        .unwrap();
+    }
+
+    let ts2 = UNIX_EPOCH + Duration::from_secs(2000);
+    let ping2_id: i32 = sqlx::query_scalar(&format!(
+        "INSERT INTO {} (system_tag_id, timestamp, scanned) VALUES ($1, $2, $3) RETURNING id",
+        ping_table
+    ))
+    .bind(st_id)
+    .bind(chrono::DateTime::<chrono::Utc>::from(ts2))
+    .bind(true)
+    .fetch_one(&ctx.pool)
+    .await
+    .unwrap();
+
+    for pkg_id in &package_ids[0..2] {
+        sqlx::query(&format!(
+            "INSERT INTO {} (ping_id, package_id, site_packages_id) VALUES ($1, $2, $3)",
+            monitor_scan_table
+        ))
+        .bind(ping2_id)
+        .bind(pkg_id)
+        .bind(site_id)
+        .execute(&ctx.pool)
+        .await
+        .unwrap();
+    }
+
+    // T3: Create ping with 3 packages (added 1 back)
+    let ts3 = UNIX_EPOCH + Duration::from_secs(3000);
+    let ping3_id: i32 = sqlx::query_scalar(&format!(
+        "INSERT INTO {} (system_tag_id, timestamp, scanned) VALUES ($1, $2, $3) RETURNING id",
+        ping_table
+    ))
+    .bind(st_id)
+    .bind(chrono::DateTime::<chrono::Utc>::from(ts3))
+    .bind(true)
+    .fetch_one(&ctx.pool)
+    .await
+    .unwrap();
+
+    for pkg_id in &package_ids[0..3] {
+        sqlx::query(&format!(
+            "INSERT INTO {} (ping_id, package_id, site_packages_id) VALUES ($1, $2, $3)",
+            monitor_scan_table
+        ))
+        .bind(ping3_id)
+        .bind(pkg_id)
+        .bind(site_id)
+        .execute(&ctx.pool)
+        .await
+        .unwrap();
+    }
+
+    let result = ctx
+        .package_counts(None, Some(tenant_id), None)
+        .await
+        .unwrap();
+
+    let counts: Vec<Value> = serde_json::from_value(result).unwrap();
+
+    // We should see counts: 5 -> 2 -> 3 (demonstrating count can decrease)
+    assert_eq!(counts.len(), 3);
+
+    let first = &counts[0];
+    assert_eq!(first[2], 5);
+    let second = &counts[1];
+    assert_eq!(second[2], 2);
+    let third = &counts[2];
+    assert_eq!(third[2], 3);
+
+    ctx.tables_drop().await.unwrap();
 }
 
 // //------------------------------------------------------------------------------
