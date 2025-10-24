@@ -57,9 +57,9 @@ export function SystemTagCard({
       </div>
 
       {/* Scrollable tables - stacked on mobile, side-by-side on larger screens */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
         {/* Scrollable ping table */}
-        <div className="h-32 overflow-y-auto border-t border-slate-700 pt-0">
+        <div className="max-h-32 overflow-y-auto border-t border-slate-700 pt-0">
           <table className="w-full text-xs text-left text-gray-400">
             <thead className="sticky top-0 bg-gray-950 text-gray-500 border-b border-slate-700">
               <tr>
@@ -97,7 +97,7 @@ export function SystemTagCard({
         </div>
 
         {/* Scrollable site_packages table */}
-        <div className="h-32 overflow-y-auto border-t border-slate-700">
+        <div className="max-h-32 overflow-y-auto border-t border-slate-700">
           <table className="w-full text-xs text-left text-gray-400">
             <thead className="sticky top-0 bg-gray-950 text-gray-500 border-b border-slate-700">
               <tr>
