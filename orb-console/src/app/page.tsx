@@ -49,23 +49,9 @@ export default function LandingPage() {
 
       <LandingFeature
         title="Track All Python Packages"
-        description="See every installed package across many machines or an entire organization."
+        description="See every installed package and version, along with associated vulnerabilities, across an entire organization."
         imageSrc="/screen-package.png"
         reverse={false}
-      />
-
-      <WaveDivider
-        height={80}
-        controlPoints={[800, 0, 2000, 15]}
-        fillClass="text-slate-900"
-        flip={false}
-      />
-
-      <LandingFeature
-        title="A Secure, Open-Source Agent"
-        description="End-point scans are published with fetter, an efficient client written in Rust."
-        imageSrc="/screen-sys.png"
-        reverse={true}
       />
 
       <WaveDivider
@@ -84,15 +70,30 @@ export default function LandingPage() {
 
       <WaveDivider
         height={80}
-        controlPoints={[800, 0, 800, 0]}
+        controlPoints={[800, 0, 2000, 15]}
         fillClass="text-slate-900"
-        flip={true}
+        flip={false}
       />
 
       <LandingFeature
         title="Validate Against a Global Allow List"
         description="Define approved packages and identify outliers."
         imageSrc="/screen-allow.png"
+        reverse={true}
+      />
+
+
+      <WaveDivider
+        height={80}
+        controlPoints={[800, 0, 800, 0]}
+        fillClass="text-slate-900"
+        flip={true}
+      />
+
+      <LandingFeature
+        title="A Secure, Open-Source Agent"
+        description="End-point scans are published with fetter, an efficient client written in Rust."
+        imageSrc="/screen-sys.png"
         reverse={true}
       />
 
