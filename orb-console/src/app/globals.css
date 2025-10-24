@@ -27,7 +27,7 @@ body {
 }
 
 .button-entry {
-  @apply px-4 py-2 rounded text-sm
+  @apply px-2 py-1 rounded text-sm
   bg-slate-800 hover:bg-slate-700
   text-zinc-300 hover:text-white
   cursor-pointer transition-colors duration-150
@@ -35,7 +35,7 @@ body {
 }
 
 .button-close {
-  @apply px-4 py-2 rounded text-sm
+  @apply px-2 py-1 rounded text-sm
   bg-slate-700 hover:bg-slate-600
   text-zinc-300 hover:text-zinc-100
   cursor-pointer transition-colors duration-150
@@ -43,8 +43,8 @@ body {
 }
 
 .button-download-deactivated {
-  @apply inline-flex items-center gap-4
-  px-4 py-2 rounded text-sm
+  @apply inline-flex items-center gap-2
+  px-2 py-1 min-w-40 rounded text-sm
   bg-slate-700 hover:bg-slate-600
   text-zinc-300 hover:text-zinc-100
   cursor-not-allowed transition-colors duration-150
@@ -52,7 +52,7 @@ body {
 }
 
 .button-danger {
-  @apply px-4 py-2 rounded text-sm
+  @apply px-2 py-1 rounded text-sm
   bg-red-950 hover:bg-red-800
   text-zinc-300 hover:text-zinc-100
   cursor-pointer transition-colors duration-150
@@ -60,7 +60,7 @@ body {
 }
 
 .button-accept {
-  @apply px-4 py-2 rounded text-sm
+  @apply px-2 py-1 rounded text-sm
   bg-blue-800 hover:bg-blue-600
   text-zinc-300 hover:text-zinc-100
   cursor-pointer transition-colors duration-150

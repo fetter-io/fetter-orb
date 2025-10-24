@@ -29,7 +29,7 @@ export function TabSelector({ activeTab, onTabChange }: TabSelectorProps) {
               className={`transition-all duration-200 text-center px-3 py-1 break-words whitespace-normal
                 ${
                   activeTab === tab.id
-                    ? "bg-gradient-to-b from-slate-900 to-slate-950 ring-1 ring-slate-700"
+                    ? "bg-gradient-to-b from-slate-900 to-slate-950"
                     : "bg-gradient-to-b from-transparent to-transparent hover:from-slate-700 hover:to-slate-800 cursor-pointer"
                 }`}
             >

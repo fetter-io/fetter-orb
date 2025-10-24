@@ -94,45 +94,49 @@ export function TenantCard({
         </code>
       </div>
 
-      <div className="mt-2 bg-slate-900 p-2 rounded">
-        <div className="text-zinc-300 font-semibold text-sm">
-          <a
-            href="https://github.com/fetter-io/fetter-rs"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-zinc-400"
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+        <div className="mt-2 bg-slate-900 p-2 rounded">
+          <div className="text-zinc-300 font-semibold text-sm">
+            <a
+              href="https://github.com/fetter-io/fetter-rs"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-zinc-400"
+            >
+              Fetter
+            </a>{" "}
+            CLI
+          </div>
+
+          <code
+            className="text-zinc-400 text-xs break-all cursor-pointer hover:text-zinc-200 transition-colors"
+            onClick={copyCommandToClipboard}
+            title={copiedCommand ? "Copied!" : "Copy to clipboard"}
           >
-            Fetter
-          </a>{" "}
-          CLI
+            fetter monitor-scan --url https://fetter.io/monitor_scan --tenant{" "}
+            {tenant.key}
+          </code>
         </div>
 
-        <code
-          className="text-zinc-400 text-xs break-all cursor-pointer hover:text-zinc-200 transition-colors leading-tight"
-          onClick={copyCommandToClipboard}
-          title={copiedCommand ? "Copied!" : "Copy to clipboard"}
-        >
-          fetter monitor-scan --url https://fetter.io/monitor_scan --tenant{" "}
-          {tenant.key}
-        </code>
-      </div>
+        <div className="mt-2 bg-slate-900 p-2 rounded">
+          <div className="text-zinc-300 font-semibold text-sm">
+            Fetter Agent
+          </div>
 
-      <div className="mt-2 bg-slate-900 p-2 rounded">
-        <div className="text-zinc-300 font-semibold text-sm">Fetter Agent</div>
-
-        <div className="flex gap-2 mt-2">
-          <button disabled className="button-download-deactivated">
-            <IconLinux />
-            Ubuntu Installer
-          </button>
-
-          <button disabled className="button-download-deactivated">
-            <IconApple />
-            Mac Installer
-          </button>
+          <div className="mt-2 mb-2">
+            <button disabled className="button-download-deactivated">
+              <IconLinux />
+              Ubuntu Installer
+            </button>
+          </div>
+          <div>
+            <button disabled className="button-download-deactivated">
+              <IconApple />
+              Mac Installer
+            </button>
+          </div>
         </div>
       </div>
-
       {showRenameDialog && currentUserId && (
         <TenantRename
           tenantId={tenantId}
