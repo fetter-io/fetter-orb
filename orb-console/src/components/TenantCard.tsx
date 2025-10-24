@@ -95,7 +95,7 @@ export function TenantCard({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
-        <div className="mt-2 bg-slate-900 p-2 rounded">
+        <div className="bg-slate-900 p-2 rounded">
           <div className="text-zinc-300 font-semibold text-sm">
             <a
               href="https://github.com/fetter-io/fetter-rs"
@@ -118,7 +118,7 @@ export function TenantCard({
           </code>
         </div>
 
-        <div className="mt-2 bg-slate-900 p-2 rounded">
+        <div className="bg-slate-900 p-2 rounded">
           <div className="text-zinc-300 font-semibold text-sm">
             Fetter Agent
           </div>
