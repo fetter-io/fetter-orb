@@ -19,7 +19,7 @@ export function TabSelector({ activeTab, onTabChange }: TabSelectorProps) {
 
   return (
     <div>
-      <div className="bg-slate-800 rounded-sm px-2 py-0 border border-gray-700">
+      <div className="bg-gradient-to-b from-slate-800 to-slate-900 px-0 py-0 border border-gray-700">
         <div className="grid grid-cols-6 gap-0 text-gray-600 font-semibold">
           {tabs.map((tab) => (
             <button
@@ -29,8 +29,8 @@ export function TabSelector({ activeTab, onTabChange }: TabSelectorProps) {
               className={`transition-all duration-200 text-center px-3 py-1 break-words whitespace-normal
                 ${
                   activeTab === tab.id
-                    ? "bg-slate-900 text-gray-400 ring-1 ring-slate-700"
-                    : "hover:bg-slate-700 hover:text-gray-300 cursor-pointer"
+                    ? "bg-gradient-to-b from-slate-900 to-slate-950 ring-1 ring-slate-700"
+                    : "bg-gradient-to-b from-transparent to-transparent hover:from-slate-700 hover:to-slate-800 cursor-pointer"
                 }`}
             >
               {tab.label}
