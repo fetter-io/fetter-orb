@@ -106,7 +106,10 @@ export function SystemTagCard({
             </thead>
             <tbody>
               {[...tag.site_packages].sort().map((path) => (
-                <tr key={path} className="border-b border-slate-800 bg-gray-900">
+                <tr
+                  key={path}
+                  className="border-b border-slate-800 bg-gray-900"
+                >
                   <td className="px-2 py-1 break-all">{path}</td>
                 </tr>
               ))}
