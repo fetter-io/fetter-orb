@@ -980,13 +980,14 @@ impl DBContext {
             where_clauses.push(format!("pi.system_tag_id = ${param_index}"));
             let _ = args.add(id);
             param_index += 1;
+        } else {
+            // Only filter to active systems when no specific system_tag_id is provided
+            where_clauses.push("st.active = true".to_string());
         }
         if let Some(tid) = tenant_id {
             where_clauses.push(format!("st.tenant_id = ${param_index}"));
             let _ = args.add(tid);
         }
-        // Always filter to only active systems
-        where_clauses.push("st.active = true".to_string());
 
         let where_clause = if !where_clauses.is_empty() {
             format!("WHERE {}", where_clauses.join(" AND "))
@@ -1381,7 +1382,7 @@ impl DBContext {
             {where_clause}
             "#,
             where_clause = if let Some(id) = system_tag_id {
-                format!("WHERE pi.system_tag_id = {id} AND st.active = true")
+                format!("WHERE pi.system_tag_id = {id}")
             } else if let Some(tid) = tenant_id {
                 format!("WHERE st.tenant_id = {tid} AND st.active = true")
             } else {
