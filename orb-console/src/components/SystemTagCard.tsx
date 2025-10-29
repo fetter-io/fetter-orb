@@ -14,12 +14,11 @@ export function SystemTagCard({
   onPackagesClick,
   onActiveChange,
 }: SystemTagCardProps) {
-  const [isActive, setIsActive] = useState(tag.active);
   const [isUpdating, setIsUpdating] = useState(false);
 
   const handleActiveToggle = async () => {
     setIsUpdating(true);
-    const newActive = !isActive;
+    const newActive = !tag.active;
 
     try {
       const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
@@ -37,7 +36,6 @@ export function SystemTagCard({
       if (response.ok) {
         const result = await response.json();
         if (result.updated) {
-          setIsActive(newActive);
           onActiveChange?.(tag.id, newActive);
         }
       }
@@ -66,14 +64,14 @@ export function SystemTagCard({
         </p>
         <div className="flex items-center gap-2">
           <button
-            title={isActive ? "Deactivate system" : "Activate system"}
+            title={tag.active ? "Deactivate system" : "Activate system"}
             className={`w-4 h-4 bg-gray-900 flex-shrink-0 overflow-visible text-clip rounded-xs flex items-center justify-center ring-1 ring-gray-600 font-black hover:bg-gray-600 cursor-pointer transition-colors ${
-              isActive ? "text-green-600" : "text-red-400"
+              tag.active ? "text-green-600" : "text-red-400"
             } ${isUpdating ? "opacity-50 cursor-not-allowed" : ""}`}
             onClick={handleActiveToggle}
             disabled={isUpdating}
           >
-            {isActive ? "●" : "○"}
+            {tag.active ? "●" : "○"}
           </button>
         </div>
       </div>

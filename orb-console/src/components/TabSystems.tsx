@@ -28,6 +28,7 @@ interface TabSystemsProps {
   setChartFilteredSystems: (systems: SystemTag[] | null) => void;
   filteredSystemsForDisplay: SystemTag[] | null;
   setFilteredSystemsForDisplay: (systems: SystemTag[] | null) => void;
+  onSystemActiveChange?: (id: number, active: boolean) => void;
 }
 
 export function TabSystems({
@@ -40,6 +41,7 @@ export function TabSystems({
   setChartFilteredSystems,
   filteredSystemsForDisplay,
   setFilteredSystemsForDisplay,
+  onSystemActiveChange,
 }: TabSystemsProps) {
   const handleScatterPointClick = (systems: SystemTag[]) => {
     // Clear display filter when interacting with chart
@@ -101,10 +103,11 @@ export function TabSystems({
             onPackagesClick(id);
             setActiveTab("packages");
           }}
+          {...(onSystemActiveChange && { onActiveChange: onSystemActiveChange })}
         />
       );
     },
-    [highlightedSystemTagId, onPackagesClick, setActiveTab],
+    [highlightedSystemTagId, onPackagesClick, setActiveTab, onSystemActiveChange],
   );
 
   return (
