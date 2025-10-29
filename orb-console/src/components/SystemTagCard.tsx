@@ -58,10 +58,10 @@ export function SystemTagCard({
     >
       {/* Basic system tag info */}
       <div className="flex items-center justify-between mb-2">
-        <p className="text-md font-bold">
-          <span className="text-gray-200">{tag.username}</span>
+        <p className="font-bold">
+          <span className="text-gray-400">{tag.username}</span>
           <span className="text-gray-300">: </span>
-          <span className="text-gray-200">{tag.hostname}</span>
+          <span className="text-gray-400">{tag.hostname}</span>
         </p>
         <div className="flex items-center gap-2">
           <SystemTagActiveIcon
