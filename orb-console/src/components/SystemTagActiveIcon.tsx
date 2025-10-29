@@ -4,21 +4,35 @@ type SystemTagActiveIconProps = {
   active: boolean;
   isUpdating: boolean;
   onToggle: () => void;
+  canModify?: boolean;
 };
 
 export function SystemTagActiveIcon({
   active,
   isUpdating,
   onToggle,
+  canModify = true,
 }: SystemTagActiveIconProps) {
+  const isDisabled = isUpdating || !canModify;
+
   return (
     <button
-      title={active ? "Deactivate system" : "Activate system"}
-      className={`w-4 h-4 bg-gray-900 flex-shrink-0 rounded-xs flex items-center justify-center ring-1 ring-gray-600 hover:bg-gray-600 cursor-pointer transition-colors ${
-        isUpdating ? "opacity-50 cursor-not-allowed" : ""
+      title={
+        !canModify
+          ? "Only tenant owner can modify"
+          : active
+            ? "Deactivate system"
+            : "Activate system"
+      }
+      className={`w-4 h-4 bg-gray-900 flex-shrink-0 rounded-xs flex items-center justify-center ring-1 ring-gray-600 transition-colors ${
+        !canModify
+          ? "opacity-30 cursor-not-allowed"
+          : isUpdating
+            ? "opacity-50 cursor-not-allowed"
+            : "hover:bg-gray-600 cursor-pointer"
       }`}
       onClick={onToggle}
-      disabled={isUpdating}
+      disabled={isDisabled}
     >
       {active ? (
         <svg

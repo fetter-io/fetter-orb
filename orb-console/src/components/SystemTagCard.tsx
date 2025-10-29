@@ -7,6 +7,7 @@ type SystemTagCardProps = {
   highlight?: boolean;
   onPackagesClick?: (id: number) => void;
   onActiveChange?: (id: number, active: boolean) => void;
+  canModify?: boolean;
 };
 
 export function SystemTagCard({
@@ -14,6 +15,7 @@ export function SystemTagCard({
   highlight,
   onPackagesClick,
   onActiveChange,
+  canModify = true,
 }: SystemTagCardProps) {
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -63,6 +65,7 @@ export function SystemTagCard({
             active={tag.active}
             isUpdating={isUpdating}
             onToggle={handleActiveToggle}
+            canModify={canModify}
           />
         </div>
         <p className="font-bold">
