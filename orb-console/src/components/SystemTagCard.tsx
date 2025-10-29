@@ -57,18 +57,26 @@ export function SystemTagCard({
         }`}
     >
       {/* Basic system tag info */}
-      <div className="flex items-center justify-between mb-2">
-        <p className="font-bold">
-          <span className="text-gray-400">{tag.username}</span>
-          <span className="text-gray-300">: </span>
-          <span className="text-gray-400">{tag.hostname}</span>
-        </p>
-        <div className="flex items-center gap-2">
+      <div className="flex items-center mb-2">
+        <div className="flex items-center mr-2">
           <SystemTagActiveIcon
             active={tag.active}
             isUpdating={isUpdating}
             onToggle={handleActiveToggle}
           />
+        </div>
+        <p className="font-bold">
+          <span className="text-gray-300">{tag.username}</span>
+          <span className="text-gray-300">: </span>
+          <span className="text-gray-300">{tag.hostname}</span>
+        </p>
+        <div className="ml-2">
+          <button
+            className="text-gray-500 hover:underline hover:text-gray-300 cursor-pointer"
+            onClick={() => onPackagesClick?.(tag.id)}
+          >
+            📦
+          </button>
         </div>
       </div>
 
@@ -86,14 +94,6 @@ export function SystemTagCard({
         <div>
           <span className="text-gray-500">Cores: </span>
           <span>{tag.logical_cores}</span>
-        </div>
-        <div>
-          <button
-            className="text-gray-500 hover:underline hover:text-gray-300 cursor-pointer"
-            onClick={() => onPackagesClick?.(tag.id)}
-          >
-            📦
-          </button>
         </div>
       </div>
 

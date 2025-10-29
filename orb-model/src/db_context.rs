@@ -1282,7 +1282,7 @@ impl DBContext {
                         SELECT pi.system_tag_id, MAX(pi.timestamp) as latest_ts
                         FROM {ping_table} pi
                         JOIN system_tag st ON pi.system_tag_id = st.id
-                        WHERE pi.scanned = true AND st.tenant_id = $1
+                        WHERE pi.scanned = true AND st.tenant_id = $1 AND st.active = true
                         GROUP BY pi.system_tag_id
                     )
                     SELECT
@@ -1307,13 +1307,15 @@ impl DBContext {
                 (query, args)
             } else {
                 // latest of all tenants and systems
+                let system_tag_table = self.get_table("system_tag");
                 let query = format!(
                     r#"
                     WITH latest_scans AS (
-                        SELECT system_tag_id, MAX(timestamp) as latest_ts
-                        FROM {ping_table}
-                        WHERE scanned = true
-                        GROUP BY system_tag_id
+                        SELECT pi.system_tag_id, MAX(pi.timestamp) as latest_ts
+                        FROM {ping_table} pi
+                        JOIN {system_tag_table} st ON pi.system_tag_id = st.id
+                        WHERE pi.scanned = true AND st.active = true
+                        GROUP BY pi.system_tag_id
                     )
                     SELECT
                         p.id,
