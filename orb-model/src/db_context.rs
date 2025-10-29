@@ -370,6 +370,42 @@ impl DBContext {
         Ok(())
     }
 
+    /// Migration: Add active column to system_tag table if it doesn't exist
+    pub async fn migrate_add_system_tag_active(&self) -> Result<(), sqlx::Error> {
+        let system_tag_table = self.get_table("system_tag");
+
+        // Check if the column already exists
+        let check_query = format!(
+            r#"
+            SELECT column_name
+            FROM information_schema.columns
+            WHERE table_name = $1 AND column_name = 'active'
+            "#
+        );
+
+        let table_name_without_prefix = if let Some(suffix) = &self.suffix {
+            format!("system_tag_{}", suffix)
+        } else {
+            "system_tag".to_string()
+        };
+
+        let exists = sqlx::query(&check_query)
+            .bind(&table_name_without_prefix)
+            .fetch_optional(&self.pool)
+            .await?;
+
+        if exists.is_none() {
+            // Column doesn't exist, add it
+            let add_column_query = format!(
+                "ALTER TABLE {system_tag_table} ADD COLUMN active BOOLEAN NOT NULL DEFAULT true"
+            );
+
+            self.pool.execute(&*add_column_query).await?;
+        }
+
+        Ok(())
+    }
+
     //--------------------------------------------------------------------------
     pub async fn tenant_insert_or_get(&self, tenant: &Tenant) -> Result<i32, sqlx::Error> {
         let table_name = self.get_table("tenant");
