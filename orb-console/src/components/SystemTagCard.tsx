@@ -1,16 +1,52 @@
 import { SystemTag } from "@/types";
+import { useState } from "react";
 
 type SystemTagCardProps = {
   tag: SystemTag;
   highlight?: boolean;
   onPackagesClick?: (id: number) => void;
+  onActiveChange?: (id: number, active: boolean) => void;
 };
 
 export function SystemTagCard({
   tag,
   highlight,
   onPackagesClick,
+  onActiveChange,
 }: SystemTagCardProps) {
+  const [isActive, setIsActive] = useState(tag.active);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleActiveToggle = async () => {
+    setIsUpdating(true);
+    const newActive = !isActive;
+
+    try {
+      const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
+      const response = await fetch(`${apiBase}/system_tag_active`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          system_tag_id: tag.id,
+          active: newActive,
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.updated) {
+          setIsActive(newActive);
+          onActiveChange?.(tag.id, newActive);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to update system tag active state:", error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
   return (
     <div
       id={`system-tag-${tag.id}`}
@@ -22,10 +58,24 @@ export function SystemTagCard({
         }`}
     >
       {/* Basic system tag info */}
-      <p>
-        <span className="text-gray-500">User: </span>
-        <span>{tag.username}</span>
-      </p>
+      <div className="flex items-center justify-between mb-2">
+        <p>
+          <span className="text-gray-500">User: </span>
+          <span>{tag.username}</span>
+        </p>
+        <div className="flex items-center gap-2">
+          <button
+            title={isActive ? "Deactivate system" : "Activate system"}
+            className={`w-4 h-4 bg-gray-900 flex-shrink-0 overflow-visible text-clip rounded-xs flex items-center justify-center ring-1 ring-gray-600 font-black hover:bg-gray-600 cursor-pointer transition-colors ${
+              isActive ? "text-green-600" : "text-red-400"
+            } ${isUpdating ? "opacity-50 cursor-not-allowed" : ""}`}
+            onClick={handleActiveToggle}
+            disabled={isUpdating}
+          >
+            {isActive ? "●" : "○"}
+          </button>
+        </div>
+      </div>
 
       <div className="grid grid-cols-5 gap-2 mb-2 break-all">
         <div>
