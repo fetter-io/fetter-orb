@@ -103,11 +103,18 @@ export function TabSystems({
             onPackagesClick(id);
             setActiveTab("packages");
           }}
-          {...(onSystemActiveChange && { onActiveChange: onSystemActiveChange })}
+          {...(onSystemActiveChange && {
+            onActiveChange: onSystemActiveChange,
+          })}
         />
       );
     },
-    [highlightedSystemTagId, onPackagesClick, setActiveTab, onSystemActiveChange],
+    [
+      highlightedSystemTagId,
+      onPackagesClick,
+      setActiveTab,
+      onSystemActiveChange,
+    ],
   );
 
   return (

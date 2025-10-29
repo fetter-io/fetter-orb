@@ -374,14 +374,13 @@ impl DBContext {
     pub async fn migrate_add_system_tag_active(&self) -> Result<(), sqlx::Error> {
         let system_tag_table = self.get_table("system_tag");
 
-        // Check if the column already exists
-        let check_query = format!(
-            r#"
+        // if the column already exists
+        let check_query = r#"
             SELECT column_name
             FROM information_schema.columns
             WHERE table_name = $1 AND column_name = 'active'
             "#
-        );
+        .to_string();
 
         let exists = sqlx::query(&check_query)
             .bind(&system_tag_table)
@@ -389,14 +388,11 @@ impl DBContext {
             .await?;
 
         if exists.is_none() {
-            // Column doesn't exist, add it
             let add_column_query = format!(
                 "ALTER TABLE {system_tag_table} ADD COLUMN active BOOLEAN NOT NULL DEFAULT true"
             );
-
             self.pool.execute(&*add_column_query).await?;
         }
-
         Ok(())
     }
 
