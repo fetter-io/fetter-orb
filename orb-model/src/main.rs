@@ -470,7 +470,7 @@ async fn main() {
     dbx.tables_create(true)
         .await
         .expect("failed to create tables");
-    dbx.migrate_add_system_tag_active().await?;
+    dbx.migrate_add_system_tag_active().await.expect("failed to migrate");
 
     let app_state = AppState {
         db: Arc::new(dbx),

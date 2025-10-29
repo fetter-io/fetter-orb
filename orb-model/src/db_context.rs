@@ -383,14 +383,8 @@ impl DBContext {
             "#
         );
 
-        let table_name_without_prefix = if let Some(suffix) = &self.suffix {
-            format!("system_tag_{}", suffix)
-        } else {
-            "system_tag".to_string()
-        };
-
         let exists = sqlx::query(&check_query)
-            .bind(&table_name_without_prefix)
+            .bind(&system_tag_table)
             .fetch_optional(&self.pool)
             .await?;
 
