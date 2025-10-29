@@ -765,7 +765,12 @@ export default function Dashboard() {
               setChartFilteredSystems={setChartFilteredSystems}
               filteredSystemsForDisplay={filteredSystemsForDisplay}
               setFilteredSystemsForDisplay={setFilteredSystemsForDisplay}
-              onSystemActiveChange={() => systemTagsState.refresh()}
+              onSystemActiveChange={(id, active) => {
+                systemTagsState.refresh();
+                if (!active && id === selectedSystemId) {
+                  setSelectedSystemId(null);
+                }
+              }}
             />
           )}
 
