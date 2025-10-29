@@ -254,7 +254,8 @@ impl DBContext {
                 os_name TEXT NOT NULL,
                 os_version TEXT NOT NULL,
                 architecture TEXT NOT NULL,
-                logical_cores SMALLINT NOT NULL
+                logical_cores SMALLINT NOT NULL,
+                active BOOLEAN NOT NULL DEFAULT true
             );
             "#
         );
@@ -663,6 +664,46 @@ impl DBContext {
         Ok(row.get("id"))
     }
 
+    pub async fn system_tag_set_active(
+        &self,
+        system_tag_id: i32,
+        user_id: Option<Uuid>,
+        active: bool,
+    ) -> Result<bool, sqlx::Error> {
+        let table_name = self.get_table("system_tag");
+
+        // If user_id is provided, verify ownership via tenant
+        if let Some(user_id) = user_id {
+            let tenant_table = self.get_table("tenant");
+            let check_query = format!(
+                r#"
+                SELECT st.id
+                FROM {table_name} st
+                JOIN {tenant_table} t ON st.tenant_id = t.id
+                WHERE st.id = $1 AND t.created_by = $2
+                "#
+            );
+            if sqlx::query(&check_query)
+                .bind(system_tag_id)
+                .bind(user_id)
+                .fetch_optional(&self.pool)
+                .await?
+                .is_none()
+            {
+                return Ok(false);
+            }
+        }
+
+        let update_query = format!("UPDATE {table_name} SET active = $1 WHERE id = $2");
+        let result = sqlx::query(&update_query)
+            .bind(active)
+            .bind(system_tag_id)
+            .execute(&self.pool)
+            .await?;
+
+        Ok(result.rows_affected() > 0)
+    }
+
     pub async fn system_tag_pings(
         &self,
         tenant_id: i32,
@@ -676,7 +717,7 @@ impl DBContext {
         // Step 1: fetch all system tags for the given tenant
         let tag_rows = sqlx::query(&format!(
             r#"
-            SELECT id, username, hostname, os_name, os_version, architecture, logical_cores
+            SELECT id, username, hostname, os_name, os_version, architecture, logical_cores, active
             FROM {system_tag_table}
             WHERE tenant_id = $1
             "#
@@ -796,6 +837,7 @@ impl DBContext {
                 "os_version": tag.get::<String, _>("os_version"),
                 "architecture": tag.get::<String, _>("architecture"),
                 "logical_cores": tag.get::<i16, _>("logical_cores") as usize,
+                "active": tag.get::<bool, _>("active"),
                 "pings": st_to_pings.remove(&id).unwrap_or_default(),
                 "site_packages": st_to_site_packages.remove(&id).unwrap_or_default()
             }));

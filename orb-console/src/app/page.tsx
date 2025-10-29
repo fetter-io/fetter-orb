@@ -82,7 +82,6 @@ export default function LandingPage() {
         reverse={true}
       />
 
-
       <WaveDivider
         height={80}
         controlPoints={[800, 0, 800, 0]}

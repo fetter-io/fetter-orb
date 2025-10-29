@@ -29,6 +29,7 @@ export type SystemTag = {
   os_version: string;
   architecture: string;
   logical_cores: number;
+  active: boolean;
   pings: Ping[];
   site_packages: string[];
 };

@@ -1202,3 +1202,90 @@ async fn test_get_users_c() {
 
     ctx.tables_drop().await.unwrap();
 }
+
+#[tokio::test]
+async fn test_system_tag_set_active() {
+    let pool = get_db_pool().await;
+    let ctx = DBContext::new(pool, Some("test_system_tag_set_active".into()));
+    ctx.tables_drop().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
+
+    // Load scan data
+    let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path1.push("tests/fixtures/monitor-scan-01.json");
+    let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
+
+    // Create user and tenant
+    let user_id = ctx
+        .user_tenant_init("foo", 0, "foo@foo.com", "Foo")
+        .await
+        .unwrap();
+    let t = Tenant::from_key("team-a", user_id);
+    let tenant_id = ctx.tenant_insert_or_get(&t).await.unwrap();
+
+    // Load scan which creates system tag
+    ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
+
+    // Get the system_tag_id from the loaded data
+    let system_tag_id = 1;
+
+    // Verify default active state is true
+    let result = ctx.system_tag_pings(tenant_id, None).await.unwrap();
+    let tags = result.as_array().unwrap();
+    assert_eq!(tags.len(), 1);
+    assert_eq!(tags[0]["active"], true);
+
+    // Set active to false as owner
+    let success = ctx
+        .system_tag_set_active(system_tag_id, Some(user_id), false)
+        .await
+        .unwrap();
+    assert!(success);
+
+    // Verify active is now false
+    let result = ctx.system_tag_pings(tenant_id, None).await.unwrap();
+    let tags = result.as_array().unwrap();
+    assert_eq!(tags[0]["active"], false);
+
+    // Set active back to true
+    let success = ctx
+        .system_tag_set_active(system_tag_id, Some(user_id), true)
+        .await
+        .unwrap();
+    assert!(success);
+
+    // Verify active is true again
+    let result = ctx.system_tag_pings(tenant_id, None).await.unwrap();
+    let tags = result.as_array().unwrap();
+    assert_eq!(tags[0]["active"], true);
+
+    // Try to set active as non-owner (should fail)
+    let other_user_id = ctx
+        .user_tenant_init("bar", 1, "bar@bar.com", "Bar")
+        .await
+        .unwrap();
+    let success = ctx
+        .system_tag_set_active(system_tag_id, Some(other_user_id), false)
+        .await
+        .unwrap();
+    assert!(!success);
+
+    // Verify active is still true (unchanged)
+    let result = ctx.system_tag_pings(tenant_id, None).await.unwrap();
+    let tags = result.as_array().unwrap();
+    assert_eq!(tags[0]["active"], true);
+
+    // Set active as admin (no user_id)
+    let success = ctx
+        .system_tag_set_active(system_tag_id, None, false)
+        .await
+        .unwrap();
+    assert!(success);
+
+    // Verify active is now false
+    let result = ctx.system_tag_pings(tenant_id, None).await.unwrap();
+    let tags = result.as_array().unwrap();
+    assert_eq!(tags[0]["active"], false);
+
+    ctx.tables_drop().await.unwrap();
+}
