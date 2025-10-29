@@ -15,6 +15,9 @@ export function SystemTagSelector({
   packageCount,
   vulnCount,
 }: SystemTagSelectorProps) {
+  // Only show active system tags in the selector
+  const activeTags = systemTags?.filter((tag) => tag.active) ?? [];
+
   return (
     <div className="flex flex-col items-start gap-1">
       <select
@@ -26,7 +29,7 @@ export function SystemTagSelector({
         className="text-sm bg-slate-800 border border-slate-600 text-gray-300 px-2 py-1 rounded"
       >
         <option value="">All Systems</option>
-        {systemTags?.map((tag) => (
+        {activeTags.map((tag) => (
           <option key={tag.id} value={tag.id}>
             {tag.username}: {tag.hostname}
           </option>

@@ -989,6 +989,8 @@ impl DBContext {
             where_clauses.push(format!("st.tenant_id = ${param_index}"));
             let _ = args.add(tid);
         }
+        // Always filter to only active systems
+        where_clauses.push("st.active = true".to_string());
 
         let where_clause = if !where_clauses.is_empty() {
             format!("WHERE {}", where_clauses.join(" AND "))
@@ -1159,10 +1161,10 @@ impl DBContext {
         "#,
             tenant_filter = if tenant_id.is_some() {
                 format!(
-                "AND pi.system_tag_id IN (SELECT id FROM {system_tag_table} WHERE tenant_id = $2)"
+                "AND pi.system_tag_id IN (SELECT id FROM {system_tag_table} WHERE tenant_id = $2 AND active = true)"
             )
             } else {
-                "".to_string()
+                format!("AND pi.system_tag_id IN (SELECT id FROM {system_tag_table} WHERE active = true)")
             }
         );
 
@@ -1381,11 +1383,11 @@ impl DBContext {
             {where_clause}
             "#,
             where_clause = if let Some(id) = system_tag_id {
-                format!("WHERE pi.system_tag_id = {id}")
+                format!("WHERE pi.system_tag_id = {id} AND st.active = true")
             } else if let Some(tid) = tenant_id {
-                format!("WHERE st.tenant_id = {tid}")
+                format!("WHERE st.tenant_id = {tid} AND st.active = true")
             } else {
-                "".to_string()
+                "WHERE st.active = true".to_string()
             }
         );
 
