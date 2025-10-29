@@ -1,5 +1,6 @@
 import { SystemTag } from "@/types";
 import { useState } from "react";
+import { SystemTagActiveIcon } from "./SystemTagActiveIcon";
 
 type SystemTagCardProps = {
   tag: SystemTag;
@@ -63,16 +64,11 @@ export function SystemTagCard({
           <span className="text-gray-200">{tag.hostname}</span>
         </p>
         <div className="flex items-center gap-2">
-          <button
-            title={tag.active ? "Deactivate system" : "Activate system"}
-            className={`w-4 h-4 bg-gray-900 flex-shrink-0 overflow-visible text-clip rounded-xs flex items-center justify-center ring-1 ring-gray-600 font-black hover:bg-gray-600 cursor-pointer transition-colors ${
-              tag.active ? "text-green-600" : "text-red-400"
-            } ${isUpdating ? "opacity-50 cursor-not-allowed" : ""}`}
-            onClick={handleActiveToggle}
-            disabled={isUpdating}
-          >
-            {tag.active ? "●" : "○"}
-          </button>
+          <SystemTagActiveIcon
+            active={tag.active}
+            isUpdating={isUpdating}
+            onToggle={handleActiveToggle}
+          />
         </div>
       </div>
 
