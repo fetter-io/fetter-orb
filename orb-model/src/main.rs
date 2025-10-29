@@ -320,6 +320,31 @@ pub async fn post_tenant_rename(
     }
 }
 
+#[derive(Deserialize)]
+pub struct SystemTagActiveParams {
+    pub system_tag_id: i32,
+    pub user_id: Option<Uuid>,
+    pub active: bool,
+}
+
+pub async fn post_system_tag_active(
+    State(db): State<Arc<DBContext>>,
+    Json(input): Json<SystemTagActiveParams>,
+) -> Result<Json<Value>, (StatusCode, String)> {
+    let success = db
+        .system_tag_set_active(input.system_tag_id, input.user_id, input.active)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    if success {
+        Ok(Json(json!({ "status": "success", "updated": true })))
+    } else {
+        Ok(Json(
+            json!({ "status": "failed", "updated": false, "reason": "unauthorized or system tag not found" }),
+        ))
+    }
+}
+
 //------------------------------------------------------------------------------
 
 #[derive(Deserialize)]
@@ -470,7 +495,9 @@ async fn main() {
     dbx.tables_create(true)
         .await
         .expect("failed to create tables");
-    dbx.migrate_add_system_tag_active().await.expect("failed to migrate");
+    dbx.migrate_add_system_tag_active()
+        .await
+        .expect("failed to migrate");
 
     let app_state = AppState {
         db: Arc::new(dbx),
@@ -490,6 +517,7 @@ async fn main() {
         .route("/package_versions", get(get_package_versions))
         .route("/package_counts", get(get_package_counts))
         .route("/system_tag_pings", get(get_system_tag_pings))
+        .route("/system_tag_active", post(post_system_tag_active))
         .route("/tenant", get(get_tenant).post(set_tenant))
         .route("/tenant_rename", post(post_tenant_rename))
         .route("/tenant_count", get(get_tenant_count))
