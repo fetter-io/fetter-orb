@@ -73,14 +73,16 @@ export function SystemTagCard({
           <span className="text-gray-300">: </span>
           <span className="text-gray-300">{tag.hostname}</span>
         </p>
-        <div className="ml-2">
-          <button
-            className="text-gray-500 hover:underline hover:text-gray-300 cursor-pointer"
-            onClick={() => onPackagesClick?.(tag.id)}
-          >
-            📦
-          </button>
-        </div>
+        {tag.active && (
+          <div className="ml-2">
+            <button
+              className="text-gray-500 hover:underline hover:text-gray-300 cursor-pointer"
+              onClick={() => onPackagesClick?.(tag.id)}
+            >
+              📦
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-2 mb-2 break-all text-sm text-gray-400">
