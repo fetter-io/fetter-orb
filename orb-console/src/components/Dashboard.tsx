@@ -663,10 +663,11 @@ export default function Dashboard() {
   const canModifySystemActive = useMemo(() => {
     if (!userInfo || !selectedTenantId || !tenantsState.data) return true;
 
+    // get pair of id, Tenant
     const selectedTenant = tenantsState.data.find(
       ([id]) => id === selectedTenantId,
     );
-
+    // if selectedTenant is empty default to true
     return selectedTenant ? selectedTenant[1].created_by === userInfo.id : true;
   }, [userInfo, selectedTenantId, tenantsState.data]);
 

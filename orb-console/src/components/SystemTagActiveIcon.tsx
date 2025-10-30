@@ -21,8 +21,8 @@ export function SystemTagActiveIcon({
         !canModify
           ? "Only tenant owner can modify"
           : active
-            ? "Deactivate system"
-            : "Activate system"
+            ? "Deactivate"
+            : "Activate"
       }
       className={`w-4 h-4 bg-gray-900 flex-shrink-0 rounded-xs flex items-center justify-center ring-1 ring-gray-600 transition-colors ${
         !canModify
