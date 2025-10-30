@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Fetter Orb",
-  description: "The Fetter Orb Console",
+  title: "Fetter IO",
+  description: "The Fetter IO Console",
 };
 
 export default function RootLayout({

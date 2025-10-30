@@ -28,7 +28,7 @@ export default function LandingPage() {
         <div className="flex w-32 h-32 mb-4">
           <Weave fill={colors.slate[600]} className="w-full h-full" />
         </div>
-        <h1 className="text-4xl font-bold text-zinc-400 mb-2">Fetter Orb</h1>
+        <h1 className="text-4xl font-bold text-zinc-400 mb-2">Fetter IO</h1>
 
         <p className="text-lg text-zinc-400">Python Supply-Chain Omniscience</p>
         <p className="text-xs text-zinc-600 mb-6">v0.11.0 Beta</p>
