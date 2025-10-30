@@ -1,16 +1,53 @@
 import { SystemTag } from "@/types";
+import { useState } from "react";
+import { SystemTagActiveIcon } from "./SystemTagActiveIcon";
 
 type SystemTagCardProps = {
   tag: SystemTag;
   highlight?: boolean;
   onPackagesClick?: (id: number) => void;
+  onActiveChange?: (id: number, active: boolean) => void;
+  canModify?: boolean;
 };
 
 export function SystemTagCard({
   tag,
   highlight,
   onPackagesClick,
+  onActiveChange,
+  canModify = true,
 }: SystemTagCardProps) {
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleActiveToggle = async () => {
+    setIsUpdating(true);
+    const newActive = !tag.active;
+
+    try {
+      const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
+      const response = await fetch(`${apiBase}/system_tag_active`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          system_tag_id: tag.id,
+          active: newActive,
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.updated) {
+          onActiveChange?.(tag.id, newActive);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to update system tag active state:", error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
   return (
     <div
       id={`system-tag-${tag.id}`}
@@ -22,16 +59,31 @@ export function SystemTagCard({
         }`}
     >
       {/* Basic system tag info */}
-      <p>
-        <span className="text-gray-500">User: </span>
-        <span>{tag.username}</span>
-      </p>
-
-      <div className="grid grid-cols-5 gap-2 mb-2 break-all">
-        <div>
-          <span className="text-gray-500">Host: </span>
-          <span>{tag.hostname}</span>
+      <div className="flex items-center mb-2">
+        <div className="flex items-center mr-2">
+          <SystemTagActiveIcon
+            active={tag.active}
+            isUpdating={isUpdating}
+            onToggle={handleActiveToggle}
+            canModify={canModify}
+          />
         </div>
+        <p className="font-bold">
+          <span className="text-gray-300">{tag.username}</span>
+          <span className="text-gray-300">: </span>
+          <span className="text-gray-300">{tag.hostname}</span>
+        </p>
+        <div className="ml-2">
+          <button
+            className="text-gray-500 hover:underline hover:text-gray-300 cursor-pointer"
+            onClick={() => onPackagesClick?.(tag.id)}
+          >
+            📦
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-2 mb-2 break-all text-sm text-gray-400">
         <div>
           <span className="text-gray-500">OS: </span>
           <span>
@@ -39,20 +91,10 @@ export function SystemTagCard({
           </span>
         </div>
         <div>
-          <span className="text-gray-500">Arch: </span>
-          <span>{tag.architecture}</span>
-        </div>
-        <div>
-          <span className="text-gray-500">Cores: </span>
-          <span>{tag.logical_cores}</span>
-        </div>
-        <div>
-          <button
-            className="text-gray-500 hover:underline hover:text-gray-300 cursor-pointer"
-            onClick={() => onPackagesClick?.(tag.id)}
-          >
-            📦
-          </button>
+          <span className="text-gray-500">Arch: Cores: </span>
+          <span>
+            {tag.architecture}: {tag.logical_cores}cpu
+          </span>
         </div>
       </div>
 

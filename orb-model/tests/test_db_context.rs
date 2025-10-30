@@ -218,7 +218,7 @@ async fn test_system_tag_pings_a() {
     let post = ctx.system_tag_pings(2, None).await.unwrap().to_string();
     assert_eq!(
         post,
-        "[{\"architecture\":\"aarch64\",\"hostname\":\"machine-x\",\"id\":1,\"logical_cores\":16,\"os_name\":\"macos\",\"os_version\":\"14.1.1\",\"pings\":[{\"scanned\":true,\"timestamp\":\"2025-07-18T23:23:45.131879Z\"}],\"site_packages\":[\"/Users/user1/.env311-fetter/lib/python3.11/site-packages\",\"/Users/user1/.env313-sf/lib/python3.13/site-packages\"],\"username\":\"user1\"}]"
+        "[{\"active\":true,\"architecture\":\"aarch64\",\"hostname\":\"machine-x\",\"id\":1,\"logical_cores\":16,\"os_name\":\"macos\",\"os_version\":\"14.1.1\",\"pings\":[{\"scanned\":true,\"timestamp\":\"2025-07-18T23:23:45.131879Z\"}],\"site_packages\":[\"/Users/user1/.env311-fetter/lib/python3.11/site-packages\",\"/Users/user1/.env313-sf/lib/python3.13/site-packages\"],\"username\":\"user1\"}]"
     );
 
     ctx.tables_drop().await.unwrap();
@@ -1199,6 +1199,223 @@ async fn test_get_users_c() {
     assert_eq!(users_after.len(), 1);
     assert_eq!(users_after[0].term_accepted, true);
     assert_eq!(users_after[0].github_login, "test_user");
+
+    ctx.tables_drop().await.unwrap();
+}
+
+#[tokio::test]
+async fn test_system_tag_set_active() {
+    let pool = get_db_pool().await;
+    let ctx = DBContext::new(pool, Some("test_system_tag_set_active".into()));
+    ctx.tables_drop().await.unwrap();
+    ctx.tables_create(false).await.unwrap();
+
+    // Load scan data
+    let mut path1 = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path1.push("tests/fixtures/monitor-scan-01.json");
+    let msg1 = fs::read_to_string(path1).expect("Failed to read JSON file");
+
+    // Create user and tenant
+    let user_id = ctx
+        .user_tenant_init("foo", 0, "foo@foo.com", "Foo")
+        .await
+        .unwrap();
+    let t = Tenant::from_key("team-a", user_id);
+    let tenant_id = ctx.tenant_insert_or_get(&t).await.unwrap();
+
+    // Load scan which creates system tag
+    ctx.monitor_scan_load_from_json(&msg1).await.unwrap();
+    let system_tag_id = 1;
+
+    // Verify default active state is true
+    let result = ctx.system_tag_pings(tenant_id, None).await.unwrap();
+    let tags = result.as_array().unwrap();
+    assert_eq!(tags.len(), 1);
+    assert_eq!(tags[0]["active"], true);
+
+    // Set active to false as owner
+    let success = ctx
+        .system_tag_set_active(system_tag_id, Some(user_id), false)
+        .await
+        .unwrap();
+    assert!(success);
+
+    // Verify active is now false
+    let result = ctx.system_tag_pings(tenant_id, None).await.unwrap();
+    let tags = result.as_array().unwrap();
+    assert_eq!(tags[0]["active"], false);
+
+    // Set active back to true
+    let success = ctx
+        .system_tag_set_active(system_tag_id, Some(user_id), true)
+        .await
+        .unwrap();
+    assert!(success);
+
+    // Verify active is true again
+    let result = ctx.system_tag_pings(tenant_id, None).await.unwrap();
+    let tags = result.as_array().unwrap();
+    assert_eq!(tags[0]["active"], true);
+
+    // Try to set active as non-owner (should fail)
+    let other_user_id = ctx
+        .user_tenant_init("bar", 1, "bar@bar.com", "Bar")
+        .await
+        .unwrap();
+    let success = ctx
+        .system_tag_set_active(system_tag_id, Some(other_user_id), false)
+        .await
+        .unwrap();
+    assert!(!success);
+
+    // Verify active is still true (unchanged)
+    let result = ctx.system_tag_pings(tenant_id, None).await.unwrap();
+    let tags = result.as_array().unwrap();
+    assert_eq!(tags[0]["active"], true);
+
+    // Set active as admin (no user_id)
+    let success = ctx
+        .system_tag_set_active(system_tag_id, None, false)
+        .await
+        .unwrap();
+    assert!(success);
+
+    // Verify active is now false
+    let result = ctx.system_tag_pings(tenant_id, None).await.unwrap();
+    let tags = result.as_array().unwrap();
+    assert_eq!(tags[0]["active"], false);
+
+    ctx.tables_drop().await.unwrap();
+}
+
+#[tokio::test]
+async fn test_migrate_add_system_tag_active() {
+    let pool = get_db_pool().await;
+    let ctx = DBContext::new(pool, Some("test_migrate_active".into()));
+    ctx.tables_drop().await.unwrap();
+
+    // Create tables without the active column (simulate old schema)
+    // We'll manually create an old version of the system_tag table
+    let system_tag_table = "system_tag_test_migrate_active";
+    let tenant_table = "tenant_test_migrate_active";
+    let user_table = "users_test_migrate_active";
+
+    // Create minimal tables for testing
+    sqlx::query(&format!(
+        r#"
+        CREATE TABLE {user_table} (
+            id UUID PRIMARY KEY,
+            github_login TEXT NOT NULL,
+            github_id INTEGER NOT NULL,
+            email TEXT,
+            name TEXT,
+            tenant_limit INTEGER NOT NULL DEFAULT 1,
+            term_accepted BOOLEAN NOT NULL DEFAULT FALSE,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+        "#
+    ))
+    .execute(&ctx.pool)
+    .await
+    .unwrap();
+
+    sqlx::query(&format!(
+        r#"
+        CREATE TABLE {tenant_table} (
+            id SERIAL PRIMARY KEY,
+            key TEXT NOT NULL,
+            name TEXT NOT NULL,
+            ping_limit INTEGER NOT NULL,
+            created_by UUID NOT NULL REFERENCES {user_table}(id) ON DELETE RESTRICT
+        )
+        "#
+    ))
+    .execute(&ctx.pool)
+    .await
+    .unwrap();
+
+    // Create system_tag table WITHOUT active column (old schema)
+    sqlx::query(&format!(
+        r#"
+        CREATE TABLE {system_tag_table} (
+            id SERIAL PRIMARY KEY,
+            tenant_id INTEGER NOT NULL REFERENCES {tenant_table}(id) ON DELETE RESTRICT,
+            username TEXT NOT NULL,
+            hostname TEXT NOT NULL,
+            os_name TEXT NOT NULL,
+            os_version TEXT NOT NULL,
+            architecture TEXT NOT NULL,
+            logical_cores SMALLINT NOT NULL
+        )
+        "#
+    ))
+    .execute(&ctx.pool)
+    .await
+    .unwrap();
+
+    // Verify active column doesn't exist
+    let check_query = r#"
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_name = $1 AND column_name = 'active'
+    "#;
+    let result = sqlx::query(check_query)
+        .bind(system_tag_table)
+        .fetch_optional(&ctx.pool)
+        .await
+        .unwrap();
+    assert!(result.is_none(), "Active column should not exist yet");
+
+    // Run migration
+    ctx.migrate_add_system_tag_active().await.unwrap();
+
+    // Verify active column now exists
+    let result = sqlx::query(check_query)
+        .bind(system_tag_table)
+        .fetch_optional(&ctx.pool)
+        .await
+        .unwrap();
+    assert!(
+        result.is_some(),
+        "Active column should exist after migration"
+    );
+
+    // Run migration again (should be idempotent)
+    ctx.migrate_add_system_tag_active().await.unwrap();
+
+    // Insert a test row to verify default value works
+    let user_id = uuid::Uuid::new_v4();
+    sqlx::query(&format!(
+        "INSERT INTO {user_table} (id, github_login, github_id) VALUES ($1, 'test', 123)"
+    ))
+    .bind(user_id)
+    .execute(&ctx.pool)
+    .await
+    .unwrap();
+
+    sqlx::query(&format!(
+        "INSERT INTO {tenant_table} (key, name, ping_limit, created_by) VALUES ('test', 'Test', 10, $1)"
+    ))
+    .bind(user_id)
+    .execute(&ctx.pool)
+    .await
+    .unwrap();
+
+    sqlx::query(&format!(
+        "INSERT INTO {system_tag_table} (tenant_id, username, hostname, os_name, os_version, architecture, logical_cores) VALUES (1, 'user', 'host', 'linux', '5.0', 'x86_64', 4)"
+    ))
+    .execute(&ctx.pool)
+    .await
+    .unwrap();
+
+    // Verify default value is true
+    let row: (bool,) = sqlx::query_as(&format!(
+        "SELECT active FROM {system_tag_table} WHERE id = 1"
+    ))
+    .fetch_one(&ctx.pool)
+    .await
+    .unwrap();
+    assert_eq!(row.0, true, "Default active value should be true");
 
     ctx.tables_drop().await.unwrap();
 }

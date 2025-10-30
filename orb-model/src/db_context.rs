@@ -254,7 +254,8 @@ impl DBContext {
                 os_name TEXT NOT NULL,
                 os_version TEXT NOT NULL,
                 architecture TEXT NOT NULL,
-                logical_cores SMALLINT NOT NULL
+                logical_cores SMALLINT NOT NULL,
+                active BOOLEAN NOT NULL DEFAULT true
             );
             "#
         );
@@ -366,6 +367,32 @@ impl DBContext {
         self.pool.execute(&*drop_tenant).await?;
         self.pool.execute(&*drop_user).await?;
 
+        Ok(())
+    }
+
+    /// Migration: Add active column to system_tag table if it doesn't exist
+    pub async fn migrate_add_system_tag_active(&self) -> Result<(), sqlx::Error> {
+        let system_tag_table = self.get_table("system_tag");
+
+        // if the column already exists
+        let check_query = r#"
+            SELECT column_name
+            FROM information_schema.columns
+            WHERE table_name = $1 AND column_name = 'active'
+            "#
+        .to_string();
+
+        let exists = sqlx::query(&check_query)
+            .bind(&system_tag_table)
+            .fetch_optional(&self.pool)
+            .await?;
+
+        if exists.is_none() {
+            let add_column_query = format!(
+                "ALTER TABLE {system_tag_table} ADD COLUMN active BOOLEAN NOT NULL DEFAULT true"
+            );
+            self.pool.execute(&*add_column_query).await?;
+        }
         Ok(())
     }
 
@@ -663,6 +690,46 @@ impl DBContext {
         Ok(row.get("id"))
     }
 
+    pub async fn system_tag_set_active(
+        &self,
+        system_tag_id: i32,
+        user_id: Option<Uuid>,
+        active: bool,
+    ) -> Result<bool, sqlx::Error> {
+        let table_name = self.get_table("system_tag");
+
+        // If user_id is provided, verify ownership via tenant
+        if let Some(user_id) = user_id {
+            let tenant_table = self.get_table("tenant");
+            let check_query = format!(
+                r#"
+                SELECT st.id
+                FROM {table_name} st
+                JOIN {tenant_table} t ON st.tenant_id = t.id
+                WHERE st.id = $1 AND t.created_by = $2
+                "#
+            );
+            if sqlx::query(&check_query)
+                .bind(system_tag_id)
+                .bind(user_id)
+                .fetch_optional(&self.pool)
+                .await?
+                .is_none()
+            {
+                return Ok(false);
+            }
+        }
+
+        let update_query = format!("UPDATE {table_name} SET active = $1 WHERE id = $2");
+        let result = sqlx::query(&update_query)
+            .bind(active)
+            .bind(system_tag_id)
+            .execute(&self.pool)
+            .await?;
+
+        Ok(result.rows_affected() > 0)
+    }
+
     pub async fn system_tag_pings(
         &self,
         tenant_id: i32,
@@ -676,7 +743,7 @@ impl DBContext {
         // Step 1: fetch all system tags for the given tenant
         let tag_rows = sqlx::query(&format!(
             r#"
-            SELECT id, username, hostname, os_name, os_version, architecture, logical_cores
+            SELECT id, username, hostname, os_name, os_version, architecture, logical_cores, active
             FROM {system_tag_table}
             WHERE tenant_id = $1
             "#
@@ -796,6 +863,7 @@ impl DBContext {
                 "os_version": tag.get::<String, _>("os_version"),
                 "architecture": tag.get::<String, _>("architecture"),
                 "logical_cores": tag.get::<i16, _>("logical_cores") as usize,
+                "active": tag.get::<bool, _>("active"),
                 "pings": st_to_pings.remove(&id).unwrap_or_default(),
                 "site_packages": st_to_site_packages.remove(&id).unwrap_or_default()
             }));
@@ -912,6 +980,9 @@ impl DBContext {
             where_clauses.push(format!("pi.system_tag_id = ${param_index}"));
             let _ = args.add(id);
             param_index += 1;
+        } else {
+            // Only filter to active systems when no specific system_tag_id is provided
+            where_clauses.push("st.active = true".to_string());
         }
         if let Some(tid) = tenant_id {
             where_clauses.push(format!("st.tenant_id = ${param_index}"));
@@ -1087,10 +1158,10 @@ impl DBContext {
         "#,
             tenant_filter = if tenant_id.is_some() {
                 format!(
-                "AND pi.system_tag_id IN (SELECT id FROM {system_tag_table} WHERE tenant_id = $2)"
+                "AND pi.system_tag_id IN (SELECT id FROM {system_tag_table} WHERE tenant_id = $2 AND active = true)"
             )
             } else {
-                "".to_string()
+                format!("AND pi.system_tag_id IN (SELECT id FROM {system_tag_table} WHERE active = true)")
             }
         );
 
@@ -1212,7 +1283,7 @@ impl DBContext {
                         SELECT pi.system_tag_id, MAX(pi.timestamp) as latest_ts
                         FROM {ping_table} pi
                         JOIN system_tag st ON pi.system_tag_id = st.id
-                        WHERE pi.scanned = true AND st.tenant_id = $1
+                        WHERE pi.scanned = true AND st.tenant_id = $1 AND st.active = true
                         GROUP BY pi.system_tag_id
                     )
                     SELECT
@@ -1237,13 +1308,15 @@ impl DBContext {
                 (query, args)
             } else {
                 // latest of all tenants and systems
+                let system_tag_table = self.get_table("system_tag");
                 let query = format!(
                     r#"
                     WITH latest_scans AS (
-                        SELECT system_tag_id, MAX(timestamp) as latest_ts
-                        FROM {ping_table}
-                        WHERE scanned = true
-                        GROUP BY system_tag_id
+                        SELECT pi.system_tag_id, MAX(pi.timestamp) as latest_ts
+                        FROM {ping_table} pi
+                        JOIN {system_tag_table} st ON pi.system_tag_id = st.id
+                        WHERE pi.scanned = true AND st.active = true
+                        GROUP BY pi.system_tag_id
                     )
                     SELECT
                         p.id,
@@ -1311,9 +1384,9 @@ impl DBContext {
             where_clause = if let Some(id) = system_tag_id {
                 format!("WHERE pi.system_tag_id = {id}")
             } else if let Some(tid) = tenant_id {
-                format!("WHERE st.tenant_id = {tid}")
+                format!("WHERE st.tenant_id = {tid} AND st.active = true")
             } else {
-                "".to_string()
+                "WHERE st.active = true".to_string()
             }
         );
 

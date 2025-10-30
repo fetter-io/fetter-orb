@@ -659,6 +659,20 @@ export default function Dashboard() {
 
   //----------------------------------------------------------------------------
 
+  // Calculate if current user can modify system active state
+  const canModifySystemActive = useMemo(() => {
+    if (!userInfo || !selectedTenantId || !tenantsState.data) return true;
+
+    // get pair of id, Tenant
+    const selectedTenant = tenantsState.data.find(
+      ([id]) => id === selectedTenantId,
+    );
+    // if selectedTenant is empty default to true
+    return selectedTenant ? selectedTenant[1].created_by === userInfo.id : true;
+  }, [userInfo, selectedTenantId, tenantsState.data]);
+
+  //----------------------------------------------------------------------------
+
   return (
     <div className="flex flex-col min-h-screen font-[family-name:var(--font-geist-sans)] bg-gradient-to-b from-slate-950 to-slate-900">
       {/* Frosted header with sticky tab selector */}
@@ -765,6 +779,13 @@ export default function Dashboard() {
               setChartFilteredSystems={setChartFilteredSystems}
               filteredSystemsForDisplay={filteredSystemsForDisplay}
               setFilteredSystemsForDisplay={setFilteredSystemsForDisplay}
+              onSystemActiveChange={(id, active) => {
+                systemTagsState.refresh();
+                if (!active && id === selectedSystemId) {
+                  setSelectedSystemId(null);
+                }
+              }}
+              canModifySystemActive={canModifySystemActive}
             />
           )}
 
