@@ -38,6 +38,12 @@ export default function LandingPage() {
             Sign in with GitHub
           </button>
         )}
+
+        <div className="mt-2">
+          <a href="/docs" className="button-accept">
+            Learn more
+          </a>
+        </div>
       </section>
 
       <WaveDivider
