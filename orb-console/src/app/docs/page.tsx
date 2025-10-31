@@ -76,6 +76,10 @@ export default function DocsPage() {
             </ul>
           </div>
 
+          <p className={styles.bodyText}>
+            The Console tabs will be mostly empty until you begin uploading scans. In the next section we will look at using Tenant to upload package data.
+          </p>
+
           <div className={styles.screenshotBox}>
             <div className={styles.screenshotLabel}>
               Screenshot placeholder:
