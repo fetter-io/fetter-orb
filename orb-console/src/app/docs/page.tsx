@@ -379,11 +379,11 @@ export default function DocsPage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-grow px-6 py-4 w-full">
-        <div className="max-w-4xl mx-auto flex grid grid-cols-1 sm:grid-cols-4 gap-4">
+      <main className="flex-grow px-6 w-full">
+        <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-4 gap-4">
           {/* Left Column - Chapter Navigation */}
-          <aside className="sm:col-span-1">
-            <div className="sticky bg-slate-900 p-2 border border-slate-800 rounded-sm">
+          <aside className="sm:col-span-1 self-start sticky top-23">
+            <div className="bg-slate-900 p-2 border border-slate-800 rounded-sm">
               <nav className="space-y-2">
                 {chapters.map((chapter) => (
                   <button
@@ -403,7 +403,7 @@ export default function DocsPage() {
           </aside>
 
           {/* Right Column - Content */}
-          <div className="sm:col-span-3">
+          <div className="sm:col-span-3 py-4">
             <div className="bg-slate-800/30 rounded-sm px-4 py-2 pb-4 border border-slate-700">
               {currentChapter ? currentChapter.content : null}
             </div>
