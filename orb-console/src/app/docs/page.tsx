@@ -45,19 +45,37 @@ export default function DocsPage() {
         <div className="space-y-4">
           <h2 className={styles.chapterTitle}>Getting Started</h2>
           <p className={styles.bodyText}>
-            Welcome to Fetter IO! This guide will help you get up and running
-            with our Python supply-chain monitoring platform. Fetter IO provides
-            comprehensive visibility into all Python packages across your
-            organization.
+            This guide will help you get up and running with Fetter IO, a supply-chain monitoring platform that provides comprehensive Python package visibility across your system or your entire organization.
           </p>
+
           <div className={styles.infoBox}>
             <h3 className={`${styles.sectionTitle}`}>Prerequisites</h3>
             <ul className={styles.list}>
-              <li>A GitHub account for authentication</li>
-              <li>Python environments to monitor</li>
-              <li>Systems running Linux, macOS, or Windows</li>
+              <li>A <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-blue-300">GitHub</a> account for authentication</li>
+              <li>One or more Python environments on a system running Linux or MacOS</li>
             </ul>
           </div>
+
+          <p className={styles.bodyText}>
+            After clicking the "Sign in with GitHub" button and accepting the terms, you will be presented with the Fetter IO Console.
+          </p>
+
+          <p className={styles.bodyText}>
+            The Console features six tabs, as well as tools to select Tenant and logout. Many tabs also feature a System selector and an update button.
+          </p>
+
+          <div className={styles.infoBox}>
+            <h3 className={`${styles.sectionTitle}`}>Console Tabs</h3>
+            <ul className={styles.list}>
+              <li>📦 Packages</li>
+              <li>⚠️ Vulnerabilities</li>
+              <li>🔓 Allow List</li>
+              <li>🖥️ Systems</li>
+              <li>🏢 Tenants</li>
+              <li>⚙️ Account</li>
+            </ul>
+          </div>
+
           <div className={styles.screenshotBox}>
             <div className={styles.screenshotLabel}>
               Screenshot placeholder:
@@ -66,6 +84,7 @@ export default function DocsPage() {
               [Dashboard Overview Screenshot]
             </div>
           </div>
+
         </div>
       ),
     },
