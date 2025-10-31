@@ -16,20 +16,22 @@ type Chapter = {
 // Reusable style definitions
 const styles = {
   chapterTitle: "text-xl font-bold text-white",
-  sectionTitle: "text-lg font-semibold text-white",
-  bodyText: "text-gray-300 leading-relaxed",
-  bodyTextMd: "text-gray-300 text-md leading-relaxed",
+  sectionTitle: "text-lg font-semibold text-gray-300",
+  bodyText: "text-gray-300 text-md leading-relaxed",
+
   infoBox: "bg-slate-800 rounded-sm p-4 border border-slate-700",
   warningBox: "bg-yellow-900/20 border border-yellow-800 rounded-sm p-4",
+
   screenshotBox: "bg-slate-900 rounded-sm p-6 border border-slate-600",
   screenshotLabel: "text-gray-400 text-sm mb-2",
   screenshotPlaceholder:
     "bg-slate-800 h-64 rounded flex items-center justify-center text-gray-500",
-  list: "list-disc list-inside text-gray-300 space-y-2",
-  orderedList: "list-decimal list-inside text-gray-300 space-y-3",
-  codeBlock: "bg-slate-950 p-3 rounded text-green-400 overflow-x-auto",
+  list: "list-disc list-inside text-gray-300 space-y-0",
+  orderedList: "list-decimal list-inside text-gray-300 space-y-0",
+
+  codeBlock: "bg-slate-950 p-2 rounded text-green-400 overflow-x-auto",
   codeBlockLarge:
-    "bg-slate-950 p-4 rounded text-green-400 overflow-x-auto border border-slate-700",
+    "bg-slate-950 p-2 rounded text-green-400 overflow-x-auto border border-slate-700",
 };
 
 export default function DocsPage() {
@@ -267,7 +269,7 @@ export default function DocsPage() {
       content: (
         <div className="space-y-6">
           <h2 className={styles.chapterTitle}>Managing Allow Lists</h2>
-          <p className={styles.bodyTextMd}>
+          <p className={styles.bodyText}>
             Define approved packages for your organization and identify outliers
             that don&apos;t conform to your allow list policy.
           </p>
