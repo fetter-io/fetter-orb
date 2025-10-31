@@ -16,22 +16,21 @@ type Chapter = {
 // Reusable style definitions
 const styles = {
   chapterTitle: "text-xl font-bold text-white",
-  sectionTitle: "text-lg font-semibold text-gray-300",
+  sectionTitle: "text-lg font-semibold text-gray-400",
   bodyText: "text-gray-300 text-md leading-relaxed",
 
-  infoBox: "bg-slate-800 rounded-sm p-4 border border-slate-700",
+  infoBox: "bg-slate-800 rounded-sm px-4 py-2 border border-slate-700",
   warningBox: "bg-yellow-900/20 border border-yellow-800 rounded-sm p-4",
 
-  screenshotBox: "bg-slate-900 rounded-sm p-6 border border-slate-600",
+  screenshotBox: "bg-slate-900 rounded-sm px-4 py-2 border border-slate-600",
   screenshotLabel: "text-gray-400 text-sm mb-2",
   screenshotPlaceholder:
     "bg-slate-800 h-64 rounded flex items-center justify-center text-gray-500",
+
   list: "list-disc list-inside text-gray-300 space-y-0",
   orderedList: "list-decimal list-inside text-gray-300 space-y-0",
 
-  codeBlock: "bg-slate-950 p-2 rounded text-green-400 overflow-x-auto",
-  codeBlockLarge:
-    "bg-slate-950 p-2 rounded text-green-400 overflow-x-auto border border-slate-700",
+  codeBlock: "bg-slate-950 px-2 py-1 rounded text-sm text-blue-400 font-semibold overflow-x-auto border border-slate-700",
 };
 
 export default function DocsPage() {
@@ -42,7 +41,7 @@ export default function DocsPage() {
       id: "getting-started",
       title: "Getting Started",
       content: (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <h2 className={styles.chapterTitle}>Getting Started</h2>
           <p className={styles.bodyText}>
             Welcome to Fetter IO! This guide will help you get up and running
@@ -73,7 +72,7 @@ export default function DocsPage() {
       id: "creating-tenant",
       title: "Creating a Tenant",
       content: (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <h2 className={styles.chapterTitle}>Creating a Tenant</h2>
           <p className={styles.bodyText}>
             A tenant is your organization&apos;s workspace in Fetter IO. Each
@@ -121,7 +120,7 @@ export default function DocsPage() {
       id: "installing-agent",
       title: "Installing the Agent",
       content: (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <h2 className={styles.chapterTitle}>Installing the Agent</h2>
           <p className={styles.bodyText}>
             The Fetter agent is a lightweight Rust application that scans Python
@@ -134,13 +133,13 @@ export default function DocsPage() {
             </h3>
             <div className="space-y-4">
               <div>
-                <h4 className="text-lg font-medium text-white mb-2">
+                <h4 className="text-sm font-medium text-white mb-2">
                   Using pip
                 </h4>
                 <pre className={styles.codeBlock}>pip install fetter</pre>
               </div>
               <div>
-                <h4 className="text-lg font-medium text-white mb-2">
+                <h4 className="text-sm font-medium text-white mb-2">
                   Using cargo
                 </h4>
                 <pre className={styles.codeBlock}>cargo install fetter</pre>
@@ -153,7 +152,7 @@ export default function DocsPage() {
             <p className="text-gray-300">
               Once installed, run fetter with your tenant key:
             </p>
-            <pre className={styles.codeBlockLarge}>
+            <pre className={styles.codeBlock}>
               fetter publish --key YOUR_TENANT_KEY
             </pre>
           </div>
@@ -173,7 +172,7 @@ export default function DocsPage() {
       id: "monitoring-packages",
       title: "Monitoring Packages",
       content: (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <h2 className={styles.chapterTitle}>Monitoring Packages</h2>
           <p className={styles.bodyText}>
             The Packages tab provides a comprehensive view of all Python
@@ -217,7 +216,7 @@ export default function DocsPage() {
       id: "vulnerability-tracking",
       title: "Vulnerability Tracking",
       content: (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <h2 className={styles.chapterTitle}>Vulnerability Tracking</h2>
           <p className={styles.bodyText}>
             Fetter IO continuously monitors your packages against the Open
@@ -267,7 +266,7 @@ export default function DocsPage() {
       id: "allow-lists",
       title: "Managing Allow Lists",
       content: (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <h2 className={styles.chapterTitle}>Managing Allow Lists</h2>
           <p className={styles.bodyText}>
             Define approved packages for your organization and identify outliers
@@ -332,7 +331,7 @@ export default function DocsPage() {
       {/* Header */}
       <header className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur border-b border-slate-700 px-6 py-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <Link
               href="/"
               className="flex w-8 h-8 hover:opacity-80 transition-opacity"
@@ -361,10 +360,10 @@ export default function DocsPage() {
 
       {/* Main Content */}
       <main className="flex-grow max-w-4xl mx-auto px-0 py-8 w-full">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 px-6">
           {/* Left Column - Chapter Navigation */}
           <aside className="md:col-span-1">
-            <div className="sticky top-24 bg-slate-900 p-2 rounded-sm">
+            <div className="sticky top-24 bg-slate-900 p-2 border border-slate-800 rounded-sm">
               <nav className="space-y-1">
                 {chapters.map((chapter) => (
                   <button
