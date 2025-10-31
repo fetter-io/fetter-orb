@@ -360,7 +360,7 @@ export default function DocsPage() {
             </Link>
             <div>
               <h1 className="text-lg font-bold text-gray-200">Fetter IO</h1>
-              {/* <p className="text-xs text-gray-400">Getting started guide</p> */}
+              <p className="text-xs text-gray-400">Documentation</p>
             </div>
           </div>
           {status !== "authenticated" ? (
