@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useSession, signIn } from "next-auth/react";
+import Link from "next/link";
 import { Weave } from "@/components/Weave";
 import { Footer } from "@/components/Footer";
 import colors from "tailwindcss/colors";
@@ -39,7 +40,9 @@ export default function DocsPage() {
             </ul>
           </div>
           <div className="bg-slate-900 rounded-sm p-6 border border-slate-600">
-            <div className="text-gray-400 text-sm mb-2">Screenshot placeholder:</div>
+            <div className="text-gray-400 text-sm mb-2">
+              Screenshot placeholder:
+            </div>
             <div className="bg-slate-800 h-64 rounded flex items-center justify-center text-gray-500">
               [Dashboard Overview Screenshot]
             </div>
@@ -54,25 +57,25 @@ export default function DocsPage() {
         <div className="space-y-6">
           <h2 className="text-xl font-bold text-white">Creating a Tenant</h2>
           <p className="text-gray-300 leading-relaxed">
-            A tenant is your organization's workspace in Fetter IO. Each tenant
-            has its own isolated environment for tracking systems, packages, and
-            vulnerabilities.
+            A tenant is your organization&apos;s workspace in Fetter IO. Each
+            tenant has its own isolated environment for tracking systems,
+            packages, and vulnerabilities.
           </p>
 
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-white">Steps to Create a Tenant</h3>
+            <h3 className="text-lg font-semibold text-white">
+              Steps to Create a Tenant
+            </h3>
             <ol className="list-decimal list-inside text-gray-300 space-y-3">
-              <li className="pl-2">
-                Sign in with your GitHub account
-              </li>
+              <li className="pl-2">Sign in with your GitHub account</li>
               <li className="pl-2">
                 Navigate to the Tenant tab in the dashboard
               </li>
               <li className="pl-2">
-                Click "Create New Tenant" and provide a name
+                Click &quot;Create New Tenant&quot; and provide a name
               </li>
               <li className="pl-2">
-                Copy your tenant key - you'll need this to register systems
+                Copy your tenant key - you&apos;ll need this to register systems
               </li>
             </ol>
           </div>
@@ -89,7 +92,9 @@ export default function DocsPage() {
           </div>
 
           <div className="bg-slate-900 rounded-sm p-6 border border-slate-600">
-            <div className="text-gray-400 text-sm mb-2">Screenshot placeholder:</div>
+            <div className="text-gray-400 text-sm mb-2">
+              Screenshot placeholder:
+            </div>
             <div className="bg-slate-800 h-64 rounded flex items-center justify-center text-gray-500">
               [Tenant Creation Interface Screenshot]
             </div>
@@ -114,13 +119,17 @@ export default function DocsPage() {
             </h3>
             <div className="space-y-4">
               <div>
-                <h4 className="text-lg font-medium text-white mb-2">Using pip</h4>
+                <h4 className="text-lg font-medium text-white mb-2">
+                  Using pip
+                </h4>
                 <pre className="bg-slate-950 p-3 rounded text-green-400 overflow-x-auto">
                   pip install fetter
                 </pre>
               </div>
               <div>
-                <h4 className="text-lg font-medium text-white mb-2">Using cargo</h4>
+                <h4 className="text-lg font-medium text-white mb-2">
+                  Using cargo
+                </h4>
                 <pre className="bg-slate-950 p-3 rounded text-green-400 overflow-x-auto">
                   cargo install fetter
                 </pre>
@@ -129,7 +138,9 @@ export default function DocsPage() {
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-white">Running Your First Scan</h3>
+            <h3 className="text-lg font-semibold text-white">
+              Running Your First Scan
+            </h3>
             <p className="text-gray-300">
               Once installed, run fetter with your tenant key:
             </p>
@@ -139,7 +150,9 @@ export default function DocsPage() {
           </div>
 
           <div className="bg-slate-900 rounded-sm p-6 border border-slate-600">
-            <div className="text-gray-400 text-sm mb-2">Screenshot placeholder:</div>
+            <div className="text-gray-400 text-sm mb-2">
+              Screenshot placeholder:
+            </div>
             <div className="bg-slate-800 h-64 rounded flex items-center justify-center text-gray-500">
               [Agent Installation & Execution Screenshot]
             </div>
@@ -154,8 +167,8 @@ export default function DocsPage() {
         <div className="space-y-6">
           <h2 className="text-xl font-bold text-white">Monitoring Packages</h2>
           <p className="text-gray-300 leading-relaxed">
-            The Packages tab provides a comprehensive view of all Python packages
-            installed across your monitored systems.
+            The Packages tab provides a comprehensive view of all Python
+            packages installed across your monitored systems.
           </p>
 
           <div className="bg-slate-800 rounded-sm p-4 border border-slate-700">
@@ -172,16 +185,20 @@ export default function DocsPage() {
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-white">Understanding the Package View</h3>
+            <h3 className="text-lg font-semibold text-white">
+              Understanding the Package View
+            </h3>
             <p className="text-gray-300">
-              Each package entry shows the package name, version, and which systems
-              have it installed. Click on a system to view all packages on that
-              specific system.
+              Each package entry shows the package name, version, and which
+              systems have it installed. Click on a system to view all packages
+              on that specific system.
             </p>
           </div>
 
           <div className="bg-slate-900 rounded-sm p-6 border border-slate-600">
-            <div className="text-gray-400 text-sm mb-2">Screenshot placeholder:</div>
+            <div className="text-gray-400 text-sm mb-2">
+              Screenshot placeholder:
+            </div>
             <div className="bg-slate-800 h-64 rounded flex items-center justify-center text-gray-500">
               [Package Monitoring Dashboard Screenshot]
             </div>
@@ -194,10 +211,13 @@ export default function DocsPage() {
       title: "Vulnerability Tracking",
       content: (
         <div className="space-y-6">
-          <h2 className="text-xl font-bold text-white">Vulnerability Tracking</h2>
+          <h2 className="text-xl font-bold text-white">
+            Vulnerability Tracking
+          </h2>
           <p className="text-gray-300 leading-relaxed">
-            Fetter IO continuously monitors your packages against the Open Source
-            Vulnerability (OSV) database to identify security issues in real-time.
+            Fetter IO continuously monitors your packages against the Open
+            Source Vulnerability (OSV) database to identify security issues in
+            real-time.
           </p>
 
           <div className="bg-slate-800 rounded-sm p-4 border border-slate-700">
@@ -228,7 +248,9 @@ export default function DocsPage() {
           </div>
 
           <div className="bg-slate-900 rounded-sm p-6 border border-slate-600">
-            <div className="text-gray-400 text-sm mb-2">Screenshot placeholder:</div>
+            <div className="text-gray-400 text-sm mb-2">
+              Screenshot placeholder:
+            </div>
             <div className="bg-slate-800 h-64 rounded flex items-center justify-center text-gray-500">
               [Vulnerability Dashboard Screenshot]
             </div>
@@ -244,21 +266,19 @@ export default function DocsPage() {
           <h2 className="text-xl font-bold text-white">Managing Allow Lists</h2>
           <p className="text-gray-300 text-md leading-relaxed">
             Define approved packages for your organization and identify outliers
-            that don't conform to your allow list policy.
+            that don&apos;t conform to your allow list policy.
           </p>
 
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-white">Creating an Allow List</h3>
+            <h3 className="text-lg font-semibold text-white">
+              Creating an Allow List
+            </h3>
             <ol className="list-decimal list-inside text-gray-300 space-y-3">
-              <li className="pl-2">
-                Navigate to the Allow tab
-              </li>
+              <li className="pl-2">Navigate to the Allow tab</li>
               <li className="pl-2">
                 Define your allowed packages in the manifest format
               </li>
-              <li className="pl-2">
-                Save your allow list to your tenant
-              </li>
+              <li className="pl-2">Save your allow list to your tenant</li>
               <li className="pl-2">
                 Review validation results to identify non-compliant packages
               </li>
@@ -270,14 +290,25 @@ export default function DocsPage() {
               Validation Categories
             </h3>
             <ul className="list-disc list-inside text-gray-300 space-y-2">
-              <li><span className="text-red-400">Missing</span>: Required packages not installed</li>
-              <li><span className="text-yellow-400">Unrequired</span>: Installed packages not in allow list</li>
-              <li><span className="text-orange-400">Misdefined</span>: Version mismatches</li>
+              <li>
+                <span className="text-red-400">Missing</span>: Required packages
+                not installed
+              </li>
+              <li>
+                <span className="text-yellow-400">Unrequired</span>: Installed
+                packages not in allow list
+              </li>
+              <li>
+                <span className="text-orange-400">Misdefined</span>: Version
+                mismatches
+              </li>
             </ul>
           </div>
 
           <div className="bg-slate-900 rounded-sm p-6 border border-slate-600">
-            <div className="text-gray-400 text-sm mb-2">Screenshot placeholder:</div>
+            <div className="text-gray-400 text-sm mb-2">
+              Screenshot placeholder:
+            </div>
             <div className="bg-slate-800 h-64 rounded flex items-center justify-center text-gray-500">
               [Allow List Management Screenshot]
             </div>
@@ -287,7 +318,9 @@ export default function DocsPage() {
     },
   ];
 
-  const [activeChapter, setActiveChapter] = useState(chapters[0].id);
+  const [activeChapter, setActiveChapter] = useState(
+    chapters[0]?.id || "getting-started",
+  );
 
   const currentChapter = chapters.find((ch) => ch.id === activeChapter);
 
@@ -297,16 +330,22 @@ export default function DocsPage() {
       <header className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur border-b border-slate-700 px-6 py-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <a href="/" className="flex w-8 h-8 hover:opacity-80 transition-opacity">
+            <Link
+              href="/"
+              className="flex w-8 h-8 hover:opacity-80 transition-opacity"
+            >
               <Weave fill={colors.slate[600]} className="w-full h-full" />
-            </a>
+            </Link>
             <div>
               <h1 className="text-lg font-bold text-gray-200">Fetter IO</h1>
               {/* <p className="text-xs text-gray-400">Getting started guide</p> */}
             </div>
           </div>
           {status !== "authenticated" ? (
-            <button onClick={() => signIn("github", { callbackUrl: "/app" })} className="button-entry">
+            <button
+              onClick={() => signIn("github", { callbackUrl: "/app" })}
+              className="button-entry"
+            >
               Sign in with GitHub
             </button>
           ) : (
