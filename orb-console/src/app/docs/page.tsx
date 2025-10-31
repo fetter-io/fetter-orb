@@ -23,11 +23,13 @@ const styles = {
   warningBox: "bg-yellow-900/20 border border-yellow-800 rounded-sm p-4",
   screenshotBox: "bg-slate-900 rounded-sm p-6 border border-slate-600",
   screenshotLabel: "text-gray-400 text-sm mb-2",
-  screenshotPlaceholder: "bg-slate-800 h-64 rounded flex items-center justify-center text-gray-500",
+  screenshotPlaceholder:
+    "bg-slate-800 h-64 rounded flex items-center justify-center text-gray-500",
   list: "list-disc list-inside text-gray-300 space-y-2",
   orderedList: "list-decimal list-inside text-gray-300 space-y-3",
   codeBlock: "bg-slate-950 p-3 rounded text-green-400 overflow-x-auto",
-  codeBlockLarge: "bg-slate-950 p-4 rounded text-green-400 overflow-x-auto border border-slate-700",
+  codeBlockLarge:
+    "bg-slate-950 p-4 rounded text-green-400 overflow-x-auto border border-slate-700",
 };
 
 export default function DocsPage() {
@@ -47,9 +49,7 @@ export default function DocsPage() {
             organization.
           </p>
           <div className={styles.infoBox}>
-            <h3 className={`${styles.sectionTitle} mb-3`}>
-              Prerequisites
-            </h3>
+            <h3 className={`${styles.sectionTitle} mb-3`}>Prerequisites</h3>
             <ul className={styles.list}>
               <li>A GitHub account for authentication</li>
               <li>Python environments to monitor</li>
@@ -80,9 +80,7 @@ export default function DocsPage() {
           </p>
 
           <div className="space-y-4">
-            <h3 className={styles.sectionTitle}>
-              Steps to Create a Tenant
-            </h3>
+            <h3 className={styles.sectionTitle}>Steps to Create a Tenant</h3>
             <ol className={styles.orderedList}>
               <li className="pl-2">Sign in with your GitHub account</li>
               <li className="pl-2">
@@ -98,9 +96,7 @@ export default function DocsPage() {
           </div>
 
           <div className={styles.infoBox}>
-            <h3 className={`${styles.sectionTitle} mb-2`}>
-              Important Notes
-            </h3>
+            <h3 className={`${styles.sectionTitle} mb-2`}>Important Notes</h3>
             <p className="text-gray-300">
               Keep your tenant key secure. It allows systems to publish data to
               your tenant. Only the tenant creator can rename or modify certain
@@ -139,25 +135,19 @@ export default function DocsPage() {
                 <h4 className="text-lg font-medium text-white mb-2">
                   Using pip
                 </h4>
-                <pre className={styles.codeBlock}>
-                  pip install fetter
-                </pre>
+                <pre className={styles.codeBlock}>pip install fetter</pre>
               </div>
               <div>
                 <h4 className="text-lg font-medium text-white mb-2">
                   Using cargo
                 </h4>
-                <pre className={styles.codeBlock}>
-                  cargo install fetter
-                </pre>
+                <pre className={styles.codeBlock}>cargo install fetter</pre>
               </div>
             </div>
           </div>
 
           <div className="space-y-4">
-            <h3 className={styles.sectionTitle}>
-              Running Your First Scan
-            </h3>
+            <h3 className={styles.sectionTitle}>Running Your First Scan</h3>
             <p className="text-gray-300">
               Once installed, run fetter with your tenant key:
             </p>
@@ -189,9 +179,7 @@ export default function DocsPage() {
           </p>
 
           <div className={styles.infoBox}>
-            <h3 className={`${styles.sectionTitle} mb-3`}>
-              Key Features
-            </h3>
+            <h3 className={`${styles.sectionTitle} mb-3`}>Key Features</h3>
             <ul className={styles.list}>
               <li>View all package versions across your organization</li>
               <li>See which systems have which packages installed</li>
@@ -228,9 +216,7 @@ export default function DocsPage() {
       title: "Vulnerability Tracking",
       content: (
         <div className="space-y-6">
-          <h2 className={styles.chapterTitle}>
-            Vulnerability Tracking
-          </h2>
+          <h2 className={styles.chapterTitle}>Vulnerability Tracking</h2>
           <p className={styles.bodyText}>
             Fetter IO continuously monitors your packages against the Open
             Source Vulnerability (OSV) database to identify security issues in
@@ -287,9 +273,7 @@ export default function DocsPage() {
           </p>
 
           <div className="space-y-4">
-            <h3 className={styles.sectionTitle}>
-              Creating an Allow List
-            </h3>
+            <h3 className={styles.sectionTitle}>Creating an Allow List</h3>
             <ol className={styles.orderedList}>
               <li className="pl-2">Navigate to the Allow tab</li>
               <li className="pl-2">
