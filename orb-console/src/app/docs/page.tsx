@@ -30,7 +30,8 @@ const styles = {
   list: "list-disc list-inside text-gray-300 space-y-0 mb-2",
   orderedList: "list-decimal list-inside text-gray-300 space-y-0",
 
-  codeBlock: "bg-slate-950 px-2 py-1 rounded text-xs text-blue-400 font-semibold overflow-x-auto border border-slate-700",
+  codeBlock:
+    "bg-slate-950 px-2 py-1 rounded text-xs text-blue-400 font-semibold overflow-x-auto border border-slate-700",
 };
 
 export default function DocsPage() {
@@ -98,7 +99,7 @@ export default function DocsPage() {
 
           <div className={styles.infoBox}>
             <h3 className={`${styles.sectionTitle} mb-2`}>Important Notes</h3>
-            <p className="text-gray-300">
+            <p className={styles.bodyText}>
               Keep your tenant key secure. It allows systems to publish data to
               your tenant. Only the tenant creator can rename or modify certain
               tenant settings.
@@ -128,9 +129,7 @@ export default function DocsPage() {
           </p>
 
           <div className={styles.infoBox}>
-            <h3 className={`${styles.sectionTitle}`}>
-              Installation Methods
-            </h3>
+            <h3 className={`${styles.sectionTitle}`}>Installation Methods</h3>
             <div className="space-y-4">
               <div>
                 <h4 className="text-sm font-medium text-white mb-2">
@@ -194,7 +193,7 @@ export default function DocsPage() {
             <h3 className={styles.sectionTitle}>
               Understanding the Package View
             </h3>
-            <p className="text-gray-300">
+            <p className={styles.bodyText}>
               Each package entry shows the package name, version, and which
               systems have it installed. Click on a system to view all packages
               on that specific system.
@@ -228,7 +227,7 @@ export default function DocsPage() {
             <h3 className={`${styles.sectionTitle}`}>
               Vulnerability Information
             </h3>
-            <p className="text-gray-300 mb-3">
+            <p className={`${styles.bodyText} mb-2`}>
               For each vulnerability, you can view:
             </p>
             <ul className={styles.list}>
@@ -288,9 +287,7 @@ export default function DocsPage() {
           </div>
 
           <div className={styles.infoBox}>
-            <h3 className={`${styles.sectionTitle}`}>
-              Validation Categories
-            </h3>
+            <h3 className={`${styles.sectionTitle}`}>Validation Categories</h3>
             <ul className={styles.list}>
               <li>
                 <span className="text-red-400">Missing</span>: Required packages
@@ -359,17 +356,17 @@ export default function DocsPage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-grow max-w-4xl mx-auto px-0 py-4 w-full">
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 px-6">
+      <main className="flex-grow px-6 py-4 w-full">
+        <div className="max-w-4xl mx-auto flex grid grid-cols-1 sm:grid-cols-4 gap-4">
           {/* Left Column - Chapter Navigation */}
           <aside className="sm:col-span-1">
-            <div className="sticky top-24 bg-slate-900 p-2 border border-slate-800 rounded-sm">
+            <div className="sticky bg-slate-900 p-2 border border-slate-800 rounded-sm">
               <nav className="space-y-2">
                 {chapters.map((chapter) => (
                   <button
                     key={chapter.id}
                     onClick={() => setActiveChapter(chapter.id)}
-                    className={`w-full text-right uppercase text-sm px-2 py-1 rounded-xs transition-default ${
+                    className={`w-full sm:text-right uppercase tracking-widest text-xs px-2 py-1 rounded-xs transition-default ${
                       activeChapter === chapter.id
                         ? "bg-slate-800 text-gray-400 border border-slate-600 cursor-default"
                         : "bg-slate-900 text-slate-500 border border-slate-800 hover:text-gray-200 hover:bg-slate-700/50 cursor-pointer"
