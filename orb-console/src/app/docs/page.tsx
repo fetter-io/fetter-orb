@@ -13,6 +13,23 @@ type Chapter = {
   content: React.ReactNode;
 };
 
+// Reusable style definitions
+const styles = {
+  chapterTitle: "text-xl font-bold text-white",
+  sectionTitle: "text-lg font-semibold text-white",
+  bodyText: "text-gray-300 leading-relaxed",
+  bodyTextMd: "text-gray-300 text-md leading-relaxed",
+  infoBox: "bg-slate-800 rounded-sm p-4 border border-slate-700",
+  warningBox: "bg-yellow-900/20 border border-yellow-800 rounded-sm p-4",
+  screenshotBox: "bg-slate-900 rounded-sm p-6 border border-slate-600",
+  screenshotLabel: "text-gray-400 text-sm mb-2",
+  screenshotPlaceholder: "bg-slate-800 h-64 rounded flex items-center justify-center text-gray-500",
+  list: "list-disc list-inside text-gray-300 space-y-2",
+  orderedList: "list-decimal list-inside text-gray-300 space-y-3",
+  codeBlock: "bg-slate-950 p-3 rounded text-green-400 overflow-x-auto",
+  codeBlockLarge: "bg-slate-950 p-4 rounded text-green-400 overflow-x-auto border border-slate-700",
+};
+
 export default function DocsPage() {
   const { status } = useSession();
 
@@ -22,28 +39,28 @@ export default function DocsPage() {
       title: "Getting Started",
       content: (
         <div className="space-y-6">
-          <h2 className="text-xl font-bold text-white">Getting Started</h2>
-          <p className="text-gray-300 leading-relaxed">
+          <h2 className={styles.chapterTitle}>Getting Started</h2>
+          <p className={styles.bodyText}>
             Welcome to Fetter IO! This guide will help you get up and running
             with our Python supply-chain monitoring platform. Fetter IO provides
             comprehensive visibility into all Python packages across your
             organization.
           </p>
-          <div className="bg-slate-800 rounded-sm p-4 border border-slate-700">
-            <h3 className="text-lg font-semibold text-white mb-3">
+          <div className={styles.infoBox}>
+            <h3 className={`${styles.sectionTitle} mb-3`}>
               Prerequisites
             </h3>
-            <ul className="list-disc list-inside text-gray-300 space-y-2">
+            <ul className={styles.list}>
               <li>A GitHub account for authentication</li>
               <li>Python environments to monitor</li>
               <li>Systems running Linux, macOS, or Windows</li>
             </ul>
           </div>
-          <div className="bg-slate-900 rounded-sm p-6 border border-slate-600">
-            <div className="text-gray-400 text-sm mb-2">
+          <div className={styles.screenshotBox}>
+            <div className={styles.screenshotLabel}>
               Screenshot placeholder:
             </div>
-            <div className="bg-slate-800 h-64 rounded flex items-center justify-center text-gray-500">
+            <div className={styles.screenshotPlaceholder}>
               [Dashboard Overview Screenshot]
             </div>
           </div>
@@ -55,18 +72,18 @@ export default function DocsPage() {
       title: "Creating a Tenant",
       content: (
         <div className="space-y-6">
-          <h2 className="text-xl font-bold text-white">Creating a Tenant</h2>
-          <p className="text-gray-300 leading-relaxed">
+          <h2 className={styles.chapterTitle}>Creating a Tenant</h2>
+          <p className={styles.bodyText}>
             A tenant is your organization&apos;s workspace in Fetter IO. Each
             tenant has its own isolated environment for tracking systems,
             packages, and vulnerabilities.
           </p>
 
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-white">
+            <h3 className={styles.sectionTitle}>
               Steps to Create a Tenant
             </h3>
-            <ol className="list-decimal list-inside text-gray-300 space-y-3">
+            <ol className={styles.orderedList}>
               <li className="pl-2">Sign in with your GitHub account</li>
               <li className="pl-2">
                 Navigate to the Tenant tab in the dashboard
@@ -80,8 +97,8 @@ export default function DocsPage() {
             </ol>
           </div>
 
-          <div className="bg-slate-800 rounded-sm p-4 border border-slate-700">
-            <h3 className="text-lg font-semibold text-white mb-2">
+          <div className={styles.infoBox}>
+            <h3 className={`${styles.sectionTitle} mb-2`}>
               Important Notes
             </h3>
             <p className="text-gray-300">
@@ -91,11 +108,11 @@ export default function DocsPage() {
             </p>
           </div>
 
-          <div className="bg-slate-900 rounded-sm p-6 border border-slate-600">
-            <div className="text-gray-400 text-sm mb-2">
+          <div className={styles.screenshotBox}>
+            <div className={styles.screenshotLabel}>
               Screenshot placeholder:
             </div>
-            <div className="bg-slate-800 h-64 rounded flex items-center justify-center text-gray-500">
+            <div className={styles.screenshotPlaceholder}>
               [Tenant Creation Interface Screenshot]
             </div>
           </div>
@@ -107,14 +124,14 @@ export default function DocsPage() {
       title: "Installing the Agent",
       content: (
         <div className="space-y-6">
-          <h2 className="text-xl font-bold text-white">Installing the Agent</h2>
-          <p className="text-gray-300 leading-relaxed">
+          <h2 className={styles.chapterTitle}>Installing the Agent</h2>
+          <p className={styles.bodyText}>
             The Fetter agent is a lightweight Rust application that scans Python
             environments and publishes package information to your tenant.
           </p>
 
-          <div className="bg-slate-800 rounded-sm p-4 border border-slate-700">
-            <h3 className="text-lg font-semibold text-white mb-3">
+          <div className={styles.infoBox}>
+            <h3 className={`${styles.sectionTitle} mb-3`}>
               Installation Methods
             </h3>
             <div className="space-y-4">
@@ -122,7 +139,7 @@ export default function DocsPage() {
                 <h4 className="text-lg font-medium text-white mb-2">
                   Using pip
                 </h4>
-                <pre className="bg-slate-950 p-3 rounded text-green-400 overflow-x-auto">
+                <pre className={styles.codeBlock}>
                   pip install fetter
                 </pre>
               </div>
@@ -130,7 +147,7 @@ export default function DocsPage() {
                 <h4 className="text-lg font-medium text-white mb-2">
                   Using cargo
                 </h4>
-                <pre className="bg-slate-950 p-3 rounded text-green-400 overflow-x-auto">
+                <pre className={styles.codeBlock}>
                   cargo install fetter
                 </pre>
               </div>
@@ -138,22 +155,22 @@ export default function DocsPage() {
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-white">
+            <h3 className={styles.sectionTitle}>
               Running Your First Scan
             </h3>
             <p className="text-gray-300">
               Once installed, run fetter with your tenant key:
             </p>
-            <pre className="bg-slate-950 p-4 rounded text-green-400 overflow-x-auto border border-slate-700">
+            <pre className={styles.codeBlockLarge}>
               fetter publish --key YOUR_TENANT_KEY
             </pre>
           </div>
 
-          <div className="bg-slate-900 rounded-sm p-6 border border-slate-600">
-            <div className="text-gray-400 text-sm mb-2">
+          <div className={styles.screenshotBox}>
+            <div className={styles.screenshotLabel}>
               Screenshot placeholder:
             </div>
-            <div className="bg-slate-800 h-64 rounded flex items-center justify-center text-gray-500">
+            <div className={styles.screenshotPlaceholder}>
               [Agent Installation & Execution Screenshot]
             </div>
           </div>
@@ -165,17 +182,17 @@ export default function DocsPage() {
       title: "Monitoring Packages",
       content: (
         <div className="space-y-6">
-          <h2 className="text-xl font-bold text-white">Monitoring Packages</h2>
-          <p className="text-gray-300 leading-relaxed">
+          <h2 className={styles.chapterTitle}>Monitoring Packages</h2>
+          <p className={styles.bodyText}>
             The Packages tab provides a comprehensive view of all Python
             packages installed across your monitored systems.
           </p>
 
-          <div className="bg-slate-800 rounded-sm p-4 border border-slate-700">
-            <h3 className="text-lg font-semibold text-white mb-3">
+          <div className={styles.infoBox}>
+            <h3 className={`${styles.sectionTitle} mb-3`}>
               Key Features
             </h3>
-            <ul className="list-disc list-inside text-gray-300 space-y-2">
+            <ul className={styles.list}>
               <li>View all package versions across your organization</li>
               <li>See which systems have which packages installed</li>
               <li>Track package installation paths</li>
@@ -185,7 +202,7 @@ export default function DocsPage() {
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-white">
+            <h3 className={styles.sectionTitle}>
               Understanding the Package View
             </h3>
             <p className="text-gray-300">
@@ -195,11 +212,11 @@ export default function DocsPage() {
             </p>
           </div>
 
-          <div className="bg-slate-900 rounded-sm p-6 border border-slate-600">
-            <div className="text-gray-400 text-sm mb-2">
+          <div className={styles.screenshotBox}>
+            <div className={styles.screenshotLabel}>
               Screenshot placeholder:
             </div>
-            <div className="bg-slate-800 h-64 rounded flex items-center justify-center text-gray-500">
+            <div className={styles.screenshotPlaceholder}>
               [Package Monitoring Dashboard Screenshot]
             </div>
           </div>
@@ -211,23 +228,23 @@ export default function DocsPage() {
       title: "Vulnerability Tracking",
       content: (
         <div className="space-y-6">
-          <h2 className="text-xl font-bold text-white">
+          <h2 className={styles.chapterTitle}>
             Vulnerability Tracking
           </h2>
-          <p className="text-gray-300 leading-relaxed">
+          <p className={styles.bodyText}>
             Fetter IO continuously monitors your packages against the Open
             Source Vulnerability (OSV) database to identify security issues in
             real-time.
           </p>
 
-          <div className="bg-slate-800 rounded-sm p-4 border border-slate-700">
-            <h3 className="text-lg font-semibold text-white mb-3">
+          <div className={styles.infoBox}>
+            <h3 className={`${styles.sectionTitle} mb-3`}>
               Vulnerability Information
             </h3>
             <p className="text-gray-300 mb-3">
               For each vulnerability, you can view:
             </p>
-            <ul className="list-disc list-inside text-gray-300 space-y-2">
+            <ul className={styles.list}>
               <li>CVE or GHSA identifier</li>
               <li>CVSS score and severity rating</li>
               <li>Detailed vulnerability description</li>
@@ -236,7 +253,7 @@ export default function DocsPage() {
             </ul>
           </div>
 
-          <div className="bg-yellow-900/20 border border-yellow-800 rounded-sm p-4">
+          <div className={styles.warningBox}>
             <h3 className="text-lg font-semibold text-yellow-400 mb-2">
               Best Practices
             </h3>
@@ -247,11 +264,11 @@ export default function DocsPage() {
             </p>
           </div>
 
-          <div className="bg-slate-900 rounded-sm p-6 border border-slate-600">
-            <div className="text-gray-400 text-sm mb-2">
+          <div className={styles.screenshotBox}>
+            <div className={styles.screenshotLabel}>
               Screenshot placeholder:
             </div>
-            <div className="bg-slate-800 h-64 rounded flex items-center justify-center text-gray-500">
+            <div className={styles.screenshotPlaceholder}>
               [Vulnerability Dashboard Screenshot]
             </div>
           </div>
@@ -263,17 +280,17 @@ export default function DocsPage() {
       title: "Managing Allow Lists",
       content: (
         <div className="space-y-6">
-          <h2 className="text-xl font-bold text-white">Managing Allow Lists</h2>
-          <p className="text-gray-300 text-md leading-relaxed">
+          <h2 className={styles.chapterTitle}>Managing Allow Lists</h2>
+          <p className={styles.bodyTextMd}>
             Define approved packages for your organization and identify outliers
             that don&apos;t conform to your allow list policy.
           </p>
 
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-white">
+            <h3 className={styles.sectionTitle}>
               Creating an Allow List
             </h3>
-            <ol className="list-decimal list-inside text-gray-300 space-y-3">
+            <ol className={styles.orderedList}>
               <li className="pl-2">Navigate to the Allow tab</li>
               <li className="pl-2">
                 Define your allowed packages in the manifest format
@@ -285,11 +302,11 @@ export default function DocsPage() {
             </ol>
           </div>
 
-          <div className="bg-slate-800 rounded-sm p-4 border border-slate-700">
-            <h3 className="text-lg font-semibold text-white mb-3">
+          <div className={styles.infoBox}>
+            <h3 className={`${styles.sectionTitle} mb-3`}>
               Validation Categories
             </h3>
-            <ul className="list-disc list-inside text-gray-300 space-y-2">
+            <ul className={styles.list}>
               <li>
                 <span className="text-red-400">Missing</span>: Required packages
                 not installed
@@ -305,11 +322,11 @@ export default function DocsPage() {
             </ul>
           </div>
 
-          <div className="bg-slate-900 rounded-sm p-6 border border-slate-600">
-            <div className="text-gray-400 text-sm mb-2">
+          <div className={styles.screenshotBox}>
+            <div className={styles.screenshotLabel}>
               Screenshot placeholder:
             </div>
-            <div className="bg-slate-800 h-64 rounded flex items-center justify-center text-gray-500">
+            <div className={styles.screenshotPlaceholder}>
               [Allow List Management Screenshot]
             </div>
           </div>
