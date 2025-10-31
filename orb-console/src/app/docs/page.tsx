@@ -15,9 +15,9 @@ type Chapter = {
 
 // Reusable style definitions
 const styles = {
-  chapterTitle: "text-xl font-bold text-white",
-  sectionTitle: "text-lg font-semibold text-gray-400",
-  bodyText: "text-gray-300 text-md leading-relaxed",
+  chapterTitle: "text-xl font-bold text-white mb-2",
+  sectionTitle: "text-xl font-semibold text-gray-400 mb-2",
+  bodyText: "text-gray-300 text-md leading-tight",
 
   infoBox: "bg-slate-800 rounded-sm px-4 py-2 border border-slate-700",
   warningBox: "bg-yellow-900/20 border border-yellow-800 rounded-sm p-4",
@@ -27,10 +27,10 @@ const styles = {
   screenshotPlaceholder:
     "bg-slate-800 h-64 rounded flex items-center justify-center text-gray-500",
 
-  list: "list-disc list-inside text-gray-300 space-y-0",
+  list: "list-disc list-inside text-gray-300 space-y-0 mb-2",
   orderedList: "list-decimal list-inside text-gray-300 space-y-0",
 
-  codeBlock: "bg-slate-950 px-2 py-1 rounded text-sm text-blue-400 font-semibold overflow-x-auto border border-slate-700",
+  codeBlock: "bg-slate-950 px-2 py-1 rounded text-xs text-blue-400 font-semibold overflow-x-auto border border-slate-700",
 };
 
 export default function DocsPage() {
@@ -50,7 +50,7 @@ export default function DocsPage() {
             organization.
           </p>
           <div className={styles.infoBox}>
-            <h3 className={`${styles.sectionTitle} mb-3`}>Prerequisites</h3>
+            <h3 className={`${styles.sectionTitle}`}>Prerequisites</h3>
             <ul className={styles.list}>
               <li>A GitHub account for authentication</li>
               <li>Python environments to monitor</li>
@@ -83,14 +83,14 @@ export default function DocsPage() {
           <div className="space-y-4">
             <h3 className={styles.sectionTitle}>Steps to Create a Tenant</h3>
             <ol className={styles.orderedList}>
-              <li className="pl-2">Sign in with your GitHub account</li>
-              <li className="pl-2">
+              <li className="pl-4">Sign in with your GitHub account</li>
+              <li className="pl-4">
                 Navigate to the Tenant tab in the dashboard
               </li>
-              <li className="pl-2">
+              <li className="pl-4">
                 Click &quot;Create New Tenant&quot; and provide a name
               </li>
-              <li className="pl-2">
+              <li className="pl-4">
                 Copy your tenant key - you&apos;ll need this to register systems
               </li>
             </ol>
@@ -128,7 +128,7 @@ export default function DocsPage() {
           </p>
 
           <div className={styles.infoBox}>
-            <h3 className={`${styles.sectionTitle} mb-3`}>
+            <h3 className={`${styles.sectionTitle}`}>
               Installation Methods
             </h3>
             <div className="space-y-4">
@@ -180,7 +180,7 @@ export default function DocsPage() {
           </p>
 
           <div className={styles.infoBox}>
-            <h3 className={`${styles.sectionTitle} mb-3`}>Key Features</h3>
+            <h3 className={`${styles.sectionTitle}`}>Key Features</h3>
             <ul className={styles.list}>
               <li>View all package versions across your organization</li>
               <li>See which systems have which packages installed</li>
@@ -225,7 +225,7 @@ export default function DocsPage() {
           </p>
 
           <div className={styles.infoBox}>
-            <h3 className={`${styles.sectionTitle} mb-3`}>
+            <h3 className={`${styles.sectionTitle}`}>
               Vulnerability Information
             </h3>
             <p className="text-gray-300 mb-3">
@@ -276,19 +276,19 @@ export default function DocsPage() {
           <div className="space-y-4">
             <h3 className={styles.sectionTitle}>Creating an Allow List</h3>
             <ol className={styles.orderedList}>
-              <li className="pl-2">Navigate to the Allow tab</li>
-              <li className="pl-2">
+              <li className="pl-4">Navigate to the Allow tab</li>
+              <li className="pl-4">
                 Define your allowed packages in the manifest format
               </li>
-              <li className="pl-2">Save your allow list to your tenant</li>
-              <li className="pl-2">
+              <li className="pl-4">Save your allow list to your tenant</li>
+              <li className="pl-4">
                 Review validation results to identify non-compliant packages
               </li>
             </ol>
           </div>
 
           <div className={styles.infoBox}>
-            <h3 className={`${styles.sectionTitle} mb-3`}>
+            <h3 className={`${styles.sectionTitle}`}>
               Validation Categories
             </h3>
             <ul className={styles.list}>
@@ -334,7 +334,7 @@ export default function DocsPage() {
           <div className="flex items-center gap-4">
             <Link
               href="/"
-              className="flex w-8 h-8 hover:opacity-80 transition-opacity"
+              className="flex w-10 h-10 hover:opacity-70 cursor-pointer transition-opacity"
             >
               <Weave fill={colors.slate[600]} className="w-full h-full" />
             </Link>
@@ -359,20 +359,20 @@ export default function DocsPage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-grow max-w-4xl mx-auto px-0 py-8 w-full">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 px-6">
+      <main className="flex-grow max-w-4xl mx-auto px-0 py-4 w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 px-6">
           {/* Left Column - Chapter Navigation */}
-          <aside className="md:col-span-1">
+          <aside className="sm:col-span-1">
             <div className="sticky top-24 bg-slate-900 p-2 border border-slate-800 rounded-sm">
-              <nav className="space-y-1">
+              <nav className="space-y-2">
                 {chapters.map((chapter) => (
                   <button
                     key={chapter.id}
                     onClick={() => setActiveChapter(chapter.id)}
-                    className={`w-full text-left text-md px-2 py-1 rounded-sm transition-colors ${
+                    className={`w-full text-right uppercase text-sm px-2 py-1 rounded-xs transition-default ${
                       activeChapter === chapter.id
-                        ? "bg-slate-800 text-white border border-slate-600"
-                        : "text-gray-400 hover:text-white hover:bg-slate-800/50"
+                        ? "bg-slate-800 text-gray-400 border border-slate-600 cursor-default"
+                        : "bg-slate-900 text-slate-500 border border-slate-800 hover:text-gray-200 hover:bg-slate-700/50 cursor-pointer"
                     }`}
                   >
                     {chapter.title}
@@ -383,8 +383,8 @@ export default function DocsPage() {
           </aside>
 
           {/* Right Column - Content */}
-          <div className="md:col-span-3">
-            <div className="bg-slate-800/30 rounded-sm p-8 border border-slate-700">
+          <div className="sm:col-span-3">
+            <div className="bg-slate-800/30 rounded-sm px-4 py-2 pb-4 border border-slate-700">
               {currentChapter ? currentChapter.content : null}
             </div>
           </div>
