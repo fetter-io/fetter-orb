@@ -349,7 +349,7 @@ export default function DocsPage() {
   return (
     <div className="flex flex-col min-h-screen font-[family-name:var(--font-geist-sans)] bg-gradient-to-b from-slate-950 to-slate-900">
       {/* Header */}
-      <header className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur border-b border-slate-700 px-6 py-4">
+      <header className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur border-b border-slate-700 px-6 py-2">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link
@@ -359,7 +359,7 @@ export default function DocsPage() {
               <Weave fill={colors.slate[600]} className="w-full h-full" />
             </Link>
             <div>
-              <h1 className="text-lg font-bold text-gray-200">Fetter IO</h1>
+              <h1 className="text-lg font-bold text-gray-300">Fetter IO</h1>
               <p className="text-xs text-gray-400">Documentation</p>
             </div>
           </div>
@@ -380,9 +380,9 @@ export default function DocsPage() {
 
       {/* Main Content */}
       <main className="flex-grow px-6 w-full">
-        <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-4 gap-4 mt-4">
           {/* Left Column - Chapter Navigation */}
-          <aside className="sm:col-span-1 self-start sticky top-23">
+          <aside className="sm:col-span-1 sm:self-start sm:sticky sm:top-23">
             <div className="bg-slate-900 p-2 border border-slate-800 rounded-sm">
               <nav className="space-y-2">
                 {chapters.map((chapter) => (
@@ -403,7 +403,7 @@ export default function DocsPage() {
           </aside>
 
           {/* Right Column - Content */}
-          <div className="sm:col-span-3 py-4">
+          <div className="sm:col-span-3 py-0">
             <div className="bg-slate-800/30 rounded-sm px-4 py-2 pb-4 border border-slate-700">
               {currentChapter ? currentChapter.content : null}
             </div>
