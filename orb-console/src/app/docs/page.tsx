@@ -406,6 +406,38 @@ export default function DocsPage() {
           <div className="sm:col-span-3 py-0">
             <div className="bg-slate-800/30 rounded-sm px-4 py-2 pb-4 border border-slate-700">
               {currentChapter ? currentChapter.content : null}
+
+              {/* Previous/Next Navigation */}
+              {currentChapter && (
+                <div className="flex justify-between items-center mt-2 pt-2 text-xs text-slate-400 tracking-widest">
+                  <div>
+                    {chapters.findIndex((ch) => ch.id === activeChapter) > 0 && (
+                      <button
+                        onClick={() => {
+                          const currentIndex = chapters.findIndex((ch) => ch.id === activeChapter);
+                          setActiveChapter(chapters[currentIndex - 1].id);
+                        }}
+                        className="uppercase hover:text-blue-300 transition-colors flex cursor-pointer items-center gap-2"
+                      >
+                        <span>{chapters[chapters.findIndex((ch) => ch.id === activeChapter) - 1]?.title}</span>
+                      </button>
+                    )}
+                  </div>
+                  <div>
+                    {chapters.findIndex((ch) => ch.id === activeChapter) < chapters.length - 1 && (
+                      <button
+                        onClick={() => {
+                          const currentIndex = chapters.findIndex((ch) => ch.id === activeChapter);
+                          setActiveChapter(chapters[currentIndex + 1].id);
+                        }}
+                        className="uppercase hover:text-blue-300 transition-colors flex cursor-pointer items-center gap-2"
+                      >
+                        <span>{chapters[chapters.findIndex((ch) => ch.id === activeChapter) + 1]?.title}</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
