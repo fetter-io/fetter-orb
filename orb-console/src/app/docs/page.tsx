@@ -382,7 +382,7 @@ export default function DocsPage() {
       <main className="flex-grow px-6 w-full">
         <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-4 gap-4 mt-4">
           {/* Left Column - Chapter Navigation */}
-          <aside className="sm:col-span-1 sm:self-start sm:sticky sm:top-23">
+          <aside className="sm:col-span-1 sm:self-start sm:sticky sm:top-19">
             <div className="bg-slate-900 p-2 border border-slate-800 rounded-sm">
               <nav className="space-y-2">
                 {chapters.map((chapter) => (
