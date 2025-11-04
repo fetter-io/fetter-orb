@@ -15,7 +15,7 @@ import { SystemStatsChart } from "@/components/SystemStatsChart";
 import { SystemTag, Tab } from "@/types";
 import { DataState } from "@/hooks/useDashboardData";
 
-const VIEWPORT_FRACTION = 1.0;
+const VIEWPORT_FRACTION = 0.5;
 const MIN_LIST_PX = 280;
 
 interface TabSystemsProps {
@@ -62,13 +62,10 @@ export function TabSystems({
     [filteredSystems, systemTagsState.data],
   );
 
-  // Responsive list height
-  const [listPxHeight, setListPxHeight] = useState<number>(() => {
-    if (typeof window === "undefined") return 560; // first paint fallback
-    return Math.max(
-      MIN_LIST_PX,
-      Math.floor(window.innerHeight * VIEWPORT_FRACTION),
-    );
+  // Responsive list height - dynamic based on content
+  const [viewportHeight, setViewportHeight] = useState<number>(() => {
+    if (typeof window === "undefined") return 560;
+    return window.innerHeight;
   });
 
   useEffect(() => {
@@ -77,12 +74,7 @@ export function TabSystems({
     const onResize = () => {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
-        setListPxHeight(
-          Math.max(
-            MIN_LIST_PX,
-            Math.floor(window.innerHeight * VIEWPORT_FRACTION),
-          ),
-        );
+        setViewportHeight(window.innerHeight);
       });
     };
     window.addEventListener("resize", onResize, { passive: true });
@@ -91,6 +83,19 @@ export function TabSystems({
       window.removeEventListener("resize", onResize);
     };
   }, []);
+
+  // Calculate height based on number of items
+  // Estimate ~180px per system card, with max and min bounds
+  const ESTIMATED_CARD_HEIGHT = 180;
+  const listPxHeight = useMemo(() => {
+    const itemCount = safeSystems.length;
+    if (itemCount === 0) return MIN_LIST_PX;
+
+    const estimatedContentHeight = itemCount * ESTIMATED_CARD_HEIGHT;
+    const maxHeight = Math.floor(viewportHeight * VIEWPORT_FRACTION);
+
+    return Math.max(MIN_LIST_PX, Math.min(estimatedContentHeight, maxHeight));
+  }, [safeSystems.length, viewportHeight]);
 
   // Stable render function for items
   const renderItem = useCallback(
