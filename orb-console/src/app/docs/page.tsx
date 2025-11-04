@@ -45,23 +45,42 @@ export default function DocsPage() {
         <div className="space-y-4">
           <h2 className={styles.chapterTitle}>Getting Started</h2>
           <p className={styles.bodyText}>
-            This guide will help you get up and running with Fetter IO, a supply-chain monitoring platform that provides comprehensive Python package visibility across your system or your entire organization.
+            This guide will help you get up and running with Fetter IO, a
+            supply-chain monitoring platform that provides comprehensive Python
+            package visibility across your system or your entire organization.
           </p>
 
           <div className={styles.infoBox}>
             <h3 className={`${styles.sectionTitle}`}>Prerequisites</h3>
             <ul className={styles.list}>
-              <li>A <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-blue-300">GitHub</a> account for authentication</li>
-              <li>One or more Python environments on a system running Linux or MacOS</li>
+              <li>
+                A{" "}
+                <a
+                  href="https://github.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-slate-400 hover:text-blue-300"
+                >
+                  GitHub
+                </a>{" "}
+                account for authentication
+              </li>
+              <li>
+                One or more Python environments on a system running Linux or
+                MacOS
+              </li>
             </ul>
           </div>
 
           <p className={styles.bodyText}>
-            After clicking the "Sign in with GitHub" button and accepting the terms, you will be presented with the Fetter IO Console.
+            After clicking the "Sign in with GitHub" button and accepting the
+            terms, you will be presented with the Fetter IO Console.
           </p>
 
           <p className={styles.bodyText}>
-            The Console features six tabs, as well as tools to select Tenant and logout. Many tabs also feature a System selector and an update button.
+            The Console features six tabs, as well as tools to select Tenant and
+            logout. Many tabs also feature a System selector and an update
+            button.
           </p>
 
           <div className={styles.infoBox}>
@@ -77,7 +96,9 @@ export default function DocsPage() {
           </div>
 
           <p className={styles.bodyText}>
-            The Console tabs will be mostly empty until you begin uploading scans. In the next section we will look at using Tenant to upload package data.
+            The Console tabs will be mostly empty until you begin uploading
+            scans. In the next section we will look at using Tenant to upload
+            package data.
           </p>
 
           <div className={styles.screenshotBox}>
@@ -88,7 +109,6 @@ export default function DocsPage() {
               [Dashboard Overview Screenshot]
             </div>
           </div>
-
         </div>
       ),
     },
@@ -411,28 +431,50 @@ export default function DocsPage() {
               {currentChapter && (
                 <div className="flex justify-between items-center mt-2 pt-2 text-xs text-slate-400 tracking-widest">
                   <div>
-                    {chapters.findIndex((ch) => ch.id === activeChapter) > 0 && (
+                    {chapters.findIndex((ch) => ch.id === activeChapter) >
+                      0 && (
                       <button
                         onClick={() => {
-                          const currentIndex = chapters.findIndex((ch) => ch.id === activeChapter);
+                          const currentIndex = chapters.findIndex(
+                            (ch) => ch.id === activeChapter,
+                          );
                           setActiveChapter(chapters[currentIndex - 1].id);
                         }}
                         className="uppercase hover:text-blue-300 transition-colors flex cursor-pointer items-center gap-2"
                       >
-                        <span>{chapters[chapters.findIndex((ch) => ch.id === activeChapter) - 1]?.title}</span>
+                        <span>
+                          {
+                            chapters[
+                              chapters.findIndex(
+                                (ch) => ch.id === activeChapter,
+                              ) - 1
+                            ]?.title
+                          }
+                        </span>
                       </button>
                     )}
                   </div>
                   <div>
-                    {chapters.findIndex((ch) => ch.id === activeChapter) < chapters.length - 1 && (
+                    {chapters.findIndex((ch) => ch.id === activeChapter) <
+                      chapters.length - 1 && (
                       <button
                         onClick={() => {
-                          const currentIndex = chapters.findIndex((ch) => ch.id === activeChapter);
+                          const currentIndex = chapters.findIndex(
+                            (ch) => ch.id === activeChapter,
+                          );
                           setActiveChapter(chapters[currentIndex + 1].id);
                         }}
                         className="uppercase hover:text-blue-300 transition-colors flex cursor-pointer items-center gap-2"
                       >
-                        <span>{chapters[chapters.findIndex((ch) => ch.id === activeChapter) + 1]?.title}</span>
+                        <span>
+                          {
+                            chapters[
+                              chapters.findIndex(
+                                (ch) => ch.id === activeChapter,
+                              ) + 1
+                            ]?.title
+                          }
+                        </span>
                       </button>
                     )}
                   </div>
