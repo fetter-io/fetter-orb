@@ -73,8 +73,9 @@ export default function DocsPage() {
           </div>
 
           <p className={styles.bodyText}>
-            After clicking the "Sign in with GitHub" button and accepting the
-            terms, you will be presented with the Fetter IO Console.
+            After clicking the &ldquo;Sign in with GitHub&rdquo; button and
+            accepting the terms, you will be presented with the Fetter IO
+            Console.
           </p>
 
           <p className={styles.bodyText}>
@@ -438,7 +439,7 @@ export default function DocsPage() {
                           const currentIndex = chapters.findIndex(
                             (ch) => ch.id === activeChapter,
                           );
-                          setActiveChapter(chapters[currentIndex - 1].id);
+                          setActiveChapter(chapters[currentIndex - 1]!.id);
                         }}
                         className="uppercase hover:text-blue-300 transition-colors flex cursor-pointer items-center gap-2"
                       >
@@ -462,7 +463,7 @@ export default function DocsPage() {
                           const currentIndex = chapters.findIndex(
                             (ch) => ch.id === activeChapter,
                           );
-                          setActiveChapter(chapters[currentIndex + 1].id);
+                          setActiveChapter(chapters[currentIndex + 1]!.id);
                         }}
                         className="uppercase hover:text-blue-300 transition-colors flex cursor-pointer items-center gap-2"
                       >
