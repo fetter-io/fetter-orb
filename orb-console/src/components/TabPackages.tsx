@@ -22,7 +22,7 @@ import {
 } from "@/types";
 import { DataState } from "@/hooks/useDashboardData";
 
-const VIEWPORT_FRACTION = 1;
+const VIEWPORT_FRACTION = 1.0;
 const MIN_LIST_PX = 280;
 
 interface TabPackagesProps {
@@ -86,18 +86,18 @@ export function TabPackages({
     );
   });
 
-  // const [viewportHeight, setViewportHeight] = useState<number>(() => {
-  //   if (typeof window === "undefined") return 560;
-  //   return window.innerHeight;
-  // });
-
   useEffect(() => {
     if (typeof window === "undefined") return;
     let raf = 0;
     const onResize = () => {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
-        setViewportHeight(window.innerHeight);
+        setListPxHeight(
+          Math.max(
+            MIN_LIST_PX,
+            Math.floor(window.innerHeight * VIEWPORT_FRACTION),
+          ),
+        );
       });
     };
     window.addEventListener("resize", onResize, { passive: true });
@@ -106,19 +106,6 @@ export function TabPackages({
       window.removeEventListener("resize", onResize);
     };
   }, []);
-
-  // Calculate height based on number of items
-  // Estimate ~120px per card (collapsed), with max and min bounds
-  // const ESTIMATED_CARD_HEIGHT = 120;
-  // const listPxHeight = useMemo(() => {
-  //   const itemCount = safePackages.length;
-  //   if (itemCount === 0) return MIN_LIST_PX;
-
-  //   const estimatedContentHeight = itemCount * ESTIMATED_CARD_HEIGHT;
-  //   const maxHeight = Math.floor(viewportHeight * VIEWPORT_FRACTION);
-
-  //   return Math.max(MIN_LIST_PX, Math.min(estimatedContentHeight, maxHeight));
-  // }, [safePackages.length, viewportHeight]);
 
   // Stable render function for items
   const renderItem = useCallback(

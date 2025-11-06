@@ -72,11 +72,6 @@ export function TabSystems({
     );
   });
 
-  // const [viewportHeight, setViewportHeight] = useState<number>(() => {
-  //   if (typeof window === "undefined") return 560;
-  //   return window.innerHeight;
-  // });
-
   useEffect(() => {
     if (typeof window === "undefined") return;
     let raf = 0;
@@ -89,8 +84,6 @@ export function TabSystems({
             Math.floor(window.innerHeight * VIEWPORT_FRACTION),
           ),
         );
-
-        // setViewportHeight(window.innerHeight);
       });
     };
     window.addEventListener("resize", onResize, { passive: true });
@@ -99,19 +92,6 @@ export function TabSystems({
       window.removeEventListener("resize", onResize);
     };
   }, []);
-
-  // Calculate height based on number of items
-  // Estimate ~180px per system card, with max and min bounds
-  // const ESTIMATED_CARD_HEIGHT = 180;
-  // const listPxHeight = useMemo(() => {
-  //   const itemCount = safeSystems.length;
-  //   if (itemCount === 0) return MIN_LIST_PX;
-
-  //   const estimatedContentHeight = itemCount * ESTIMATED_CARD_HEIGHT;
-  //   const maxHeight = Math.floor(viewportHeight * VIEWPORT_FRACTION);
-
-  //   return Math.max(MIN_LIST_PX, Math.min(estimatedContentHeight, maxHeight));
-  // }, [safeSystems.length, viewportHeight]);
 
   // Stable render function for items
   const renderItem = useCallback(
