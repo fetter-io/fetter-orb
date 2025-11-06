@@ -7,6 +7,7 @@ import Link from "next/link";
 import { ImageLightbox } from "@/components/ImageLightbox";
 import { Weave } from "@/components/Weave";
 import { Footer } from "@/components/Footer";
+import { AllowIcon } from "@/components/AllowIcon";
 import colors from "tailwindcss/colors";
 
 type Chapter = {
@@ -133,6 +134,13 @@ export default function DocsPage() {
           <p className={styles.bodyText}>
             The Account tab (⚙️) displays all information specific to your account, including GitHub login and optionally GitHub email and name. You can delete your account and all associated data at any time with the &quot;Delete Account&quot; button; this operation cannot be undone.
           </p>
+
+          <div className={styles.warningBox}>
+            <h3 className={styles.warningTitle}>Note</h3>
+            <p className={styles.bodyText}>
+              Fetter IO will never share or sell your information with third-parties unless required by law.
+            </p>
+          </div>
 
           <h3 className={styles.sectionTitle}>Up Next</h3>
 
@@ -486,17 +494,21 @@ fetter --version`}</pre>
           <div className={styles.infoBox}>
             <h3 className={`${styles.sectionTitle}`}>Validation Categories</h3>
             <ul className={styles.list}>
-              <li>
-                <span className="text-red-400">Missing</span>: Required packages
-                not installed
+              <li className="flex items-center gap-2">
+                <AllowIcon status="missing" />
+                <span>Missing: Required packages not installed</span>
               </li>
-              <li>
-                <span className="text-yellow-400">Unrequired</span>: Installed
-                packages not in allow list
+              <li className="flex items-center gap-2">
+                <AllowIcon status="unrequired" />
+                <span>Unrequired: Installed packages not in allow list</span>
               </li>
-              <li>
-                <span className="text-orange-400">Misdefined</span>: Version
-                mismatches
+              <li className="flex items-center gap-2">
+                <AllowIcon status="misdefined" />
+                <span>Misdefined: Version mismatches</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <AllowIcon status="allowed" />
+                <span>Allowed: Package meets allow list requirements</span>
               </li>
             </ul>
           </div>
