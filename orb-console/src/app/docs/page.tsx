@@ -18,7 +18,7 @@ type Chapter = {
 // Reusable style definitions
 const styles = {
   chapterTitle: "text-xl font-bold text-white mb-2",
-  sectionTitle: "text-xl font-semibold text-slate-400/70 mb-2",
+  sectionTitle: "text-xl font-semibold text-slate-400/80 mb-2",
   bodyText: "text-gray-300 text-md leading-tight",
 
   infoBox: "bg-slate-800 rounded-sm px-4 py-2 border border-slate-700",
@@ -101,7 +101,7 @@ export default function DocsPage() {
           </p>
 
           <div className={styles.infoBox}>
-            <h3 className={`${styles.sectionTitle}`}>Console Tabs</h3>
+            <h3 className={styles.sectionTitle}>Console Tabs</h3>
             <ul className={styles.list}>
               <li>📦 Packages</li>
               <li>⚠️ Vulnerabilities</li>
@@ -168,7 +168,7 @@ export default function DocsPage() {
           </ol>
 
           <div className={styles.infoBox}>
-            <h3 className={`${styles.sectionTitle} mb-2`}>Note</h3>
+            <h3 className={styles.sectionTitle}>Note</h3>
             <p className={styles.bodyText}>
               Limit Tenant key access to those who will post scans to your
               Tenant. The Tenant key cannot be used to access your account. Only
