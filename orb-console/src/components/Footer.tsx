@@ -26,10 +26,7 @@ export function Footer() {
 
         {/* Column 3: Link to docs */}
         <div className="flex justify-center">
-          <a
-            className="flex gap-2 hover:text-gray-400"
-            href="/docs"
-          >
+          <a className="flex gap-2 hover:text-gray-400" href="/docs">
             Docs
           </a>
         </div>

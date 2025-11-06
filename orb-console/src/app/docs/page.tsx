@@ -19,6 +19,7 @@ type Chapter = {
 const styles = {
   chapterTitle: "text-xl font-bold text-white mb-2",
   sectionTitle: "text-xl font-semibold text-slate-400/80 mb-2",
+  warningTitle: "text-lg font-semibold text-yellow-400 mb-2",
   bodyText: "text-gray-300 text-md leading-tight",
 
   infoBox: "bg-slate-800 rounded-sm px-4 py-2 border border-slate-700",
@@ -96,7 +97,7 @@ export default function DocsPage() {
 
           <p className={styles.bodyText}>
             For greater security, Fetter IO uses GitHub for identity management.
-            After clicking the &ldquo;Sign in with GitHub&rdquo; button,
+            After clicking the &quot;Sign in with GitHub&quot; button,
             providing GitHub credentials, and accepting the terms, you will be
             provisioned an account and be presented with the Fetter IO Console.
           </p>
@@ -126,6 +127,19 @@ export default function DocsPage() {
             scans. In the next section we will look at using Tenant to upload
             package data.
           </p>
+
+          <h3 className={styles.sectionTitle}>Managing Your Account</h3>
+
+          <p className={styles.bodyText}>
+            The Account tab (⚙️) displays all information specific to your account, including GitHub login and optionally GitHub email and name. You can delete your account and all associated data at any time with the &quot;Delete Account&quot; button; this operation cannot be undone.
+          </p>
+
+          <h3 className={styles.sectionTitle}>Up Next</h3>
+
+          <p className={styles.bodyText}>
+            In the next section we will learn how to use and create Tenants.
+          </p>
+
         </div>
       ),
     },
@@ -153,11 +167,11 @@ export default function DocsPage() {
           </p>
 
           <ul className={styles.list}>
-            <li>Name: A label that can be renamed only by the Tenant owner</li>
-            <li>Key: A 64 character code unique to this Tenant</li>
+            <li>Name: A label that can be renamed only by the Tenant. owner</li>
+            <li>Key: A 64-character code unique to this Tenant.</li>
             <li>
               Updates per day: The maximum number of times systems can post
-              scans to this Tenant
+              scans to this Tenant per 24 hour period.
             </li>
           </ul>
 
@@ -165,20 +179,20 @@ export default function DocsPage() {
 
           <p className={styles.bodyText}>
             On account creation, each user is given a default Tenant named
-            &ldquo;Self&rdquo;. Users can create, by default, up to two Tenants.
+            &quot;Self&quot;. Users can create, by default, up to two Tenants.
             The following steps explain how to create a new Tenant.
           </p>
 
           <ol className={styles.orderedList}>
-            <li>Navigate to the Tenant tab</li>
+            <li>Navigate to the Tenant tab (🏢)</li>
             <li>
               Click the <span className="inline-block">＋</span> button.
             </li>
-            <li>Provide a valid name and select &ldquo;Create&rdquo;</li>
+            <li>Provide a valid name and select &quot;Create&quot;</li>
           </ol>
 
-          <div className={styles.infoBox}>
-            <h3 className={styles.sectionTitle}>Note</h3>
+          <div className={styles.warningBox}>
+            <h3 className={styles.warningTitle}>Note</h3>
             <p className={styles.bodyText}>
               Limit Tenant key access to those who will post scans to your
               Tenant. The Tenant key cannot be used to access your account. Only
@@ -190,7 +204,7 @@ export default function DocsPage() {
 
           <p className={styles.bodyText}>
             Every Tenant associated with your account will be listed in the
-            Tenant tab. The display provides the name, key, and number of
+            Tenant tab (🏢). The display provides the name, key, and number of
             updates per day, as well as two ways to post scan data to the
             Tenant.
           </p>
@@ -204,11 +218,6 @@ export default function DocsPage() {
             </li>
           </ol>
 
-          <p className={styles.bodyText}>
-            In the next sections we use the <code>fetter</code> command-line
-            application to post package scans.
-          </p>
-
           <div className={styles.screenshotBox}>
             <div className={styles.screenshotLabel}>
               This screenshot depicts...
@@ -220,6 +229,15 @@ export default function DocsPage() {
               height={800}
             />
           </div>
+
+          <h3 className={styles.sectionTitle}>Up Next</h3>
+
+          <p className={styles.bodyText}>
+            In the next sections we use the <code>fetter</code> command-line
+            application to post package scans.
+          </p>
+
+
         </div>
       ),
     },
@@ -332,12 +350,13 @@ fetter --version`}</pre>
 
           <div className="space-y-4">
             <h3 className={styles.sectionTitle}>Running Your First Scan</h3>
+
             <p className={styles.bodyText}>
               Now that you have installed <code>fetter</code> you can perform
               your first package scan. In Fetter IO Console, navigate to to the
-              Tenant tab and, for the selected tenant, copy the complete command
-              line under "Fetter CLI" by clicking on it. Execute that command in
-              the terminal. It will look something like this:
+              Tenant tab (🏢) and, for the selected tenant, copy the complete command
+              line under &quot;Fetter CLI&quot; by clicking on it. Execute that
+              command in the terminal. It will look something like this (your Tenant key will not be <code>ffffffff...</code>)  :
             </p>
             <pre
               className={styles.codeBlock}
@@ -352,9 +371,11 @@ fetter --version`}</pre>
               className={styles.codeBlock}
             >{`fetter --log monitor-scan --url https://fetter.io/monitor_scan --tenant ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff`}</pre>
 
+          <h3 className={styles.sectionTitle}>Up Next</h3>
+
             <p className={styles.bodyText}>
               With a package scan complete, we can return to the Fetter IO
-              Console to examine the contents.
+              Console to examine the uploaded data.
             </p>
           </div>
         </div>
@@ -397,11 +418,11 @@ fetter --version`}</pre>
       ),
     },
     {
-      id: "vulnerability-tracking",
-      title: "Vulnerability Tracking",
+      id: "tracking-vulnerabilities",
+      title: "Tracking Vulnerabilities",
       content: (
         <div className="space-y-4">
-          <h2 className={styles.chapterTitle}>Vulnerability Tracking</h2>
+          <h2 className={styles.chapterTitle}>Tracking Vulnerabilities</h2>
           <p className={styles.bodyText}>
             Fetter IO continuously monitors your packages against the Open
             Source Vulnerability (OSV) database to identify security issues in
@@ -425,7 +446,7 @@ fetter --version`}</pre>
           </div>
 
           <div className={styles.warningBox}>
-            <h3 className="text-lg font-semibold text-yellow-400 mb-2">
+            <h3 className={styles.warningTitle}>
               Best Practices
             </h3>
             <p className="text-gray-300">
