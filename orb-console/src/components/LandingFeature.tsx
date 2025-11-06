@@ -1,5 +1,5 @@
-import Image from "next/image";
 import clsx from "clsx";
+import { ImageLightbox } from "@/components/ImageLightbox";
 
 export function LandingFeature({
   title,
@@ -25,7 +25,7 @@ export function LandingFeature({
       </div>
       <div className="md:w-1/2 flex justify-center">
         <div className="">
-          <Image
+          <ImageLightbox
             src={imageSrc}
             alt={title}
             width={600}

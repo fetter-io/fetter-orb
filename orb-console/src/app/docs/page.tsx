@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession, signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+import { ImageLightbox } from "@/components/ImageLightbox";
 import { Weave } from "@/components/Weave";
 import { Footer } from "@/components/Footer";
 import colors from "tailwindcss/colors";
@@ -29,7 +29,7 @@ const styles = {
   screenshotPlaceholder:
     "bg-slate-800 h-64 rounded flex items-center justify-center text-gray-500",
 
-  list: "list-disc list-inside text-gray-300 space-y-0 mb-2 px-4",
+  list: "list-none list-inside text-gray-300 space-y-0 mb-2 px-4",
   orderedList: "list-decimal list-inside text-gray-300 space-y-0 px-4",
 
   codeBlock:
@@ -52,8 +52,7 @@ export default function DocsPage() {
           <h2 className={styles.chapterTitle}>Getting Started</h2>
 
           <p className={styles.bodyText}>
-            Fetter IO is a web-application for aggregating information about all
-            the Python packages on all your (or your organizations) systems.
+            Fetter IO is a web-application for aggregating information about Python packages on all your (or your organization&apos;s) systems.
             With this information, comprehensive supply-chain monitoring is
             possible. Fetter IO permits searching among all packages, displaying
             detailed vulnerability information, and applying a global allow
@@ -79,15 +78,15 @@ export default function DocsPage() {
                 >
                   GitHub
                 </a>{" "}
-                account for authentication
+                account for authentication.
               </li>
               <li>
                 Python or Rust tools (like <code>pip</code> or{" "}
-                <code>cargo</code>) for installing packages or crates
+                <code>cargo</code>) for installing packages or crates.
               </li>
               <li>
                 One or more Python environments on a system running Linux or
-                MacOS
+                MacOS.
               </li>
             </ul>
           </div>
@@ -95,15 +94,15 @@ export default function DocsPage() {
           <h3 className={styles.sectionTitle}>Creating an Account</h3>
 
           <p className={styles.bodyText}>
-            After clicking the &ldquo;Sign in with GitHub&rdquo; button and
-            accepting the terms, you will be presented with the Fetter IO
+            For greater security, Fetter IO uses GitHub for identity management. After clicking the &ldquo;Sign in with GitHub&rdquo; button, providing GitHub credentials, and
+            accepting the terms, you will be provisioned an account and be presented with the Fetter IO
             Console.
           </p>
 
           <h3 className={styles.sectionTitle}>Navigating the Console</h3>
 
           <p className={styles.bodyText}>
-            The Console features six tabs, as well as tools to select Tenant and
+            The Console features six tabs, as well as interfaces to select Tenant and
             logout. Many tabs also feature a System selector and an update
             button.
           </p>
@@ -212,7 +211,7 @@ export default function DocsPage() {
             <div className={styles.screenshotLabel}>
               This screenshot depicts...
             </div>
-            <Image
+            <ImageLightbox
               src="/screen-allow.png"
               alt="Tenant Creation Interface"
               width={1200}
