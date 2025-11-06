@@ -24,7 +24,7 @@ const styles = {
   infoBox: "bg-slate-800 rounded-sm px-4 py-2 border border-slate-700",
   warningBox: "bg-yellow-900/20 border border-yellow-800 rounded-sm p-4",
 
-  screenshotBox: "bg-slate-900 rounded-sm px-4 pt-2 border border-slate-600",
+  screenshotBox: "px-0 pt-2",
   screenshotLabel: "text-gray-400 text-sm",
   screenshotPlaceholder:
     "bg-slate-800 h-64 rounded flex items-center justify-center text-gray-500",
@@ -156,10 +156,10 @@ export default function DocsPage() {
           </ol>
 
           <div className={styles.infoBox}>
-            <h3 className={`${styles.sectionTitle} mb-2`}>Important Note</h3>
+            <h3 className={`${styles.sectionTitle} mb-2`}>Important</h3>
             <p className={styles.bodyText}>
-              Treat your Tenant key as a secret, keeping access limited to those
-              who will post scans to your Tenant. Only the tenant creator can
+              Limit Tenant key access to those
+              who will post scans to your Tenant. The Tenant key cannot be used to access your account. Only the Tenant creator can
               rename or modify certain tenant settings.
             </p>
           </div>
@@ -174,13 +174,18 @@ export default function DocsPage() {
           </p>
 
           <ol className={styles.orderedList}>
-            <li>Using the fetter command-line tool.</li>
-            <li>Installing the fetter endpoint agent.</li>
+            <li>Using the <code>fetter</code> command-line application.</li>
+            <li>Installing the <code>fetter</code> endpoint agent as a service.</li>
           </ol>
+
+          <p className={styles.bodyText}>
+            In the next section we use the <code>fetter</code> command-line application to post package scans.
+          </p>
+
 
           <div className={styles.screenshotBox}>
             <div className={styles.screenshotLabel}>
-              Screenshot placeholder:
+              This screenshot depicts...
             </div>
             <Image
               src="/screen-allow.png"
