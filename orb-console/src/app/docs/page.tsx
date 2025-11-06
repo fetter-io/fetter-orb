@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession, signIn } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Weave } from "@/components/Weave";
 import { Footer } from "@/components/Footer";
 import colors from "tailwindcss/colors";
@@ -22,13 +24,13 @@ const styles = {
   infoBox: "bg-slate-800 rounded-sm px-4 py-2 border border-slate-700",
   warningBox: "bg-yellow-900/20 border border-yellow-800 rounded-sm p-4",
 
-  screenshotBox: "bg-slate-900 rounded-sm px-4 py-2 border border-slate-600",
-  screenshotLabel: "text-gray-400 text-sm mb-2",
+  screenshotBox: "bg-slate-900 rounded-sm px-4 pt-2 border border-slate-600",
+  screenshotLabel: "text-gray-400 text-sm",
   screenshotPlaceholder:
     "bg-slate-800 h-64 rounded flex items-center justify-center text-gray-500",
 
-  list: "list-disc list-inside text-gray-300 space-y-0 mb-2",
-  orderedList: "list-decimal list-inside text-gray-300 space-y-0",
+  list: "list-disc list-inside text-gray-300 space-y-0 mb-2 px-4",
+  orderedList: "list-decimal list-inside text-gray-300 space-y-0 px-4",
 
   codeBlock:
     "bg-slate-950 px-2 py-1 rounded text-xs text-blue-400 font-semibold overflow-x-auto border border-slate-700",
@@ -36,6 +38,8 @@ const styles = {
 
 export default function DocsPage() {
   const { status } = useSession();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const chapters: Chapter[] = [
     {
@@ -101,62 +105,86 @@ export default function DocsPage() {
             scans. In the next section we will look at using Tenant to upload
             package data.
           </p>
-
-          <div className={styles.screenshotBox}>
-            <div className={styles.screenshotLabel}>
-              Screenshot placeholder:
-            </div>
-            <div className={styles.screenshotPlaceholder}>
-              [Dashboard Overview Screenshot]
-            </div>
-          </div>
         </div>
       ),
     },
     {
       id: "creating-tenant",
-      title: "Creating a Tenant",
+      title: "Using & Creating Tenants",
       content: (
         <div className="space-y-4">
-          <h2 className={styles.chapterTitle}>Creating a Tenant</h2>
+          <h2 className={styles.chapterTitle}>Using & Creating Tenants</h2>
+
           <p className={styles.bodyText}>
-            A tenant is your organization&apos;s workspace in Fetter IO. Each
-            tenant has its own isolated environment for tracking systems,
-            packages, and vulnerabilities.
+            Fetter IO groups package data from one or more systems under a
+            Tenant. Each Tenant offers its own isolated environment for tracking
+            packages, vulnerabilities, and systems, and each Tenant defines a
+            configurable allow list. Additionally, Tenant configuration includes
+            defining which systems are active in aggregate system displays.
           </p>
 
-          <div className="space-y-4">
-            <h3 className={styles.sectionTitle}>Steps to Create a Tenant</h3>
-            <ol className={styles.orderedList}>
-              <li className="pl-4">Sign in with your GitHub account</li>
-              <li className="pl-4">
-                Navigate to the Tenant tab in the dashboard
-              </li>
-              <li className="pl-4">
-                Click &quot;Create New Tenant&quot; and provide a name
-              </li>
-              <li className="pl-4">
-                Copy your tenant key - you&apos;ll need this to register systems
-              </li>
-            </ol>
-          </div>
+          <h3 className={styles.sectionTitle}>Tenant Attributes</h3>
+
+          <p className={styles.bodyText}>
+            Every Tenant has a name, a key, and a maximum number of updates
+            permitted per day.
+          </p>
+
+          <ul className={styles.list}>
+            <li>Name: A label that can be renamed only by the Tenant owner</li>
+            <li>Key: A 64 character code unique to this Tenant</li>
+            <li>
+              Updates per day: The maximum number of times systems can post
+              scans to this Tenant
+            </li>
+          </ul>
+
+          <h3 className={styles.sectionTitle}>Creating a new Tenant</h3>
+
+          <p className={styles.bodyText}>
+            On account creation, each user is given a default Tenant named
+            &ldquo;Self&rdquo;. Users can create, by default, up to two Tenants.
+            The following steps explain how to create a new Tenant.
+          </p>
+
+          <ol className={styles.orderedList}>
+            <li>Navigate to the Tenant tab</li>
+            <li>
+              Click the <span className="inline-block">＋</span> button.
+            </li>
+            <li>Provide a valid name and select &ldquo;Create&rdquo;</li>
+          </ol>
 
           <div className={styles.infoBox}>
-            <h3 className={`${styles.sectionTitle} mb-2`}>Important Notes</h3>
+            <h3 className={`${styles.sectionTitle} mb-2`}>Important Note</h3>
             <p className={styles.bodyText}>
-              Keep your tenant key secure. It allows systems to publish data to
-              your tenant. Only the tenant creator can rename or modify certain
-              tenant settings.
+              Treat your Tenant key as a secret, keeping access limited to
+              those who will post scans to your Tenant. Only the tenant creator can rename or
+              modify certain tenant settings.
             </p>
           </div>
+
+          <h3 className={styles.sectionTitle}>Tenant Usage & Display</h3>
+
+          <p className={styles.bodyText}>
+            Every Tenant associated with your account will be listed in the Tenant tab. The display provides the name, key, and number of updates per day, as well as two ways to post scan data to the Tenant.
+          </p>
+
+          <ol className={styles.orderedList}>
+            <li>Using the fetter command-line tool.</li>
+            <li>Installing the fetter endpoint agent.</li>
+          </ol>
 
           <div className={styles.screenshotBox}>
             <div className={styles.screenshotLabel}>
               Screenshot placeholder:
             </div>
-            <div className={styles.screenshotPlaceholder}>
-              [Tenant Creation Interface Screenshot]
-            </div>
+            <Image
+              src="/screen-allow.png"
+              alt="Tenant Creation Interface"
+              width={1200}
+              height={800}
+            />
           </div>
         </div>
       ),
@@ -361,9 +389,25 @@ export default function DocsPage() {
     },
   ];
 
-  const [activeChapter, setActiveChapter] = useState(
-    chapters[0]?.id || "getting-started",
-  );
+  // Initialize from URL or default to first chapter
+  const [activeChapter, setActiveChapter] = useState(() => {
+    const chapterFromUrl = searchParams?.get("chapter");
+    return chapterFromUrl || chapters[0]?.id || "getting-started";
+  });
+
+  // Sync URL changes to state (for browser back/forward)
+  useEffect(() => {
+    const chapterFromUrl = searchParams?.get("chapter");
+    if (chapterFromUrl && chapterFromUrl !== activeChapter) {
+      setActiveChapter(chapterFromUrl);
+    }
+  }, [searchParams, activeChapter]);
+
+  // Function to change chapter and update URL
+  const changeChapter = (chapterId: string) => {
+    setActiveChapter(chapterId);
+    router.push(`/docs?chapter=${chapterId}`, { scroll: false });
+  };
 
   const currentChapter = chapters.find((ch) => ch.id === activeChapter);
 
@@ -400,7 +444,7 @@ export default function DocsPage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-grow px-6 w-full">
+      <main className="flex-grow px-6 w-full pb-4">
         <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-4 gap-4 mt-4">
           {/* Left Column - Chapter Navigation */}
           <aside className="sm:col-span-1 sm:self-start sm:sticky sm:top-19">
@@ -409,7 +453,7 @@ export default function DocsPage() {
                 {chapters.map((chapter) => (
                   <button
                     key={chapter.id}
-                    onClick={() => setActiveChapter(chapter.id)}
+                    onClick={() => changeChapter(chapter.id)}
                     className={`w-full sm:text-right uppercase tracking-widest text-xs px-2 py-1 rounded-xs transition-default ${
                       activeChapter === chapter.id
                         ? "bg-slate-800 text-gray-400 border border-slate-600 cursor-default"
@@ -439,7 +483,7 @@ export default function DocsPage() {
                           const currentIndex = chapters.findIndex(
                             (ch) => ch.id === activeChapter,
                           );
-                          setActiveChapter(chapters[currentIndex - 1]!.id);
+                          changeChapter(chapters[currentIndex - 1]!.id);
                         }}
                         className="uppercase hover:text-blue-300 transition-colors flex cursor-pointer items-center gap-2"
                       >
@@ -463,7 +507,7 @@ export default function DocsPage() {
                           const currentIndex = chapters.findIndex(
                             (ch) => ch.id === activeChapter,
                           );
-                          setActiveChapter(chapters[currentIndex + 1]!.id);
+                          changeChapter(chapters[currentIndex + 1]!.id);
                         }}
                         className="uppercase hover:text-blue-300 transition-colors flex cursor-pointer items-center gap-2"
                       >
