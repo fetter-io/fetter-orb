@@ -52,7 +52,8 @@ export default function DocsPage() {
           <h2 className={styles.chapterTitle}>Getting Started</h2>
 
           <p className={styles.bodyText}>
-            Fetter IO is a web-application for aggregating information about Python packages on all your (or your organization&apos;s) systems.
+            Fetter IO is a web-application for aggregating information about
+            Python packages on all your (or your organization&apos;s) systems.
             With this information, comprehensive supply-chain monitoring is
             possible. Fetter IO permits searching among all packages, displaying
             detailed vulnerability information, and applying a global allow
@@ -94,17 +95,18 @@ export default function DocsPage() {
           <h3 className={styles.sectionTitle}>Creating an Account</h3>
 
           <p className={styles.bodyText}>
-            For greater security, Fetter IO uses GitHub for identity management. After clicking the &ldquo;Sign in with GitHub&rdquo; button, providing GitHub credentials, and
-            accepting the terms, you will be provisioned an account and be presented with the Fetter IO
-            Console.
+            For greater security, Fetter IO uses GitHub for identity management.
+            After clicking the &ldquo;Sign in with GitHub&rdquo; button,
+            providing GitHub credentials, and accepting the terms, you will be
+            provisioned an account and be presented with the Fetter IO Console.
           </p>
 
           <h3 className={styles.sectionTitle}>Navigating the Console</h3>
 
           <p className={styles.bodyText}>
-            The Console features six tabs, as well as interfaces to select Tenant and
-            logout. Many tabs also feature a System selector and an update
-            button.
+            The Console features six tabs, as well as interfaces to select
+            Tenant and logout. Many tabs also feature a System selector and an
+            update button.
           </p>
 
           <div className={styles.infoBox}>
@@ -331,21 +333,29 @@ fetter --version`}</pre>
           <div className="space-y-4">
             <h3 className={styles.sectionTitle}>Running Your First Scan</h3>
             <p className={styles.bodyText}>
-              Now that you have installed <code>fetter</code> you can perform your first package scan. In Fetter IO Console, navigate to to the Tenant tab and, for the selected tenant, copy the complete command line under "Fetter CLI" by clicking on it. Execute that command in the terminal. It will look something like this:
+              Now that you have installed <code>fetter</code> you can perform
+              your first package scan. In Fetter IO Console, navigate to to the
+              Tenant tab and, for the selected tenant, copy the complete command
+              line under "Fetter CLI" by clicking on it. Execute that command in
+              the terminal. It will look something like this:
             </p>
-            <pre className={styles.codeBlock}>{`fetter monitor-scan --url https://fetter.io/monitor_scan --tenant ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff`}</pre>
+            <pre
+              className={styles.codeBlock}
+            >{`fetter monitor-scan --url https://fetter.io/monitor_scan --tenant ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff`}</pre>
 
             <p className={styles.bodyText}>
-              In general, no additional output will be provided. If you want to see logging information, provide the <code>--log</code> flag.
+              In general, no additional output will be provided. If you want to
+              see logging information, provide the <code>--log</code> flag.
             </p>
 
-            <pre className={styles.codeBlock}>{`fetter --log monitor-scan --url https://fetter.io/monitor_scan --tenant ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff`}</pre>
+            <pre
+              className={styles.codeBlock}
+            >{`fetter --log monitor-scan --url https://fetter.io/monitor_scan --tenant ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff`}</pre>
 
             <p className={styles.bodyText}>
-              With a package scan complete, we can return to the Fetter IO Console to examine the contents.
+              With a package scan complete, we can return to the Fetter IO
+              Console to examine the contents.
             </p>
-
-
           </div>
         </div>
       ),
