@@ -18,7 +18,7 @@ type Chapter = {
 // Reusable style definitions
 const styles = {
   chapterTitle: "text-xl font-bold text-white mb-2",
-  sectionTitle: "text-xl font-semibold text-gray-400 mb-2",
+  sectionTitle: "text-xl font-semibold text-slate-400/70 mb-2",
   bodyText: "text-gray-300 text-md leading-tight",
 
   infoBox: "bg-slate-800 rounded-sm px-4 py-2 border border-slate-700",
@@ -33,7 +33,7 @@ const styles = {
   orderedList: "list-decimal list-inside text-gray-300 space-y-0 px-4",
 
   codeBlock:
-    "bg-slate-950 px-2 py-1 rounded text-xs text-blue-400 font-semibold overflow-x-auto border border-slate-700",
+    "bg-slate-950 px-4 py-2 my-2 ml-2 rounded text-xs text-blue-300/80 font-semibold overflow-x-auto border border-slate-700",
 };
 
 export default function DocsPage() {
@@ -48,10 +48,14 @@ export default function DocsPage() {
       content: (
         <div className="space-y-4">
           <h2 className={styles.chapterTitle}>Getting Started</h2>
+
+
           <p className={styles.bodyText}>
-            This guide will help you get up and running with Fetter IO, a
-            supply-chain monitoring platform that provides comprehensive Python
-            package visibility across your system or your entire organization.
+            Fetter IO is a web-application for aggregating information about all the Python packages on all your (or your organizations) systems. With this information, comprehensive supply-chain monitoring is possible. Fetter IO permits searching among all packages, displaying detailed vulnerability information, and applying a global allow list.
+          </p>
+
+          <p className={styles.bodyText}>
+            This guide will help get up and running with Fetter IO, including creating an account, performing your first scan, and using the Fetter IO Console.
           </p>
 
           <div className={styles.infoBox}>
@@ -70,17 +74,25 @@ export default function DocsPage() {
                 account for authentication
               </li>
               <li>
+                Python or Rust tools (like <code>pip</code> or <code>cargo</code>) for installing packages or crates
+              </li>
+              <li>
                 One or more Python environments on a system running Linux or
                 MacOS
               </li>
+
             </ul>
           </div>
+
+          <h3 className={styles.sectionTitle}>Creating an Account</h3>
 
           <p className={styles.bodyText}>
             After clicking the &ldquo;Sign in with GitHub&rdquo; button and
             accepting the terms, you will be presented with the Fetter IO
             Console.
           </p>
+
+          <h3 className={styles.sectionTitle}>Navigating the Console</h3>
 
           <p className={styles.bodyText}>
             The Console features six tabs, as well as tools to select Tenant and
@@ -156,11 +168,11 @@ export default function DocsPage() {
           </ol>
 
           <div className={styles.infoBox}>
-            <h3 className={`${styles.sectionTitle} mb-2`}>Important</h3>
+            <h3 className={`${styles.sectionTitle} mb-2`}>Note</h3>
             <p className={styles.bodyText}>
-              Limit Tenant key access to those
-              who will post scans to your Tenant. The Tenant key cannot be used to access your account. Only the Tenant creator can
-              rename or modify certain tenant settings.
+              Limit Tenant key access to those who will post scans to your
+              Tenant. The Tenant key cannot be used to access your account. Only
+              the Tenant creator can rename or modify certain tenant settings.
             </p>
           </div>
 
@@ -174,14 +186,18 @@ export default function DocsPage() {
           </p>
 
           <ol className={styles.orderedList}>
-            <li>Using the <code>fetter</code> command-line application.</li>
-            <li>Installing the <code>fetter</code> endpoint agent as a service.</li>
+            <li>
+              Using the <code>fetter</code> command-line application.
+            </li>
+            <li>
+              Installing the <code>fetter</code> endpoint agent as a service.
+            </li>
           </ol>
 
           <p className={styles.bodyText}>
-            In the next section we use the <code>fetter</code> command-line application to post package scans.
+            In the next sections we use the <code>fetter</code> command-line
+            application to post package scans.
           </p>
-
 
           <div className={styles.screenshotBox}>
             <div className={styles.screenshotLabel}>
@@ -198,32 +214,49 @@ export default function DocsPage() {
       ),
     },
     {
-      id: "installing-agent",
-      title: "Installing the Agent",
+      id: "installing-fetter",
+      title: "Installing & Using Fetter",
       content: (
         <div className="space-y-4">
-          <h2 className={styles.chapterTitle}>Installing the Agent</h2>
+          <h2 className={styles.chapterTitle}>Installing & Using Fetter</h2>
+
           <p className={styles.bodyText}>
-            The Fetter agent is a lightweight Rust application that scans Python
-            environments and publishes package information to your tenant.
+            There are a number of ways to publish package information to Fetter
+            IO. To get started quickly, we can use the open-source{" "}
+            <code>fetter</code> command-line application.
+          </p>
+
+          <p className={styles.bodyText}>
+            The Fetter command-line application searches systems to find all
+            Python environments and packages. Using the{" "}
+            <code>monitor-scan</code> command, that scan data can be uploaded to
+            your Fetter IO Tenant.
+          </p>
+
+          <h3 className={styles.sectionTitle}>Installation Methods</h3>
+
+          <p className={styles.bodyText}>
+            For Python users, installing <code>fetter</code> with Python
+            packaging tools might be convenient.
           </p>
 
           <div className={styles.infoBox}>
-            <h3 className={`${styles.sectionTitle}`}>Installation Methods</h3>
-            <div className="space-y-4">
-              <div>
-                <h4 className="text-sm font-medium text-white mb-2">
-                  Using pip
-                </h4>
-                <pre className={styles.codeBlock}>pip install fetter</pre>
-              </div>
-              <div>
-                <h4 className="text-sm font-medium text-white mb-2">
-                  Using cargo
-                </h4>
-                <pre className={styles.codeBlock}>cargo install fetter</pre>
-              </div>
-            </div>
+            <h3 className={styles.sectionTitle}>
+              Installing with Python Tools
+            </h3>
+            <p className={styles.bodyText}>
+              If installing into a virtual environment or default{" "}
+              <code>site-packages</code>, use <code>pip</code>.
+            </p>
+            <pre className={styles.codeBlock}>pip install fetter</pre>
+
+            <p className={styles.bodyText}>
+              Alternatively the <code>uvx</code> command (part of{" "}
+              <code>uv</code>) can be used to perform an ephemeral install and
+              immediately run commands.
+            </p>
+
+            <pre className={styles.codeBlock}>uvx fetter -h</pre>
           </div>
 
           <div className="space-y-4">
@@ -236,14 +269,7 @@ export default function DocsPage() {
             </pre>
           </div>
 
-          <div className={styles.screenshotBox}>
-            <div className={styles.screenshotLabel}>
-              Screenshot placeholder:
-            </div>
-            <div className={styles.screenshotPlaceholder}>
-              [Agent Installation & Execution Screenshot]
-            </div>
-          </div>
+
         </div>
       ),
     },
@@ -278,15 +304,6 @@ export default function DocsPage() {
               systems have it installed. Click on a system to view all packages
               on that specific system.
             </p>
-          </div>
-
-          <div className={styles.screenshotBox}>
-            <div className={styles.screenshotLabel}>
-              Screenshot placeholder:
-            </div>
-            <div className={styles.screenshotPlaceholder}>
-              [Package Monitoring Dashboard Screenshot]
-            </div>
           </div>
         </div>
       ),
@@ -330,14 +347,6 @@ export default function DocsPage() {
             </p>
           </div>
 
-          <div className={styles.screenshotBox}>
-            <div className={styles.screenshotLabel}>
-              Screenshot placeholder:
-            </div>
-            <div className={styles.screenshotPlaceholder}>
-              [Vulnerability Dashboard Screenshot]
-            </div>
-          </div>
         </div>
       ),
     },
@@ -384,14 +393,6 @@ export default function DocsPage() {
             </ul>
           </div>
 
-          <div className={styles.screenshotBox}>
-            <div className={styles.screenshotLabel}>
-              Screenshot placeholder:
-            </div>
-            <div className={styles.screenshotPlaceholder}>
-              [Allow List Management Screenshot]
-            </div>
-          </div>
         </div>
       ),
     },
