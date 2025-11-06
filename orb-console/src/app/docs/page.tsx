@@ -34,6 +34,8 @@ const styles = {
 
   codeBlock:
     "bg-slate-950 px-4 py-2 my-2 ml-2 rounded text-xs text-blue-300/80 font-semibold overflow-x-auto border border-slate-700",
+
+  link: "text-slate-400 hover:text-blue-300",
 };
 
 export default function DocsPage() {
@@ -49,13 +51,19 @@ export default function DocsPage() {
         <div className="space-y-4">
           <h2 className={styles.chapterTitle}>Getting Started</h2>
 
-
           <p className={styles.bodyText}>
-            Fetter IO is a web-application for aggregating information about all the Python packages on all your (or your organizations) systems. With this information, comprehensive supply-chain monitoring is possible. Fetter IO permits searching among all packages, displaying detailed vulnerability information, and applying a global allow list.
+            Fetter IO is a web-application for aggregating information about all
+            the Python packages on all your (or your organizations) systems.
+            With this information, comprehensive supply-chain monitoring is
+            possible. Fetter IO permits searching among all packages, displaying
+            detailed vulnerability information, and applying a global allow
+            list.
           </p>
 
           <p className={styles.bodyText}>
-            This guide will help get up and running with Fetter IO, including creating an account, performing your first scan, and using the Fetter IO Console.
+            This guide will help get up and running with Fetter IO, including
+            creating an account, performing your first scan, and using the
+            Fetter IO Console.
           </p>
 
           <div className={styles.infoBox}>
@@ -67,20 +75,20 @@ export default function DocsPage() {
                   href="https://github.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-slate-400 hover:text-blue-300"
+                  className={styles.link}
                 >
                   GitHub
                 </a>{" "}
                 account for authentication
               </li>
               <li>
-                Python or Rust tools (like <code>pip</code> or <code>cargo</code>) for installing packages or crates
+                Python or Rust tools (like <code>pip</code> or{" "}
+                <code>cargo</code>) for installing packages or crates
               </li>
               <li>
                 One or more Python environments on a system running Linux or
                 MacOS
               </li>
-
             </ul>
           </div>
 
@@ -120,6 +128,7 @@ export default function DocsPage() {
         </div>
       ),
     },
+    //--------------------------------------------------------------------------
     {
       id: "creating-tenant",
       title: "Using & Creating Tenants",
@@ -213,6 +222,7 @@ export default function DocsPage() {
         </div>
       ),
     },
+    //--------------------------------------------------------------------------
     {
       id: "installing-fetter",
       title: "Installing & Using Fetter",
@@ -246,51 +256,102 @@ export default function DocsPage() {
             </h3>
             <p className={styles.bodyText}>
               If installing into a virtual environment or default{" "}
-              <code>site-packages</code>, use <code>pip</code>.
+              <code>site-packages</code>, use <code>pip</code>. Use{" "}
+              <code>fetter --version</code> to test your installation.
             </p>
-            <pre className={styles.codeBlock}>pip install fetter</pre>
+            <pre className={styles.codeBlock}>{`pip install fetter
+fetter --version`}</pre>
 
             <p className={styles.bodyText}>
-              Alternatively the <code>uvx</code> command (part of{" "}
-              <code>uv</code>) can be used to perform an ephemeral install and
-              immediately run commands.
+              Alternatively, <code>fetter</code> can be installed outside of any
+              virtual environment as a standalone binary via{" "}
+              <a
+                href="https://github.com/pypa/pipx"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.link}
+              >
+                <code>pipx</code>
+              </a>
+              . Calling <code>pipx ensurepath</code> might be necessary to
+              ensure the binary is discoverable.
             </p>
 
-            <pre className={styles.codeBlock}>uvx fetter -h</pre>
-          </div>
+            <pre className={styles.codeBlock}>{`pipx install fetter
+pipx ensurepath
+fetter --version`}</pre>
 
+            <p className={styles.bodyText}>
+              The most lightweight installation is possible with the{" "}
+              <code>uvx</code> command (part of{" "}
+              <a
+                href="https://docs.astral.sh/uv/getting-started/installation/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.link}
+              >
+                <code>uv</code>
+              </a>
+              ). With this approach, an ephemeral installation is provided upon
+              which commands can be immediately executed.
+            </p>
+
+            <pre className={styles.codeBlock}>{`uvx fetter --version`}</pre>
+          </div>
 
           <div className={styles.infoBox}>
-            <h3 className={styles.sectionTitle}>
-              Installing with Rust Tools
-            </h3>
+            <h3 className={styles.sectionTitle}>Installing with Rust Tools</h3>
             <p className={styles.bodyText}>
-              Using <code>cargo</code>, <code>fetter</code> can be compiled and installed directly. On most platforms this will put the <code>fetter</code> binary in a directory that is already in your binary search path.
+              Using{" "}
+              <a
+                href="https://doc.rust-lang.org/cargo/getting-started/installation.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.link}
+              >
+                <code>cargo</code>
+              </a>
+              , <code>fetter</code> can be compiled and installed directly. On
+              most platforms this will put the <code>fetter</code> command-line
+              application in a directory that is already in your binary search
+              path. Use <code>fetter --version</code> to test your installation.
             </p>
-            <pre className={styles.codeBlock}>cargo install fetter -v</pre>
+            <pre className={styles.codeBlock}>{`cargo install fetter
+fetter --version`}</pre>
 
             <p className={styles.bodyText}>
-              To specify an alternative <code>bin</code> location, provide a different <code>--root</code>:
+              To specify an alternative <code>bin</code> location, provide a
+              different <code>--root</code>:
             </p>
-            <pre className={styles.codeBlock}>sudo cargo install --root /usr/local fetter</pre>
-
+            <pre
+              className={styles.codeBlock}
+            >{`sudo cargo install --root /usr/local fetter
+fetter --version`}</pre>
           </div>
-
 
           <div className="space-y-4">
             <h3 className={styles.sectionTitle}>Running Your First Scan</h3>
-            <p className="text-gray-300">
-              Once installed, run fetter with your tenant key:
+            <p className={styles.bodyText}>
+              Now that you have installed <code>fetter</code> you can perform your first package scan. In Fetter IO Console, navigate to to the Tenant tab and, for the selected tenant, copy the complete command line under "Fetter CLI" by clicking on it. Execute that command in the terminal. It will look something like this:
             </p>
-            <pre className={styles.codeBlock}>
-              fetter publish --key YOUR_TENANT_KEY
-            </pre>
+            <pre className={styles.codeBlock}>{`fetter monitor-scan --url https://fetter.io/monitor_scan --tenant ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff`}</pre>
+
+            <p className={styles.bodyText}>
+              In general, no additional output will be provided. If you want to see logging information, provide the <code>--log</code> flag.
+            </p>
+
+            <pre className={styles.codeBlock}>{`fetter --log monitor-scan --url https://fetter.io/monitor_scan --tenant ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff`}</pre>
+
+            <p className={styles.bodyText}>
+              With a package scan complete, we can return to the Fetter IO Console to examine the contents.
+            </p>
+
+
           </div>
-
-
         </div>
       ),
     },
+    //--------------------------------------------------------------------------
     {
       id: "monitoring-packages",
       title: "Monitoring Packages",
@@ -364,7 +425,6 @@ export default function DocsPage() {
               which systems need updates.
             </p>
           </div>
-
         </div>
       ),
     },
@@ -410,7 +470,6 @@ export default function DocsPage() {
               </li>
             </ul>
           </div>
-
         </div>
       ),
     },
