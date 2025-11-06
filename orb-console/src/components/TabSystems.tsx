@@ -62,8 +62,7 @@ export function TabSystems({
     [filteredSystems, systemTagsState.data],
   );
 
-  // Responsive list height - dynamic based on content
-
+  // Responsive list height
   const [listPxHeight, setListPxHeight] = useState<number>(() => {
     if (typeof window === "undefined") return 560; // first paint fallback
     return Math.max(

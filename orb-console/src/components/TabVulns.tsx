@@ -64,7 +64,7 @@ export function TabVulns({
     [filteredAuditData],
   );
 
-  // Responsive list height - dynamic based on content
+  // Responsive list height
   const [listPxHeight, setListPxHeight] = useState<number>(() => {
     if (typeof window === "undefined") return 560; // first paint fallback
     return Math.max(
@@ -72,11 +72,6 @@ export function TabVulns({
       Math.floor(window.innerHeight * VIEWPORT_FRACTION),
     );
   });
-
-  // const [viewportHeight, setViewportHeight] = useState<number>(() => {
-  //   if (typeof window === "undefined") return 560;
-  //   return window.innerHeight;
-  // });
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -90,7 +85,6 @@ export function TabVulns({
             Math.floor(window.innerHeight * VIEWPORT_FRACTION),
           ),
         );
-        // setViewportHeight(window.innerHeight);
       });
     };
     window.addEventListener("resize", onResize, { passive: true });
@@ -99,19 +93,6 @@ export function TabVulns({
       window.removeEventListener("resize", onResize);
     };
   }, []);
-
-  // Calculate height based on number of items
-  // Estimate ~140px per vuln card (collapsed), with max and min bounds
-  // const ESTIMATED_CARD_HEIGHT = 140;
-  // const listPxHeight = useMemo(() => {
-  //   const itemCount = safeAuditData.length;
-  //   if (itemCount === 0) return MIN_LIST_PX;
-
-  //   const estimatedContentHeight = itemCount * ESTIMATED_CARD_HEIGHT;
-  //   const maxHeight = Math.floor(viewportHeight * VIEWPORT_FRACTION);
-
-  //   return Math.max(MIN_LIST_PX, Math.min(estimatedContentHeight, maxHeight));
-  // }, [safeAuditData.length, viewportHeight]);
 
   // Stable render function for items
   const renderItem = useCallback(
