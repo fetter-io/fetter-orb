@@ -701,7 +701,7 @@ export default function Dashboard() {
       </header>
 
       {/* Main scrollable content */}
-      <main className="flex-grow px-6 py-4">
+      <main className="flex-1 overflow-y-auto px-6 py-4">
         <div className="max-w-4xl mx-auto flex flex-col gap-4">
           {activeTab === "packages" && (
             <TabPackages
