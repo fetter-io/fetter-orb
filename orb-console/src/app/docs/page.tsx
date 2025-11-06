@@ -259,6 +259,24 @@ export default function DocsPage() {
             <pre className={styles.codeBlock}>uvx fetter -h</pre>
           </div>
 
+
+          <div className={styles.infoBox}>
+            <h3 className={styles.sectionTitle}>
+              Installing with Rust Tools
+            </h3>
+            <p className={styles.bodyText}>
+              Using <code>cargo</code>, <code>fetter</code> can be compiled and installed directly. On most platforms this will put the <code>fetter</code> binary in a directory that is already in your binary search path.
+            </p>
+            <pre className={styles.codeBlock}>cargo install fetter -v</pre>
+
+            <p className={styles.bodyText}>
+              To specify an alternative <code>bin</code> location, provide a different <code>--root</code>:
+            </p>
+            <pre className={styles.codeBlock}>sudo cargo install --root /usr/local fetter</pre>
+
+          </div>
+
+
           <div className="space-y-4">
             <h3 className={styles.sectionTitle}>Running Your First Scan</h3>
             <p className="text-gray-300">
