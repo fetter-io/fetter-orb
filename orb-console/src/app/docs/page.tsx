@@ -19,7 +19,8 @@ type Chapter = {
 // Reusable style definitions
 const styles = {
   chapterTitle: "text-xl font-bold text-white mb-2",
-  sectionTitle: "text-xl font-semibold text-slate-400/80 mb-2 mt-6 border-t-2 border-slate-500/50",
+  sectionTitle:
+    "text-xl font-semibold text-slate-400/80 mb-2 mt-6 border-t-2 border-slate-500/50",
   infoBoxTitle: "text-xl font-semibold text-slate-400/80 mb-2",
   warningBoxTitle: "text-lg font-semibold text-yellow-400 mb-2",
   bodyText: "text-gray-300 text-md leading-tight",
@@ -351,7 +352,8 @@ fetter --version`}</pre>
 
             <p className={styles.bodyText}>
               To specify an alternative <code>bin</code> location, provide a
-              different <code>--root</code>. For example, the command below installs <code>fetter</code> in <code>/usr/local/bin</code>:
+              different <code>--root</code>. For example, the command below
+              installs <code>fetter</code> in <code>/usr/local/bin</code>:
             </p>
             <pre
               className={styles.codeBlock}
