@@ -626,7 +626,7 @@ fetter --version`}</pre>
       </main>
 
       {/* Footer */}
-      <footer className="bg-slate-950 border-t border-slate-700 px-6 py-4">
+      <footer className="bg-slate-950 border-t border-slate-700 px-6 py-2">
         <div className="max-w-4xl mx-auto">
           <Footer />
         </div>

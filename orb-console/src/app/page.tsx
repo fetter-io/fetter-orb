@@ -102,7 +102,7 @@ export default function LandingPage() {
         reverse={true}
       />
 
-      <footer className="bg-slate-950 border-t border-slate-700 px-6 py-4">
+      <footer className="bg-slate-950 border-t border-slate-700 px-6 py-2">
         <Footer />
       </footer>
     </main>
