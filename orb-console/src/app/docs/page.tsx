@@ -98,9 +98,9 @@ export default function DocsPage() {
 
           <p className={styles.bodyText}>
             For greater security, Fetter IO uses GitHub for identity management.
-            After clicking the &quot;Sign in with GitHub&quot; button,
-            providing GitHub credentials, and accepting the terms, you will be
-            provisioned an account and be presented with the Fetter IO Console.
+            After clicking the &quot;Sign in with GitHub&quot; button, providing
+            GitHub credentials, and accepting the terms, you will be provisioned
+            an account and be presented with the Fetter IO Console.
           </p>
 
           <h3 className={styles.sectionTitle}>Navigating the Console</h3>
@@ -132,13 +132,18 @@ export default function DocsPage() {
           <h3 className={styles.sectionTitle}>Managing Your Account</h3>
 
           <p className={styles.bodyText}>
-            The Account tab (⚙️) displays all information specific to your account, including GitHub login and optionally GitHub email and name. You can delete your account and all associated data at any time with the &quot;Delete Account&quot; button; this operation cannot be undone.
+            The Account tab (⚙️) displays all information specific to your
+            account, including GitHub login and optionally GitHub email and
+            name. You can delete your account and all associated data at any
+            time with the &quot;Delete Account&quot; button; this operation
+            cannot be undone.
           </p>
 
           <div className={styles.warningBox}>
             <h3 className={styles.warningTitle}>Note</h3>
             <p className={styles.bodyText}>
-              Fetter IO will never share or sell your information with third-parties unless required by law.
+              Fetter IO will never share or sell your information with
+              third-parties unless required by law.
             </p>
           </div>
 
@@ -147,7 +152,6 @@ export default function DocsPage() {
           <p className={styles.bodyText}>
             In the next section we will learn how to use and create Tenants.
           </p>
-
         </div>
       ),
     },
@@ -244,8 +248,6 @@ export default function DocsPage() {
             In the next sections we use the <code>fetter</code> command-line
             application to post package scans.
           </p>
-
-
         </div>
       ),
     },
@@ -362,9 +364,10 @@ fetter --version`}</pre>
             <p className={styles.bodyText}>
               Now that you have installed <code>fetter</code> you can perform
               your first package scan. In Fetter IO Console, navigate to to the
-              Tenant tab (🏢) and, for the selected tenant, copy the complete command
-              line under &quot;Fetter CLI&quot; by clicking on it. Execute that
-              command in the terminal. It will look something like this (your Tenant key will not be <code>ffffffff...</code>)  :
+              Tenant tab (🏢) and, for the selected tenant, copy the complete
+              command line under &quot;Fetter CLI&quot; by clicking on it.
+              Execute that command in the terminal. It will look something like
+              this (your Tenant key will not be <code>ffffffff...</code>) :
             </p>
             <pre
               className={styles.codeBlock}
@@ -379,7 +382,7 @@ fetter --version`}</pre>
               className={styles.codeBlock}
             >{`fetter --log monitor-scan --url https://fetter.io/monitor_scan --tenant ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff`}</pre>
 
-          <h3 className={styles.sectionTitle}>Up Next</h3>
+            <h3 className={styles.sectionTitle}>Up Next</h3>
 
             <p className={styles.bodyText}>
               With a package scan complete, we can return to the Fetter IO
@@ -454,9 +457,7 @@ fetter --version`}</pre>
           </div>
 
           <div className={styles.warningBox}>
-            <h3 className={styles.warningTitle}>
-              Best Practices
-            </h3>
+            <h3 className={styles.warningTitle}>Best Practices</h3>
             <p className="text-gray-300">
               Review the Vulns tab regularly and prioritize addressing
               high-severity vulnerabilities. Use the package details to identify
