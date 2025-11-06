@@ -158,16 +158,19 @@ export default function DocsPage() {
           <div className={styles.infoBox}>
             <h3 className={`${styles.sectionTitle} mb-2`}>Important Note</h3>
             <p className={styles.bodyText}>
-              Treat your Tenant key as a secret, keeping access limited to
-              those who will post scans to your Tenant. Only the tenant creator can rename or
-              modify certain tenant settings.
+              Treat your Tenant key as a secret, keeping access limited to those
+              who will post scans to your Tenant. Only the tenant creator can
+              rename or modify certain tenant settings.
             </p>
           </div>
 
           <h3 className={styles.sectionTitle}>Tenant Usage & Display</h3>
 
           <p className={styles.bodyText}>
-            Every Tenant associated with your account will be listed in the Tenant tab. The display provides the name, key, and number of updates per day, as well as two ways to post scan data to the Tenant.
+            Every Tenant associated with your account will be listed in the
+            Tenant tab. The display provides the name, key, and number of
+            updates per day, as well as two ways to post scan data to the
+            Tenant.
           </p>
 
           <ol className={styles.orderedList}>
