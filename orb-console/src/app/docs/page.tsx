@@ -19,12 +19,13 @@ type Chapter = {
 // Reusable style definitions
 const styles = {
   chapterTitle: "text-xl font-bold text-white mb-2",
-  sectionTitle: "text-xl font-semibold text-slate-400/80 mb-2",
-  warningTitle: "text-lg font-semibold text-yellow-400 mb-2",
+  sectionTitle: "text-xl font-semibold text-slate-400/80 mb-2 mt-6 border-t-2 border-slate-500/50",
+  infoBoxTitle: "text-xl font-semibold text-slate-400/80 mb-2",
+  warningBoxTitle: "text-lg font-semibold text-yellow-400 mb-2",
   bodyText: "text-gray-300 text-md leading-tight",
 
   infoBox: "bg-slate-800 rounded-sm px-4 py-2 border border-slate-700",
-  warningBox: "bg-yellow-900/20 border border-yellow-800 rounded-sm p-4",
+  warningBox: "bg-yellow-900/20 border border-yellow-800 rounded-sm py-2 px-4",
 
   screenshotBox: "px-0 pt-2",
   screenshotLabel: "text-gray-400 text-sm",
@@ -69,7 +70,7 @@ export default function DocsPage() {
           </p>
 
           <div className={styles.infoBox}>
-            <h3 className={`${styles.sectionTitle}`}>Prerequisites</h3>
+            <h3 className={`${styles.infoBoxTitle}`}>Prerequisites</h3>
             <ul className={styles.list}>
               <li>
                 A{" "}
@@ -112,7 +113,7 @@ export default function DocsPage() {
           </p>
 
           <div className={styles.infoBox}>
-            <h3 className={styles.sectionTitle}>Console Tabs</h3>
+            <h3 className={styles.infoBoxTitle}>Console Tabs</h3>
             <ul className={styles.list}>
               <li>📦 Packages</li>
               <li>⚠️ Vulnerabilities</li>
@@ -140,7 +141,7 @@ export default function DocsPage() {
           </p>
 
           <div className={styles.warningBox}>
-            <h3 className={styles.warningTitle}>Note</h3>
+            <h3 className={styles.warningBoxTitle}>Note</h3>
             <p className={styles.bodyText}>
               Fetter IO will never share or sell your information with
               third-parties unless required by law.
@@ -204,7 +205,7 @@ export default function DocsPage() {
           </ol>
 
           <div className={styles.warningBox}>
-            <h3 className={styles.warningTitle}>Note</h3>
+            <h3 className={styles.warningBoxTitle}>Note</h3>
             <p className={styles.bodyText}>
               Limit Tenant key access to those who will post scans to your
               Tenant. The Tenant key cannot be used to access your account. Only
@@ -280,7 +281,7 @@ export default function DocsPage() {
           </p>
 
           <div className={styles.infoBox}>
-            <h3 className={styles.sectionTitle}>
+            <h3 className={styles.infoBoxTitle}>
               Installing with Python Tools
             </h3>
             <p className={styles.bodyText}>
@@ -329,7 +330,7 @@ fetter --version`}</pre>
           </div>
 
           <div className={styles.infoBox}>
-            <h3 className={styles.sectionTitle}>Installing with Rust Tools</h3>
+            <h3 className={styles.infoBoxTitle}>Installing with Rust Tools</h3>
             <p className={styles.bodyText}>
               Using{" "}
               <a
@@ -350,7 +351,7 @@ fetter --version`}</pre>
 
             <p className={styles.bodyText}>
               To specify an alternative <code>bin</code> location, provide a
-              different <code>--root</code>:
+              different <code>--root</code>. For example, the command below installs <code>fetter</code> in <code>/usr/local/bin</code>:
             </p>
             <pre
               className={styles.codeBlock}
@@ -405,7 +406,7 @@ fetter --version`}</pre>
           </p>
 
           <div className={styles.infoBox}>
-            <h3 className={`${styles.sectionTitle}`}>Key Features</h3>
+            <h3 className={`${styles.infoBoxTitle}`}>Key Features</h3>
             <ul className={styles.list}>
               <li>View all package versions across your organization</li>
               <li>See which systems have which packages installed</li>
@@ -441,7 +442,7 @@ fetter --version`}</pre>
           </p>
 
           <div className={styles.infoBox}>
-            <h3 className={`${styles.sectionTitle}`}>
+            <h3 className={`${styles.infoBoxTitle}`}>
               Vulnerability Information
             </h3>
             <p className={`${styles.bodyText} mb-2`}>
@@ -457,7 +458,7 @@ fetter --version`}</pre>
           </div>
 
           <div className={styles.warningBox}>
-            <h3 className={styles.warningTitle}>Best Practices</h3>
+            <h3 className={styles.warningBoxTitle}>Best Practices</h3>
             <p className="text-gray-300">
               Review the Vulns tab regularly and prioritize addressing
               high-severity vulnerabilities. Use the package details to identify
@@ -493,7 +494,7 @@ fetter --version`}</pre>
           </div>
 
           <div className={styles.infoBox}>
-            <h3 className={`${styles.sectionTitle}`}>Validation Categories</h3>
+            <h3 className={`${styles.infoBoxTitle}`}>Validation Categories</h3>
             <ul className={styles.list}>
               <li className="flex items-center gap-2">
                 <AllowIcon status="missing" />
