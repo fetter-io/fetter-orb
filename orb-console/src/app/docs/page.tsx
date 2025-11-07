@@ -361,37 +361,42 @@ fetter --version`}</pre>
 fetter --version`}</pre>
           </div>
 
-          <div className="space-y-4">
-            <h3 className={styles.sectionTitle}>Running Your First Scan</h3>
+          <h3 className={styles.sectionTitle}>Running Your First Scan</h3>
 
-            <p className={styles.bodyText}>
-              Now that you have installed <code>fetter</code> you can perform
-              your first package scan. In Fetter IO Console, navigate to to the
-              Tenant tab (🏢) and, for the selected tenant, copy the complete
-              command line under &quot;Fetter CLI&quot; by clicking on it.
-              Execute that command in the terminal. It will look something like
-              this (your Tenant key will not be <code>ffffffff...</code>) :
-            </p>
-            <pre
-              className={styles.codeBlock}
-            >{`fetter monitor-scan --url https://fetter.io/monitor_scan --tenant ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff`}</pre>
+          <p className={styles.bodyText}>
+            Now that you have installed <code>fetter</code> you can perform your
+            first package scan. In Fetter IO Console, navigate to to the Tenant
+            tab (🏢) and, for the selected tenant, copy the complete command
+            line under &quot;Fetter CLI&quot; by clicking on it. Execute that
+            command in the terminal. It will look something like this (your
+            Tenant key will not be <code>ffffffff...</code>) :
+          </p>
+          <pre
+            className={styles.codeBlock}
+          >{`fetter monitor-scan --url https://fetter.io/monitor_scan --tenant ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff`}</pre>
 
-            <p className={styles.bodyText}>
-              In general, no additional output will be provided. If you want to
-              see logging information, provide the <code>--log</code> flag.
-            </p>
+          <p className={styles.bodyText}>
+            In general, no additional output will be provided. If you want to
+            see logging information, provide the <code>--log</code> flag.
+          </p>
 
-            <pre
-              className={styles.codeBlock}
-            >{`fetter --log monitor-scan --url https://fetter.io/monitor_scan --tenant ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff`}</pre>
+          <pre
+            className={styles.codeBlock}
+          >{`fetter --log monitor-scan --url https://fetter.io/monitor_scan --tenant ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff`}</pre>
 
-            <h3 className={styles.sectionTitle}>Up Next</h3>
+          <h3 className={styles.sectionTitle}>Automating Scans</h3>
 
-            <p className={styles.bodyText}>
-              With a package scan complete, we can return to the Fetter IO
-              Console to examine the uploaded data.
-            </p>
-          </div>
+          <p className={styles.bodyText}>
+            The <code>fetter</code> command-line app can be set up to run automatically on schedule through a a number of means. An installer of a background service will also be available in the future.
+          </p>
+
+
+          <h3 className={styles.sectionTitle}>Up Next</h3>
+
+          <p className={styles.bodyText}>
+            With a package scan complete, we can return to the Fetter IO Console
+            to examine the uploaded data.
+          </p>
         </div>
       ),
     },
