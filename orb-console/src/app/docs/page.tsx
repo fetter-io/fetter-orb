@@ -431,7 +431,9 @@ fetter --version`}</pre>
           <div className={styles.warningBox}>
             <h3 className={styles.warningBoxTitle}>Best Practices</h3>
             <p className="text-gray-300">
-              The plot of unique package counts is an important signal: significant changes in the count of packages can indicate the installation of new requirements for previously unseen project.
+              The plot of unique package counts is an important signal:
+              significant changes in the count of packages can indicate the
+              installation of new requirements for previously unseen project.
             </p>
           </div>
 
@@ -559,25 +561,29 @@ fetter --version`}</pre>
           <h2 className={styles.chapterTitle}>Managing Allow Lists</h2>
 
           <p className={styles.bodyText}>
-            The Allow List tab (🔓) permits the specification of an allow list that can be applied to all packages observed on all systems. The allow list can be defined explicitly, via a URL to a git repository (for seprately defining and tracking the allow list), or derived on the fly from the minimum version of all observed packages.
+            The Allow List tab (🔓) permits the specification of an allow list
+            that can be applied to all packages observed on all systems. The
+            allow list can be defined explicitly, via a URL to a git repository
+            (for seprately defining and tracking the allow list), or derived on
+            the fly from the minimum version of all observed packages.
           </p>
 
           <div className={styles.infoBox}>
             <h3 className={`${styles.infoBoxTitle}`}>Key Features</h3>
             <ul className={styles.list}>
               <li>
-                View a chart of counts of missing, misdefined, unrequired, and allowed pacakges.
+                View a chart of counts of missing, misdefined, unrequired, and
+                allowed pacakges.
               </li>
               <li>Directly edit the allow list or derive it dynamically.</li>
-              <li>Permit superset or subset deviations from the allow list.
-              </li>
-              <li>Browse all packages in each validation category,
-              </li>
+              <li>Permit superset or subset deviations from the allow list.</li>
+              <li>Browse all packages in each validation category,</li>
             </ul>
           </div>
 
           <p className={styles.bodyText}>
-            When evaluating packages in relation to an allow list, the following four categories are defined.
+            When evaluating packages in relation to an allow list, the following
+            four categories are defined.
           </p>
 
           <div className={styles.infoBox}>
@@ -602,24 +608,29 @@ fetter --version`}</pre>
             </ul>
           </div>
 
-
           <div className={styles.warningBox}>
             <h3 className={styles.warningBoxTitle}>Best Practices</h3>
             <p className="text-gray-300">
-              A global allow list may require frequent revision. Use automatic allow list derivation to reset contraints after evaluating incremental changes.
+              A global allow list may require frequent revision. Use automatic
+              allow list derivation to reset contraints after evaluating
+              incremental changes.
             </p>
           </div>
 
           <h3 className={styles.sectionTitle}>The Allow List Plot</h3>
           <p className={styles.bodyText}>
-            The top of the Allow List tab (🔓) displays a horizontal bar chart of
-            the counts packages per validation category: Missing, Misdefined, Unrequired, and Allowed. By clicking on a bar, the details of packages in that category will be displayed.
+            The top of the Allow List tab (🔓) displays a horizontal bar chart
+            of the counts packages per validation category: Missing, Misdefined,
+            Unrequired, and Allowed. By clicking on a bar, the details of
+            packages in that category will be displayed.
           </p>
 
           <h3 className={styles.sectionTitle}>Creating an Allow List</h3>
 
           <p className={styles.bodyText}>
-            The Allow List component displays the current allow list. By clicking the Edit button, the list can be edited or automatically derived.
+            The Allow List component displays the current allow list. By
+            clicking the Edit button, the list can be edited or automatically
+            derived.
           </p>
 
           <ol className={styles.orderedList}>
@@ -637,9 +648,10 @@ fetter --version`}</pre>
             Package Details Per Validation Category
           </h3>
           <p className={styles.bodyText}>
-            Four each of the four validation categories, The Allow List tab (🔓) list every package in that category. Each listing provides link the package and system from which that package is observed.
+            Four each of the four validation categories, The Allow List tab (🔓)
+            list every package in that category. Each listing provides link the
+            package and system from which that package is observed.
           </p>
-
 
           <h3 className={styles.sectionTitle}>
             Isolating Systems & Reloading Data
@@ -649,8 +661,6 @@ fetter --version`}</pre>
             desired, the drop-down in the upper left can be used to filter
             results to a single system.
           </p>
-
-
         </div>
       ),
     },
