@@ -181,7 +181,7 @@ export default function DocsPage() {
           </p>
 
           <ul className={styles.list}>
-            <li>Name: A label that can be renamed only by the Tenant. owner</li>
+            <li>Name: A label that can be renamed only by the Tenant.</li>
             <li>Key: A 64-character code unique to this Tenant.</li>
             <li>
               Updates per day: The maximum number of times systems can post
@@ -263,18 +263,16 @@ export default function DocsPage() {
 
           <p className={styles.bodyText}>
             There are a number of ways to publish package information to Fetter
-            IO. To get started quickly, we can use the open-source{" "}
-            <code>fetter</code> command-line application.
+            IO with the open-source <code>fetter</code> command-line application. In the example below we will install and call <code>fetter</code> directly.
           </p>
 
           <p className={styles.bodyText}>
             The Fetter command-line application searches systems to find all
-            Python environments and packages. Using the{" "}
-            <code>monitor-scan</code> command, that scan data can be uploaded to
+            Python environments and packages. Using the <code>monitor-scan</code> command, that scan data can be uploaded to
             your Fetter IO Tenant.
           </p>
 
-          <h3 className={styles.sectionTitle}>Installation Methods</h3>
+          <h3 className={styles.sectionTitle}>Installing Fetter</h3>
 
           <p className={styles.bodyText}>
             For Python users, installing <code>fetter</code> with Python
@@ -283,7 +281,7 @@ export default function DocsPage() {
 
           <div className={styles.infoBox}>
             <h3 className={styles.infoBoxTitle}>
-              Installing with Python Tools
+              Python Installation
             </h3>
             <p className={styles.bodyText}>
               If installing into a virtual environment or default{" "}
@@ -331,7 +329,7 @@ fetter --version`}</pre>
           </div>
 
           <div className={styles.infoBox}>
-            <h3 className={styles.infoBoxTitle}>Installing with Rust Tools</h3>
+            <h3 className={styles.infoBoxTitle}>Rust Installation</h3>
             <p className={styles.bodyText}>
               Using{" "}
               <a
@@ -364,10 +362,10 @@ fetter --version`}</pre>
           <h3 className={styles.sectionTitle}>Running Your First Scan</h3>
 
           <p className={styles.bodyText}>
-            Now that you have installed <code>fetter</code> you can perform your
-            first package scan. In Fetter IO Console, navigate to to the Tenant
-            tab (🏢) and, for the selected tenant, copy the complete command
-            line under &quot;Fetter CLI&quot; by clicking on it. Execute that
+            After installing <code>fetter</code> you can perform your
+            first system-wide package scan. In the Fetter IO Console, navigate to to the Tenant
+            tab (🏢) and, for the selected tenant, copy (by clicking on it) the complete command
+            line under &quot;Fetter CLI&quot;. Execute that
             command in the terminal. It will look something like this (your
             Tenant key will not be <code>ffffffff...</code>) :
           </p>
@@ -387,7 +385,7 @@ fetter --version`}</pre>
           <h3 className={styles.sectionTitle}>Automating Scans</h3>
 
           <p className={styles.bodyText}>
-            The <code>fetter</code> command-line app can be set up to run automatically on schedule through a a number of means. An installer of a background service will also be available in the future.
+            There are many ways to set up the <code>fetter</code> command-line app to be run automatically or on a schedule. An installer of a background service will also be available in the future.
           </p>
 
 
@@ -408,31 +406,53 @@ fetter --version`}</pre>
         <div className="space-y-4">
           <h2 className={styles.chapterTitle}>Monitoring Packages</h2>
           <p className={styles.bodyText}>
-            The Packages tab provides a comprehensive view of all Python
+            The Packages tab (📦) provides a comprehensive view of all Python
             packages installed across your monitored systems.
           </p>
 
           <div className={styles.infoBox}>
             <h3 className={`${styles.infoBoxTitle}`}>Key Features</h3>
             <ul className={styles.list}>
-              <li>View all package versions across your organization</li>
-              <li>See which systems have which packages installed</li>
-              <li>Track package installation paths</li>
-              <li>Filter by package name or version</li>
-              <li>Identify version drift across systems</li>
+              <li>View a plot of unique package counts over historical scans.</li>
+              <li>Search among installed packages.</li>
+              <li>See which systems and environments have each package.</li>
+              <li>See vulnerabilities and CVS scores associated with packages.</li>
+              <li>See package alignment to this Tenant&apos;s allow list.</li>
+              <li>Optionally view packages for a single system.</li>
             </ul>
           </div>
 
-          <div className="space-y-4">
-            <h3 className={styles.sectionTitle}>
-              Understanding the Package View
-            </h3>
-            <p className={styles.bodyText}>
-              Each package entry shows the package name, version, and which
-              systems have it installed. Click on a system to view all packages
-              on that specific system.
-            </p>
-          </div>
+          <h3 className={styles.sectionTitle}>
+            The Package Count Plot
+          </h3>
+          <p className={styles.bodyText}>
+            Each package entry shows the package name, version, and which
+            systems have it installed. Click on a system to view all packages
+            on that specific system.
+          </p>
+
+          <h3 className={styles.sectionTitle}>
+            The Search Interface
+          </h3>
+          <p className={styles.bodyText}>
+            x.
+          </p>
+
+
+          <h3 className={styles.sectionTitle}>
+            Package Details
+          </h3>
+          <p className={styles.bodyText}>
+            x.
+          </p>
+
+          <h3 className={styles.sectionTitle}>
+            Isolating Systems & Reloading Data
+          </h3>
+          <p className={styles.bodyText}>
+            x.
+          </p>
+
         </div>
       ),
     },
@@ -441,9 +461,11 @@ fetter --version`}</pre>
       title: "Tracking Vulnerabilities",
       content: (
         <div className="space-y-4">
+
           <h2 className={styles.chapterTitle}>Tracking Vulnerabilities</h2>
           <p className={styles.bodyText}>
-            Fetter IO continuously monitors your packages against the Open
+            The Vulnerabilities tab (⚠️) provides full details of all vulnerabilities associated with installed packages across all systems.
+             Fetter IO continuously monitors your packages against the Open
             Source Vulnerability (OSV) database to identify security issues in
             real-time.
           </p>
@@ -486,7 +508,6 @@ fetter --version`}</pre>
             that don&apos;t conform to your allow list policy.
           </p>
 
-          <div className="space-y-4">
             <h3 className={styles.sectionTitle}>Creating an Allow List</h3>
             <ol className={styles.orderedList}>
               <li className="pl-4">Navigate to the Allow tab</li>
@@ -498,7 +519,6 @@ fetter --version`}</pre>
                 Review validation results to identify non-compliant packages
               </li>
             </ol>
-          </div>
 
           <div className={styles.infoBox}>
             <h3 className={`${styles.infoBoxTitle}`}>Validation Categories</h3>
