@@ -26,7 +26,8 @@ const styles = {
   bodyText: "text-gray-300 text-md leading-tight",
 
   infoBox: "bg-slate-800 rounded-sm px-4 py-2 border border-slate-700",
-  warningBox: "bg-yellow-900/20 border border-yellow-800 rounded-sm py-2 px-4 leading-tight",
+  warningBox:
+    "bg-yellow-900/20 border border-yellow-800 rounded-sm py-2 px-4 leading-tight",
 
   screenshotBox: "px-0 pt-2",
   screenshotLabel: "text-gray-400 text-sm",
@@ -584,7 +585,8 @@ fetter --version`}</pre>
 
           <p className={styles.bodyText}>
             When evaluating packages in relation to an allow list, the following
-            four categories are defined. These icons are displayed with package names in the Packages tab (📦).
+            four categories are defined. These icons are displayed with package
+            names in the Packages tab (📦).
           </p>
 
           <div className={styles.infoBox}>
@@ -600,7 +602,10 @@ fetter --version`}</pre>
               </li>
               <li className="flex items-center gap-2">
                 <AllowIcon status="misdefined" />
-                <span>Misdefined: A required package is installed with an invalid version.</span>
+                <span>
+                  Misdefined: A required package is installed with an invalid
+                  version.
+                </span>
               </li>
               <li className="flex items-center gap-2">
                 <AllowIcon status="allowed" />
@@ -673,8 +678,8 @@ fetter --version`}</pre>
         <div className="space-y-4">
           <h2 className={styles.chapterTitle}>Observing Systems</h2>
           <p className={styles.bodyText}>
-            The Systems tab (🖥️) provides full details of all
-            vulnerabilities associated with all observed packages.
+            The Systems tab (🖥️) provides full details of all vulnerabilities
+            associated with all observed packages.
           </p>
 
           <div className={styles.infoBox}>
@@ -698,9 +703,7 @@ fetter --version`}</pre>
 
           <div className={styles.warningBox}>
             <h3 className={styles.warningBoxTitle}>Best Practices</h3>
-            <p className="text-gray-300">
-              Review the Systems tab...
-            </p>
+            <p className="text-gray-300">Review the Systems tab...</p>
           </div>
 
           <h3 className={styles.sectionTitle}>The Vulnerability Count Plot</h3>
@@ -709,20 +712,13 @@ fetter --version`}</pre>
           </p>
 
           <h3 className={styles.sectionTitle}>System Details</h3>
-          <p className={styles.bodyText}>
-            Pass...
-          </p>
+          <p className={styles.bodyText}>Pass...</p>
 
-          <h3 className={styles.sectionTitle}>
-            Reloading Data
-          </h3>
-          <p className={styles.bodyText}>
-            Pass...
-          </p>
+          <h3 className={styles.sectionTitle}>Reloading Data</h3>
+          <p className={styles.bodyText}>Pass...</p>
         </div>
       ),
     },
-
   ];
 
   // Initialize from URL or default to first chapter
