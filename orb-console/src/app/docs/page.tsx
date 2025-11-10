@@ -26,7 +26,7 @@ const styles = {
   bodyText: "text-gray-300 text-md leading-tight",
 
   infoBox: "bg-slate-800 rounded-sm px-4 py-2 border border-slate-700",
-  warningBox: "bg-yellow-900/20 border border-yellow-800 rounded-sm py-2 px-4",
+  warningBox: "bg-yellow-900/20 border border-yellow-800 rounded-sm py-2 px-4 leading-tight",
 
   screenshotBox: "px-0 pt-2",
   screenshotLabel: "text-gray-400 text-sm",
@@ -583,7 +583,7 @@ fetter --version`}</pre>
 
           <p className={styles.bodyText}>
             When evaluating packages in relation to an allow list, the following
-            four categories are defined.
+            four categories are defined. These icons are displayed with package names in the Packages tab (📦).
           </p>
 
           <div className={styles.infoBox}>
@@ -591,19 +591,19 @@ fetter --version`}</pre>
             <ul className={styles.list}>
               <li className="flex items-center gap-2">
                 <AllowIcon status="missing" />
-                <span>Missing: Required packages not installed</span>
+                <span>Missing: A required package is not installed.</span>
               </li>
               <li className="flex items-center gap-2">
                 <AllowIcon status="unrequired" />
-                <span>Unrequired: Installed packages not in allow list</span>
+                <span>Unrequired: An installed packages is not required.</span>
               </li>
               <li className="flex items-center gap-2">
                 <AllowIcon status="misdefined" />
-                <span>Misdefined: Version mismatches</span>
+                <span>Misdefined: A required package is installed with an invalid version.</span>
               </li>
               <li className="flex items-center gap-2">
                 <AllowIcon status="allowed" />
-                <span>Allowed: Package meets allow list requirements</span>
+                <span>Allowed: An installed package meets requirements.</span>
               </li>
             </ul>
           </div>
