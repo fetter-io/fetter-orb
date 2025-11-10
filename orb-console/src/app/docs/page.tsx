@@ -477,6 +477,7 @@ fetter --version`}</pre>
         </div>
       ),
     },
+    //--------------------------------------------------------------------------
     {
       id: "tracking-vulnerabilities",
       title: "Tracking Vulnerabilities",
@@ -664,6 +665,64 @@ fetter --version`}</pre>
         </div>
       ),
     },
+    //--------------------------------------------------------------------------
+    {
+      id: "observing-systems",
+      title: "Observing Systems",
+      content: (
+        <div className="space-y-4">
+          <h2 className={styles.chapterTitle}>Observing Systems</h2>
+          <p className={styles.bodyText}>
+            The Systems tab (🖥️) provides full details of all
+            vulnerabilities associated with all observed packages.
+          </p>
+
+          <div className={styles.infoBox}>
+            <h3 className={`${styles.infoBoxTitle}`}>Key Features</h3>
+            <ul className={styles.list}>
+              <li>
+                View a bar chart of counts of vulnerabilities per CVS score
+                range.
+              </li>
+              <li>Filter vulnerabilities by selecting CVSS score bar graph.</li>
+              <li>
+                See full details on vulnerabilities, including full description,
+                CVSS vector, and links to further information.
+              </li>
+              <li>
+                Jump to package details to find which sites and systems have the
+                vulnerability.
+              </li>
+            </ul>
+          </div>
+
+          <div className={styles.warningBox}>
+            <h3 className={styles.warningBoxTitle}>Best Practices</h3>
+            <p className="text-gray-300">
+              Review the Systems tab...
+            </p>
+          </div>
+
+          <h3 className={styles.sectionTitle}>The Vulnerability Count Plot</h3>
+          <p className={styles.bodyText}>
+            The top of the Systems tab (🖥️) displays...
+          </p>
+
+          <h3 className={styles.sectionTitle}>System Details</h3>
+          <p className={styles.bodyText}>
+            Pass...
+          </p>
+
+          <h3 className={styles.sectionTitle}>
+            Reloading Data
+          </h3>
+          <p className={styles.bodyText}>
+            Pass...
+          </p>
+        </div>
+      ),
+    },
+
   ];
 
   // Initialize from URL or default to first chapter
