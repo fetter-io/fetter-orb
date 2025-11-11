@@ -276,17 +276,16 @@ export default function DocsPage() {
           </p>
 
           <p className={styles.bodyText}>
-            The Fetter command-line application searches systems to find all
-            Python environments and packages. Using the{" "}
-            <code>monitor-scan</code> command, that scan data can be uploaded to
-            your Fetter IO Tenant.
+            The Fetter command-line application finds all Python environments
+            and packages on a system. Using the <code>monitor-scan</code>{" "}
+            command, that scan data can be uploaded to your Fetter IO Tenant.
           </p>
 
           <h3 className={styles.sectionTitle}>Installing Fetter</h3>
 
           <p className={styles.bodyText}>
             For Python users, installing <code>fetter</code> with Python
-            packaging tools will be convenient.
+            packaging tools is convenient.
           </p>
 
           <div className={styles.infoBox}>
@@ -297,8 +296,8 @@ export default function DocsPage() {
               installation, use <code>fetter --version</code> to test your
               installation.
             </p>
-            <pre className={styles.codeBlock}>{`pip install fetter
-fetter --version`}</pre>
+            <pre className={styles.codeBlock}>{`$ pip install fetter
+$ fetter --version`}</pre>
 
             <p className={styles.bodyText}>
               Alternatively, <code>fetter</code> can be installed outside of a
@@ -315,9 +314,9 @@ fetter --version`}</pre>
               ensure the binary is discoverable.
             </p>
 
-            <pre className={styles.codeBlock}>{`pipx install fetter
-pipx ensurepath
-fetter --version`}</pre>
+            <pre className={styles.codeBlock}>{`$ pipx install fetter
+$ pipx ensurepath
+$ fetter --version`}</pre>
 
             <p className={styles.bodyText}>
               A lightweight installation is possible with the <code>uvx</code>{" "}
@@ -334,7 +333,7 @@ fetter --version`}</pre>
               which commands can be immediately executed.
             </p>
 
-            <pre className={styles.codeBlock}>{`uvx fetter --version`}</pre>
+            <pre className={styles.codeBlock}>{`$ uvx fetter --version`}</pre>
           </div>
 
           <div className={styles.infoBox}>
@@ -349,13 +348,13 @@ fetter --version`}</pre>
               >
                 <code>cargo</code>
               </a>
-              , <code>fetter</code> can be compiled and installed directly. On
-              most platforms this will put the <code>fetter</code> command-line
-              application in a directory that is already in your binary search
-              path. Use <code>fetter --version</code> to test your installation.
+              , <code>fetter</code> can be compiled and installed. On most
+              platforms this will put the <code>fetter</code> command-line
+              application in a directory that is already in your search path.
+              Use <code>fetter --version</code> to test your installation.
             </p>
-            <pre className={styles.codeBlock}>{`cargo install fetter
-fetter --version`}</pre>
+            <pre className={styles.codeBlock}>{`$ cargo install fetter
+$ fetter --version`}</pre>
 
             <p className={styles.bodyText}>
               To specify an alternative <code>bin</code> location, provide a
@@ -365,31 +364,32 @@ fetter --version`}</pre>
             </p>
             <pre
               className={styles.codeBlock}
-            >{`sudo cargo install --root /usr/local fetter
-fetter --version`}</pre>
+            >{`$ sudo cargo install --root /usr/local fetter
+$ fetter --version`}</pre>
           </div>
 
           <h3 className={styles.sectionTitle}>Running Your First Scan</h3>
 
           <p className={styles.bodyText}>
             After installing <code>fetter</code> you can perform your first
-            system-wide package scan.
+            system-wide package scan. Fetter IO provides the complete
+            command-line arguments.
           </p>
 
           <p className={styles.bodyText}>
             In the Fetter IO Console, navigate to to the Tenant tab (🏢) and,
-            for the selected tenant, copy (by clicking on it) the complete
-            command line under &quot;Fetter CLI&quot;. Execute that command in a
+            for the selected tenant, copy (by clicking) the complete command
+            line under &quot;Fetter CLI&quot;. Execute that command in a
             terminal. The command will look something like this (your Tenant key
-            will not be <code>ffffffff...</code>) :
+            will not be <code>ffff...</code>) :
           </p>
           <pre
             className={styles.codeBlock}
           >{`fetter monitor-scan --url https://fetter.io/monitor_scan --tenant ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff`}</pre>
 
           <p className={styles.bodyText}>
-            In general, no additional output will be provided. If you want to
-            see logging information, provide the <code>--log</code> flag.
+            No additional output will be provided by default. To see logging
+            information, provide the <code>--log</code> flag.
           </p>
 
           <pre
@@ -399,10 +399,10 @@ fetter --version`}</pre>
           <h3 className={styles.sectionTitle}>Automating Scans</h3>
 
           <p className={styles.bodyText}>
-            There are many third-party tools to set up the <code>fetter</code>{" "}
-            command-line app to be run automatically or on a schedule. An
-            installer of a background service will also be available in the
-            future.
+            Many third-party tools can be used to run the <code>fetter</code>{" "}
+            command-line app automatically or on a schedule. Alternatively, the
+            Fetter Agent is a background service that continuously and
+            efficiently runs <code>fetter</code> scans.
           </p>
 
           <h3 className={styles.sectionTitle}>Up Next</h3>
@@ -423,22 +423,25 @@ fetter --version`}</pre>
           <h2 className={styles.chapterTitle}>Monitoring Packages</h2>
           <p className={styles.bodyText}>
             The Packages tab (📦) provides a comprehensive view of all Python
-            packages installed across your monitored systems.
+            packages installed across all systems.
           </p>
 
           <div className={styles.infoBox}>
             <h3 className={`${styles.infoBoxTitle}`}>Key Features</h3>
             <ul className={styles.list}>
               <li>
-                View a plot of unique package counts over historical scans.
+                View a plot of unique package count over historical scans.
               </li>
-              <li>Search among installed packages.</li>
-              <li>See which systems and environments have each package.</li>
+              <li>Search installed packages.</li>
               <li>
-                See vulnerabilities and CVS scores associated with packages.
+                For each package, see the system and environment of every
+                version.
+              </li>
+              <li>
+                See vulnerabilities and CVSS scores associated with packages.
               </li>
               <li>See package alignment to this Tenant&apos;s allow list.</li>
-              <li>Optionally view packages for a single system.</li>
+              <li>View packages of a single system.</li>
             </ul>
           </div>
 
@@ -446,23 +449,24 @@ fetter --version`}</pre>
             <h3 className={styles.warningBoxTitle}>Best Practices</h3>
             <p className="text-gray-300">
               The plot of unique package counts is an important signal:
-              significant changes in the count of packages can indicate the
-              installation of new requirements for previously unseen project.
+              significant changes in the count can indicate the installation of
+              requirements for new projects.
             </p>
           </div>
 
           <h3 className={styles.sectionTitle}>The Package Count Plot</h3>
           <p className={styles.bodyText}>
-            The top of the Packages tab (📦) displays a plot of the number of
-            unique packages known at the time of each package data scan.
+            The top of the Packages tab (📦) displays a plot of the total number
+            of unique packages over time. This plot is made by finding the
+            unique number of packages observed with each new scan and the most
+            recent previous scan of all other systems.
           </p>
 
           <h3 className={styles.sectionTitle}>The Search Interface</h3>
           <p className={styles.bodyText}>
-            By providing package name (or package name components) to the search
-            interface, the display will be updated to only show matching
-            packages. The "Show All" button will clear the search and show all
-            packages.
+            Packages can be searched by name, updating the display to only show
+            matching packages. The "Show All" button will clear the search and
+            show all packages.
           </p>
 
           <h3 className={styles.sectionTitle}>Package Details</h3>
@@ -480,8 +484,8 @@ fetter --version`}</pre>
           </h3>
           <p className={styles.bodyText}>
             By default, Fetter IO will show information for all systems. If
-            desired, the drop-down in the upper left can be used to filter
-            results to a single system.
+            desired, the System selector, a drop-down in the upper left, can be
+            used to filter results to a single system.
           </p>
 
           <p className={styles.bodyText}>
@@ -500,9 +504,9 @@ fetter --version`}</pre>
           <h2 className={styles.chapterTitle}>Tracking Vulnerabilities</h2>
           <p className={styles.bodyText}>
             The Vulnerabilities tab (⚠️) provides full details of all
-            vulnerabilities associated with all observed packages. Fetter IO
+            vulnerabilities associated with observed packages. Fetter IO
             continuously checks packages against the Open Source Vulnerability
-            (OSV) database to identify all known security issues.
+            (OSV) database to report all known security issues.
           </p>
 
           <div className={styles.infoBox}>
@@ -512,14 +516,14 @@ fetter --version`}</pre>
                 View a bar chart of counts of vulnerabilities per CVS score
                 range.
               </li>
-              <li>Filter vulnerabilities by selecting CVSS score bar graph.</li>
+              <li>Filter vulnerabilities by CVSS score.</li>
               <li>
-                See full details on vulnerabilities, including full description,
-                CVSS vector, and links to further information.
+                See full details on vulnerabilities, including description, CVSS
+                vector, and links to further information.
               </li>
               <li>
                 Jump to package details to find which sites and systems have the
-                vulnerability.
+                vulnerable package.
               </li>
             </ul>
           </div>
@@ -543,11 +547,11 @@ fetter --version`}</pre>
 
           <h3 className={styles.sectionTitle}>Vulnerability Details</h3>
           <p className={styles.bodyText}>
-            For each vulnerability, clicking the + icon will display extensive
-            details, including the OSV DB identifiers (linking to the OSV DB
-            reference page), the full CVSS vector (linking to the FIRST CVSS
-            calculator), and links to all other associated references, including
-            (when available) the NIST National Vulnerability Database.
+            For each vulnerability, clicking the + icon will display full
+            details, including the OSV DB identifiers (linking to the OSV DB),
+            the full CVSS vector (linking to the FIRST CVSS calculator), and
+            links to all other associated references, including (when available)
+            the NIST National Vulnerability Database.
           </p>
 
           <h3 className={styles.sectionTitle}>
@@ -555,13 +559,13 @@ fetter --version`}</pre>
           </h3>
           <p className={styles.bodyText}>
             By default, Fetter IO will show information for all systems. If
-            desired, the drop-down in the upper left can be used to filter
-            results to a single system.
+            desired, the System selector, a drop-down in the upper left, can be
+            used to filter results to a single system.
           </p>
 
           <p className={styles.bodyText}>
             As fetching vulnerability details can be time consuming, Fetter IO
-            will only automatically refresh vulnerability information after
+            will only automatically refresh vulnerability information after a
             fixed period. The reload button can be used to force checking for
             new vulnerability data.
           </p>
@@ -577,19 +581,33 @@ fetter --version`}</pre>
           <h2 className={styles.chapterTitle}>Managing Allow Lists</h2>
 
           <p className={styles.bodyText}>
-            The Allow List tab (🔓) permits the specification of an allow list
-            that can be applied to all packages observed on all systems. The
-            allow list can be defined explicitly, via a URL to a git repository
-            (for seprately defining and tracking the allow list), or derived on
-            the fly from the minimum version of all observed packages.
+            The Allow List tab (🔓) permits the application of a lock or
+            constraint file to all packages observed on all systems. The allow
+            list can be defined explicitly, via a URL to a git repository (for
+            separately defining and tracking the allow list), or derived on the
+            fly from the minimum version of each observed packages.
+          </p>
+
+          <p className={styles.bodyText}>
+            As <code>fetter</code> collects information on all installed
+            packages, the resulting set of packages can be quite large. A
+            cross-project, multi-system constraint file, documenting the lowest
+            observed version of all packages, can be used to identify minimum
+            package expectations.
+          </p>
+
+          <p className={styles.bodyText}>
+            Alternatively, a core set of packages might be defined with the
+            "Allow superset" configuration set: this would permit packages
+            beyond those explicitly defined.
           </p>
 
           <div className={styles.infoBox}>
             <h3 className={`${styles.infoBoxTitle}`}>Key Features</h3>
             <ul className={styles.list}>
               <li>
-                View a chart of counts of missing, misdefined, unrequired, and
-                allowed pacakges.
+                View a chart of counts of Missing, Misdefined, Unrequired, and
+                Allowed packages.
               </li>
               <li>Directly edit the allow list or derive it dynamically.</li>
               <li>Permit superset or subset deviations from the allow list.</li>
@@ -631,34 +649,33 @@ fetter --version`}</pre>
           <div className={styles.warningBox}>
             <h3 className={styles.warningBoxTitle}>Best Practices</h3>
             <p className="text-gray-300">
-              A global allow list may require frequent revision. Use automatic
-              allow list derivation to reset contraints after evaluating
-              incremental changes.
+              A cross-project, multi-system allow list may require frequent
+              updates over time. After evaluating incremental changes, automatic allow
+              list derivation can be used to reset constraints.
             </p>
           </div>
 
           <h3 className={styles.sectionTitle}>The Allow List Plot</h3>
           <p className={styles.bodyText}>
             The top of the Allow List tab (🔓) displays a horizontal bar chart
-            of the counts packages per validation category: Missing, Misdefined,
+            of the counts of packages per validation category: Missing, Misdefined,
             Unrequired, and Allowed. By clicking on a bar, the details of
-            packages in that category will be displayed.
+            packages in that category are displayed.
           </p>
 
           <h3 className={styles.sectionTitle}>Creating an Allow List</h3>
 
           <p className={styles.bodyText}>
-            The Allow List component displays the current allow list. By
-            clicking the Edit button, the list can be edited or automatically
-            derived.
+            To edit the allow list, follow the these steps.
           </p>
 
           <ol className={styles.orderedList}>
-            <li className="pl-4">Navigate to the Allow tab</li>
+            <li className="pl-4">Navigate to the Allow tab (🔓)</li>
+            <li className="pl-4">In the Allow List display, clock Edit.</li>
             <li className="pl-4">
-              Define your allowed packages in the manifest format
+              Define allowed package versions.
             </li>
-            <li className="pl-4">Save your allow list to your tenant</li>
+            <li className="pl-4">Save your allow list to your Tenant</li>
             <li className="pl-4">
               Review validation results to identify non-compliant packages
             </li>
