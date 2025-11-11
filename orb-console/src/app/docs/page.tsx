@@ -34,8 +34,9 @@ const styles = {
   screenshotPlaceholder:
     "bg-slate-800 h-64 rounded flex items-center justify-center text-gray-500",
 
-  list: "list-none list-inside text-gray-300 space-y-0 mb-2 px-4",
-  orderedList: "list-decimal list-inside text-gray-300 space-y-0 px-4",
+  list: "list-none list-inside text-gray-300 space-y-2 mb-2 px-4 leading-tight",
+  orderedList:
+    "list-decimal list-inside text-gray-300 space-y-0 px-4 leading-tight",
 
   codeBlock:
     "bg-slate-950 px-4 py-2 my-2 ml-2 rounded text-xs text-blue-300/80 font-semibold overflow-x-auto border border-slate-700",
@@ -66,9 +67,9 @@ export default function DocsPage() {
           </p>
 
           <p className={styles.bodyText}>
-            This guide will help get up and running with Fetter IO, including
-            creating an account, performing your first scan, and using the
-            Fetter IO Console.
+            This guide will help you get up and running with Fetter IO,
+            including creating an account, performing your first scan, and using
+            the Fetter IO Console.
           </p>
 
           <div className={styles.infoBox}>
@@ -103,15 +104,15 @@ export default function DocsPage() {
             For greater security, Fetter IO uses GitHub for identity management.
             After clicking the &quot;Sign in with GitHub&quot; button, providing
             GitHub credentials, and accepting the terms, you will be provisioned
-            an account and be presented with the Fetter IO Console.
+            an account and presented with the Fetter IO Console.
           </p>
 
           <h3 className={styles.sectionTitle}>Navigating the Console</h3>
 
           <p className={styles.bodyText}>
-            The Console features six tabs, as well as interfaces to select
-            Tenant and logout. Many tabs also feature a System selector and an
-            update button.
+            The Console features six tabs, as well as common interfaces to
+            select Tenant and logout. Many tabs also feature a System selector
+            and an update button.
           </p>
 
           <div className={styles.infoBox}>
@@ -127,16 +128,15 @@ export default function DocsPage() {
           </div>
 
           <p className={styles.bodyText}>
-            The Console tabs will be mostly empty until you begin uploading
-            scans. In the next section we will look at using Tenant to upload
-            package data.
+            The Console tabs will be mostly empty until you begin uploading scan
+            data.
           </p>
 
           <h3 className={styles.sectionTitle}>Managing Your Account</h3>
 
           <p className={styles.bodyText}>
             The Account tab (⚙️) displays all information specific to your
-            account, including GitHub login and optionally GitHub email and
+            account, including GitHub login and (optionally) GitHub email and
             name. You can delete your account and all associated data at any
             time with the &quot;Delete Account&quot; button; this operation
             cannot be undone.
@@ -171,7 +171,7 @@ export default function DocsPage() {
             Tenant. Each Tenant offers its own isolated environment for tracking
             packages, vulnerabilities, and systems, and each Tenant defines a
             configurable allow list. Additionally, Tenant configuration includes
-            defining which systems are active in aggregate system displays.
+            defining which systems are active in All Systems displays.
           </p>
 
           <h3 className={styles.sectionTitle}>Tenant Attributes</h3>
@@ -182,13 +182,27 @@ export default function DocsPage() {
           </p>
 
           <ul className={styles.list}>
-            <li>Name: A label that can be renamed only by the Tenant.</li>
-            <li>Key: A 64-character code unique to this Tenant.</li>
             <li>
-              Updates per day: The maximum number of times systems can post
-              scans to this Tenant per 24 hour period.
+              <b>Name</b>: A label that can be renamed only by the Tenant
+              creator.
+            </li>
+            <li>
+              <b>Key</b>: A 64-character code unique to this Tenant.
+            </li>
+            <li>
+              <b>Updates per day</b>: The maximum number of times systems can
+              post scans to this Tenant per 24 hour period.
             </li>
           </ul>
+
+          <div className={styles.warningBox}>
+            <h3 className={styles.warningBoxTitle}>Note</h3>
+            <p className={styles.bodyText}>
+              Limit Tenant key access to those who will post scans to your
+              Tenant. The Tenant key cannot be used to access your account. Only
+              the Tenant creator can rename or modify Tenant settings.
+            </p>
+          </div>
 
           <h3 className={styles.sectionTitle}>Creating a new Tenant</h3>
 
@@ -206,22 +220,13 @@ export default function DocsPage() {
             <li>Provide a valid name and select &quot;Create&quot;</li>
           </ol>
 
-          <div className={styles.warningBox}>
-            <h3 className={styles.warningBoxTitle}>Note</h3>
-            <p className={styles.bodyText}>
-              Limit Tenant key access to those who will post scans to your
-              Tenant. The Tenant key cannot be used to access your account. Only
-              the Tenant creator can rename or modify certain tenant settings.
-            </p>
-          </div>
-
           <h3 className={styles.sectionTitle}>Tenant Usage & Display</h3>
 
           <p className={styles.bodyText}>
             Every Tenant associated with your account will be listed in the
             Tenant tab (🏢). The display provides the name, key, and number of
-            updates per day, as well as two ways to post scan data to the
-            Tenant.
+            updates per day, as well as two ways to post package scan data to
+            the Tenant.
           </p>
 
           <ol className={styles.orderedList}>
@@ -249,7 +254,7 @@ export default function DocsPage() {
 
           <p className={styles.bodyText}>
             In the next sections we use the <code>fetter</code> command-line
-            application to post package scans.
+            application to post a package scan.
           </p>
         </div>
       ),
@@ -263,10 +268,11 @@ export default function DocsPage() {
           <h2 className={styles.chapterTitle}>Installing & Using Fetter</h2>
 
           <p className={styles.bodyText}>
-            There are a number of ways to publish package information to Fetter
-            IO with the open-source <code>fetter</code> command-line
-            application. In the example below we will install and call{" "}
-            <code>fetter</code> directly.
+            Fetter IO is designed to work with package data obtained from the
+            open-source <code>fetter</code> command-line application. There are
+            a few ways to publish package scans with <code>fetter</code>. In the
+            example below we will use the most explicit approach: installing and
+            calling <code>fetter</code> directly.
           </p>
 
           <p className={styles.bodyText}>
@@ -280,21 +286,22 @@ export default function DocsPage() {
 
           <p className={styles.bodyText}>
             For Python users, installing <code>fetter</code> with Python
-            packaging tools might be convenient.
+            packaging tools will be convenient.
           </p>
 
           <div className={styles.infoBox}>
             <h3 className={styles.infoBoxTitle}>Python Installation</h3>
             <p className={styles.bodyText}>
               If installing into a virtual environment or default{" "}
-              <code>site-packages</code>, use <code>pip</code>. Use{" "}
-              <code>fetter --version</code> to test your installation.
+              <code>site-packages</code>, use <code>pip</code>. After
+              installation, use <code>fetter --version</code> to test your
+              installation.
             </p>
             <pre className={styles.codeBlock}>{`pip install fetter
 fetter --version`}</pre>
 
             <p className={styles.bodyText}>
-              Alternatively, <code>fetter</code> can be installed outside of any
+              Alternatively, <code>fetter</code> can be installed outside of a
               virtual environment as a standalone binary via{" "}
               <a
                 href="https://github.com/pypa/pipx"
@@ -313,8 +320,8 @@ pipx ensurepath
 fetter --version`}</pre>
 
             <p className={styles.bodyText}>
-              The most lightweight installation is possible with the{" "}
-              <code>uvx</code> command (part of{" "}
+              A lightweight installation is possible with the <code>uvx</code>{" "}
+              command (part of{" "}
               <a
                 href="https://docs.astral.sh/uv/getting-started/installation/"
                 target="_blank"
@@ -323,7 +330,7 @@ fetter --version`}</pre>
               >
                 <code>uv</code>
               </a>
-              ). With this approach, an ephemeral installation is provided upon
+              ). With this approach, an ephemeral installation is created upon
               which commands can be immediately executed.
             </p>
 
@@ -352,8 +359,9 @@ fetter --version`}</pre>
 
             <p className={styles.bodyText}>
               To specify an alternative <code>bin</code> location, provide a
-              different <code>--root</code>. For example, the command below
-              installs <code>fetter</code> in <code>/usr/local/bin</code>:
+              different <code>--root</code> to <code>cargo</code>. For example,
+              the command below installs <code>fetter</code> in{" "}
+              <code>/usr/local/bin</code>:
             </p>
             <pre
               className={styles.codeBlock}
@@ -365,11 +373,15 @@ fetter --version`}</pre>
 
           <p className={styles.bodyText}>
             After installing <code>fetter</code> you can perform your first
-            system-wide package scan. In the Fetter IO Console, navigate to to
-            the Tenant tab (🏢) and, for the selected tenant, copy (by clicking
-            on it) the complete command line under &quot;Fetter CLI&quot;.
-            Execute that command in the terminal. It will look something like
-            this (your Tenant key will not be <code>ffffffff...</code>) :
+            system-wide package scan.
+          </p>
+
+          <p className={styles.bodyText}>
+            In the Fetter IO Console, navigate to to the Tenant tab (🏢) and,
+            for the selected tenant, copy (by clicking on it) the complete
+            command line under &quot;Fetter CLI&quot;. Execute that command in a
+            terminal. The command will look something like this (your Tenant key
+            will not be <code>ffffffff...</code>) :
           </p>
           <pre
             className={styles.codeBlock}
@@ -387,9 +399,10 @@ fetter --version`}</pre>
           <h3 className={styles.sectionTitle}>Automating Scans</h3>
 
           <p className={styles.bodyText}>
-            There are many ways to set up the <code>fetter</code> command-line
-            app to be run automatically or on a schedule. An installer of a
-            background service will also be available in the future.
+            There are many third-party tools to set up the <code>fetter</code>{" "}
+            command-line app to be run automatically or on a schedule. An
+            installer of a background service will also be available in the
+            future.
           </p>
 
           <h3 className={styles.sectionTitle}>Up Next</h3>
@@ -555,6 +568,7 @@ fetter --version`}</pre>
         </div>
       ),
     },
+    //--------------------------------------------------------------------------
     {
       id: "allow-lists",
       title: "Managing Allow Lists",
@@ -654,7 +668,7 @@ fetter --version`}</pre>
             Package Details Per Validation Category
           </h3>
           <p className={styles.bodyText}>
-            Four each of the four validation categories, The Allow List tab (🔓)
+            For each of the four validation categories, The Allow List tab (🔓)
             list every package in that category. Each listing provides link the
             package and system from which that package is observed.
           </p>
@@ -678,44 +692,80 @@ fetter --version`}</pre>
         <div className="space-y-4">
           <h2 className={styles.chapterTitle}>Observing Systems</h2>
           <p className={styles.bodyText}>
-            The Systems tab (🖥️) provides information on all systems that have posted data to the currently active Tenant.
+            The Systems tab (🖥️) provides information on all systems that have
+            posted data to the currently active Tenant. Each Tenant will have
+            its own colletion of systems.
           </p>
 
           <div className={styles.infoBox}>
             <h3 className={`${styles.infoBoxTitle}`}>Key Features</h3>
             <ul className={styles.list}>
               <li>
-                View a scatter plot of operating systems and architectures.
+                View a scatter plot of system counts by operating system and
+                architecture.
               </li>
               <li>
-                For each system, see information on recent scans and the paths of all discovered virtual environments.
+                For each system, see information on recent activity and the
+                paths of all discovered virtual environments.
               </li>
               <li>
-                Selectively remove a system from being included in All-System aggregate displays.
+                Selectively remove a system from being included in All-System
+                aggregate displays.
               </li>
             </ul>
           </div>
 
           <div className={styles.warningBox}>
             <h3 className={styles.warningBoxTitle}>Best Practices</h3>
-            <p className="text-gray-300">Deactivating systems is a useful tool to remove out-of-date or invalid system data from All-System aggregates.</p>
+            <p className="text-gray-300">
+              To remove out-of-date or invalid system data from All-System
+              aggregates, systems can be deactivated.
+            </p>
           </div>
 
           <h3 className={styles.sectionTitle}>The Systems Plot</h3>
           <p className={styles.bodyText}>
-            The top of the Systems tab (🖥️) displays a three-dimensional scatter plot, with operating system and version on the <i>x</i> axis, architecture and CPU count on the <i>y</i> axis, and the count of systems, the <i>z</i> axis, as the size of the plotted point.
+            The top of the Systems tab (🖥️) displays a three-dimensional scatter
+            plot, with operating system and version on the <i>x</i> axis,
+            architecture and CPU count on the <i>y</i> axis, and the count of
+            systems, the <i>z</i> axis, as the size of the plotted point.
           </p>
 
           <h3 className={styles.sectionTitle}>System Details</h3>
-          <p className={styles.bodyText}>For each unique host name that has posted a scan, details are provided regarding the operating system, architecture, and CPU count. Two additional tables are provided.</p>
+          <p className={styles.bodyText}>
+            For each unique host name that has posts a scan, details are
+            provided regarding the operating system, architecture, and CPU
+            count. Two additional tables are provided.
+          </p>
 
-          <p className={styles.bodyText}>Ths first table shows recent activity from that system, including time and date of the most recent communication from that system as well as if scan data was delivered. In general, systems will only post scan data if it has changed from the last scan stored in memory. Restarting a system will force the transmission of a new scan.</p>
+          <p className={styles.bodyText}>
+            The first table shows recent activity from that system, including
+            time and date of the most recent communication from that system, as
+            well as if scan data was delivered. In general, systems will only
+            post scan data if scan results have changed from the last scan
+            stored in memory. Restarting a system will force the transmission of
+            a new scan.
+          </p>
 
+          <p className={styles.bodyText}>
+            Ths second table lists the complete file path to all site-packages
+            directories discovered on this system.
+          </p>
 
-          <p className={styles.bodyText}>Ths second table lists the complete file path to all site-packages directories discovered on this system.</p>
+          <h3 className={styles.sectionTitle}>Deactivating Systems</h3>
+          <p className={styles.bodyText}>
+            To the left of the host name of each system is a square button that
+            can be used to deactivate the system from inclusion in All System
+            displays. This is often needed for systems that are no longer active
+            or that improperly loaded data to the Tenant. Deactivating a system
+            removes it as an option in the System selector.
+          </p>
 
           <h3 className={styles.sectionTitle}>Reloading Data</h3>
-          <p className={styles.bodyText}>Pass...</p>
+          <p className={styles.bodyText}>
+            The systems tab will automatically update. If an updated is
+            immediately required, the reload button can be pressed.
+          </p>
         </div>
       ),
     },
