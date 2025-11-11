@@ -678,41 +678,41 @@ fetter --version`}</pre>
         <div className="space-y-4">
           <h2 className={styles.chapterTitle}>Observing Systems</h2>
           <p className={styles.bodyText}>
-            The Systems tab (🖥️) provides full details of all vulnerabilities
-            associated with all observed packages.
+            The Systems tab (🖥️) provides information on all systems that have posted data to the currently active Tenant.
           </p>
 
           <div className={styles.infoBox}>
             <h3 className={`${styles.infoBoxTitle}`}>Key Features</h3>
             <ul className={styles.list}>
               <li>
-                View a bar chart of counts of vulnerabilities per CVS score
-                range.
-              </li>
-              <li>Filter vulnerabilities by selecting CVSS score bar graph.</li>
-              <li>
-                See full details on vulnerabilities, including full description,
-                CVSS vector, and links to further information.
+                View a scatter plot of operating systems and architectures.
               </li>
               <li>
-                Jump to package details to find which sites and systems have the
-                vulnerability.
+                For each system, see information on recent scans and the paths of all discovered virtual environments.
+              </li>
+              <li>
+                Selectively remove a system from being included in All-System aggregate displays.
               </li>
             </ul>
           </div>
 
           <div className={styles.warningBox}>
             <h3 className={styles.warningBoxTitle}>Best Practices</h3>
-            <p className="text-gray-300">Review the Systems tab...</p>
+            <p className="text-gray-300">Deactivating systems is a useful tool to remove out-of-date or invalid system data from All-System aggregates.</p>
           </div>
 
-          <h3 className={styles.sectionTitle}>The Vulnerability Count Plot</h3>
+          <h3 className={styles.sectionTitle}>The Systems Plot</h3>
           <p className={styles.bodyText}>
-            The top of the Systems tab (🖥️) displays...
+            The top of the Systems tab (🖥️) displays a three-dimensional scatter plot, with operating system and version on the <i>x</i> axis, architecture and CPU count on the <i>y</i> axis, and the count of systems, the <i>z</i> axis, as the size of the plotted point.
           </p>
 
           <h3 className={styles.sectionTitle}>System Details</h3>
-          <p className={styles.bodyText}>Pass...</p>
+          <p className={styles.bodyText}>For each unique host name that has posted a scan, details are provided regarding the operating system, architecture, and CPU count. Two additional tables are provided.</p>
+
+          <p className={styles.bodyText}>Ths first table shows recent activity from that system, including time and date of the most recent communication from that system as well as if scan data was delivered. In general, systems will only post scan data if it has changed from the last scan stored in memory. Restarting a system will force the transmission of a new scan.</p>
+
+
+          <p className={styles.bodyText}>Ths second table lists the complete file path to all site-packages directories discovered on this system.</p>
 
           <h3 className={styles.sectionTitle}>Reloading Data</h3>
           <p className={styles.bodyText}>Pass...</p>
