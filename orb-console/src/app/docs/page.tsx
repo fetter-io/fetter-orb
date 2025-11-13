@@ -27,7 +27,7 @@ const styles = {
 
   infoBox: "bg-slate-800 rounded-sm px-4 py-2 border border-slate-700",
   warningBox:
-    "bg-yellow-900/20 border border-yellow-800 rounded-sm py-2 px-4 leading-tight",
+    "bg-yellow-900/20 border border-yellow-800 rounded-sm py-2 px-4 mt-4 leading-tight",
 
   screenshotBox: "px-0 pt-2",
   screenshotLabel: "text-gray-400 text-sm",
@@ -59,11 +59,11 @@ export default function DocsPage() {
 
           <p className={styles.bodyText}>
             Fetter IO is a web-application for aggregating information about
-            Python packages on all your (or your organization&apos;s) systems.
-            With this information, comprehensive supply-chain monitoring is
-            possible. Fetter IO permits searching among all packages, displaying
-            detailed vulnerability information, and applying a global allow
-            list.
+            Python packages on all of your (or your organization&apos;s)
+            systems. With this information, comprehensive supply-chain
+            monitoring is possible. Fetter IO permits searching among all
+            packages, displaying detailed vulnerability information, and
+            applying a global allow list.
           </p>
 
           <p className={styles.bodyText}>
@@ -111,8 +111,8 @@ export default function DocsPage() {
 
           <p className={styles.bodyText}>
             The Console features six tabs, as well as common interfaces to
-            select Tenant and logout. Many tabs also feature a System selector
-            and an update button.
+            select Tenant and to logout. Many tabs also feature a System
+            selector and an refresh button.
           </p>
 
           <div className={styles.infoBox}>
@@ -128,8 +128,8 @@ export default function DocsPage() {
           </div>
 
           <p className={styles.bodyText}>
-            The Console tabs will be mostly empty until you begin uploading scan
-            data.
+            Most Console tabs will be empty until you begin uploading package
+            scan data.
           </p>
 
           <h3 className={styles.sectionTitle}>Managing Your Account</h3>
@@ -137,9 +137,13 @@ export default function DocsPage() {
           <p className={styles.bodyText}>
             The Account tab (⚙️) displays all information specific to your
             account, including GitHub login and (optionally) GitHub email and
-            name. You can delete your account and all associated data at any
-            time with the &quot;Delete Account&quot; button; this operation
-            cannot be undone.
+            name.
+          </p>
+
+          <p className={styles.bodyText}>
+            You can delete your account and all associated data at any time with
+            the &quot;Delete Account&quot; button; this operation cannot be
+            undone.
           </p>
 
           <div className={styles.warningBox}>
@@ -171,7 +175,8 @@ export default function DocsPage() {
             Tenant. Each Tenant offers its own isolated environment for tracking
             packages, vulnerabilities, and systems, and each Tenant defines a
             configurable allow list. Additionally, Tenant configuration includes
-            defining which systems are active in All Systems displays.
+            defining which systems are active in &quot;All Systems&quot;
+            displays.
           </p>
 
           <h3 className={styles.sectionTitle}>Tenant Attributes</h3>
@@ -191,7 +196,7 @@ export default function DocsPage() {
             </li>
             <li>
               <b>Updates per day</b>: The maximum number of times systems can
-              post scans to this Tenant per 24 hour period.
+              post scans to this Tenant per 24-hour period.
             </li>
           </ul>
 
@@ -224,9 +229,9 @@ export default function DocsPage() {
 
           <p className={styles.bodyText}>
             Every Tenant associated with your account will be listed in the
-            Tenant tab (🏢). The display provides the name, key, and number of
-            updates per day, as well as two ways to post package scan data to
-            the Tenant.
+            Tenant tab (🏢). The Tenant display provides the name, key, and
+            number of updates per day, as well as information on two ways to
+            post package scan data to the Tenant:
           </p>
 
           <ol className={styles.orderedList}>
@@ -253,7 +258,7 @@ export default function DocsPage() {
           <h3 className={styles.sectionTitle}>Up Next</h3>
 
           <p className={styles.bodyText}>
-            In the next sections we use the <code>fetter</code> command-line
+            In the next section we will use the <code>fetter</code> command-line
             application to post a package scan.
           </p>
         </div>
@@ -270,15 +275,16 @@ export default function DocsPage() {
           <p className={styles.bodyText}>
             Fetter IO is designed to work with package data obtained from the
             open-source <code>fetter</code> command-line application. There are
-            a few ways to publish package scans with <code>fetter</code>. In the
-            example below we will use the most explicit approach: installing and
-            calling <code>fetter</code> directly.
+            multiple ways to publish package scans with <code>fetter</code>. In
+            the example below we will use the most explicit approach: installing
+            and calling <code>fetter</code> directly.
           </p>
 
           <p className={styles.bodyText}>
-            The Fetter command-line application finds all Python environments
-            and packages on a system. Using the <code>monitor-scan</code>{" "}
-            command, that scan data can be uploaded to your Fetter IO Tenant.
+            The Fetter command-line application finds all Python environments,
+            and all packages installed in that environment, across an entire
+            system. Using the <code>monitor-scan</code> command, that scan data
+            can be uploaded to your Fetter IO Tenant.
           </p>
 
           <h3 className={styles.sectionTitle}>Installing Fetter</h3>
@@ -348,8 +354,8 @@ $ fetter --version`}</pre>
               >
                 <code>cargo</code>
               </a>
-              , <code>fetter</code> can be compiled and installed. On most
-              platforms this will put the <code>fetter</code> command-line
+              , <code>fetter</code> can be easily compiled and installed. On
+              most platforms this will put the <code>fetter</code> command-line
               application in a directory that is already in your search path.
               Use <code>fetter --version</code> to test your installation.
             </p>
@@ -372,8 +378,7 @@ $ fetter --version`}</pre>
 
           <p className={styles.bodyText}>
             After installing <code>fetter</code> you can perform your first
-            system-wide package scan. Fetter IO provides the complete
-            command-line arguments.
+            system-wide package scan.
           </p>
 
           <p className={styles.bodyText}>
@@ -399,10 +404,10 @@ $ fetter --version`}</pre>
           <h3 className={styles.sectionTitle}>Automating Scans</h3>
 
           <p className={styles.bodyText}>
-            Many third-party tools can be used to run the <code>fetter</code>{" "}
-            command-line app automatically or on a schedule. Alternatively, the
-            Fetter Agent is a background service that continuously and
-            efficiently runs <code>fetter</code> scans.
+            Many tools can be used to run the <code>fetter</code> command-line
+            app automatically or on a schedule. Alternatively, the Fetter Agent
+            is a background service that continuously and efficiently runs{" "}
+            <code>fetter</code> scans.
           </p>
 
           <h3 className={styles.sectionTitle}>Up Next</h3>
@@ -430,18 +435,18 @@ $ fetter --version`}</pre>
             <h3 className={`${styles.infoBoxTitle}`}>Key Features</h3>
             <ul className={styles.list}>
               <li>
-                View a plot of unique package count over historical scans.
+                View a plot of the count of unique packages across historical
+                scans.
               </li>
               <li>Search installed packages.</li>
               <li>
                 For each package, see the system and environment of every
-                version.
+                installed version.
               </li>
               <li>
                 See vulnerabilities and CVSS scores associated with packages.
               </li>
               <li>See package alignment to this Tenant&apos;s allow list.</li>
-              <li>View packages of a single system.</li>
             </ul>
           </div>
 
@@ -458,8 +463,8 @@ $ fetter --version`}</pre>
           <p className={styles.bodyText}>
             The top of the Packages tab (📦) displays a plot of the total number
             of unique packages over time. This plot is made by finding the
-            unique number of packages observed with each new scan and the most
-            recent previous scan of all other systems.
+            unique number of packages observed with each new scan combined with
+            the most recent previous scan of all other systems.
           </p>
 
           <h3 className={styles.sectionTitle}>The Search Interface</h3>
@@ -474,9 +479,9 @@ $ fetter --version`}</pre>
             For each package, clicking the + icon will display all versions
             found on all systems, as well as the specific site and system where
             that package is found. For each pacakge, its allow-list status will
-            be displayed. If a package has vulnerabilities, a CVS score icon
-            will be displayed: clicking that icon will display vulnerability
-            details.
+            also be displayed. If a package has vulnerabilities, a CVS score
+            icon will be displayed: clicking that icon will display
+            vulnerability details.
           </p>
 
           <h3 className={styles.sectionTitle}>
@@ -489,7 +494,7 @@ $ fetter --version`}</pre>
           </p>
 
           <p className={styles.bodyText}>
-            While Fetter IO will auto-refresh content periodically, the reload
+            While Fetter IO will periodically auto-refresh content, the reload
             button can be used to force fetching new data.
           </p>
         </div>
@@ -506,7 +511,7 @@ $ fetter --version`}</pre>
             The Vulnerabilities tab (⚠️) provides full details of all
             vulnerabilities associated with observed packages. Fetter IO
             continuously checks packages against the Open Source Vulnerability
-            (OSV) database to report all known security issues.
+            (OSV) database to identify all known security issues.
           </p>
 
           <div className={styles.infoBox}>
@@ -522,8 +527,8 @@ $ fetter --version`}</pre>
                 vector, and links to further information.
               </li>
               <li>
-                Jump to package details to find which sites and systems have the
-                vulnerable package.
+                Jump to package details to find which sites and systems have
+                vulnerable packages.
               </li>
             </ul>
           </div>
@@ -542,16 +547,16 @@ $ fetter --version`}</pre>
             The top of the Vulnerabilities tab (⚠️) displays a bar chart of
             vulnerability counts per CVSS score. By clicking on one or more bar,
             the list of vulnerabilities can be filtered to the selected CVSS
-            score.
+            score range.
           </p>
 
           <h3 className={styles.sectionTitle}>Vulnerability Details</h3>
           <p className={styles.bodyText}>
             For each vulnerability, clicking the + icon will display full
-            details, including the OSV DB identifiers (linking to the OSV DB),
-            the full CVSS vector (linking to the FIRST CVSS calculator), and
-            links to all other associated references, including (when available)
-            the NIST National Vulnerability Database.
+            details, including OSV DB identifiers (linking to the OSV DB), the
+            full CVSS vector (linking to the FIRST CVSS calculator), and links
+            to all other associated references, including (when available)
+            details in the NIST National Vulnerability Database.
           </p>
 
           <h3 className={styles.sectionTitle}>
@@ -566,7 +571,7 @@ $ fetter --version`}</pre>
           <p className={styles.bodyText}>
             As fetching vulnerability details can be time consuming, Fetter IO
             will only automatically refresh vulnerability information after a
-            fixed period. The reload button can be used to force checking for
+            fixed period. The refresh button can be used to force checking for
             new vulnerability data.
           </p>
         </div>
@@ -584,15 +589,15 @@ $ fetter --version`}</pre>
             The Allow List tab (🔓) permits the application of a lock or
             constraint file to all packages observed on all systems. The allow
             list can be defined explicitly, via a URL to a git repository (for
-            separately defining and tracking the allow list), or derived on the
-            fly from the minimum version of each observed packages.
+            separately defining and tracking the allow list), or derived from
+            the minimum version of all observed packages.
           </p>
 
           <p className={styles.bodyText}>
             As <code>fetter</code> collects information on all installed
             packages, the resulting set of packages can be quite large. A
             cross-project, multi-system constraint file, documenting the lowest
-            observed version of all packages, can be used to identify minimum
+            observed version of all packages, can be used to enforce minimum
             package expectations.
           </p>
 
@@ -617,8 +622,8 @@ $ fetter --version`}</pre>
 
           <p className={styles.bodyText}>
             When evaluating packages in relation to an allow list, the following
-            four categories are defined. These icons are displayed with package
-            names in the Packages tab (📦).
+            four categories are defined. The following icons are also displayed
+            with package names in the Packages tab (📦).
           </p>
 
           <div className={styles.infoBox}>
@@ -650,32 +655,30 @@ $ fetter --version`}</pre>
             <h3 className={styles.warningBoxTitle}>Best Practices</h3>
             <p className="text-gray-300">
               A cross-project, multi-system allow list may require frequent
-              updates over time. After evaluating incremental changes, automatic allow
-              list derivation can be used to reset constraints.
+              updates over time. After evaluating incremental changes, automatic
+              allow list derivation can be used to reset constraints.
             </p>
           </div>
 
           <h3 className={styles.sectionTitle}>The Allow List Plot</h3>
           <p className={styles.bodyText}>
             The top of the Allow List tab (🔓) displays a horizontal bar chart
-            of the counts of packages per validation category: Missing, Misdefined,
-            Unrequired, and Allowed. By clicking on a bar, the details of
-            packages in that category are displayed.
+            of the counts of packages per validation category: Missing,
+            Misdefined, Unrequired, and Allowed. By clicking on a bar, the
+            details of packages in that category are displayed.
           </p>
 
           <h3 className={styles.sectionTitle}>Creating an Allow List</h3>
 
           <p className={styles.bodyText}>
-            To edit the allow list, follow the these steps.
+            The following steps explain how to edit an allow list.
           </p>
 
           <ol className={styles.orderedList}>
-            <li className="pl-4">Navigate to the Allow tab (🔓)</li>
-            <li className="pl-4">In the Allow List display, clock Edit.</li>
-            <li className="pl-4">
-              Define allowed package versions.
-            </li>
-            <li className="pl-4">Save your allow list to your Tenant</li>
+            <li className="pl-4">Navigate to the Allow List tab (🔓)</li>
+            <li className="pl-4">In the Allow List display, click Edit.</li>
+            <li className="pl-4">Define allowed package versions.</li>
+            <li className="pl-4">Save your allow list to your Tenant.</li>
             <li className="pl-4">
               Review validation results to identify non-compliant packages
             </li>
@@ -686,8 +689,8 @@ $ fetter --version`}</pre>
           </h3>
           <p className={styles.bodyText}>
             For each of the four validation categories, The Allow List tab (🔓)
-            list every package in that category. Each listing provides link the
-            package and system from which that package is observed.
+            lists every package in that category. Each listing provides a link
+            to the package and system from which that package is observed.
           </p>
 
           <h3 className={styles.sectionTitle}>
@@ -697,6 +700,11 @@ $ fetter --version`}</pre>
             By default, Fetter IO will show information for all systems. If
             desired, the drop-down in the upper left can be used to filter
             results to a single system.
+          </p>
+
+          <p className={styles.bodyText}>
+            While Fetter IO will periodically auto-refresh content, the reload
+            button can be used to force fetching new data.
           </p>
         </div>
       ),
@@ -711,7 +719,7 @@ $ fetter --version`}</pre>
           <p className={styles.bodyText}>
             The Systems tab (🖥️) provides information on all systems that have
             posted data to the currently active Tenant. Each Tenant will have
-            its own colletion of systems.
+            its own collection of systems.
           </p>
 
           <div className={styles.infoBox}>
@@ -750,15 +758,15 @@ $ fetter --version`}</pre>
 
           <h3 className={styles.sectionTitle}>System Details</h3>
           <p className={styles.bodyText}>
-            For each unique host name that has posts a scan, details are
-            provided regarding the operating system, architecture, and CPU
-            count. Two additional tables are provided.
+            For each unique host that posts a scan, details are provided
+            regarding the operating system, architecture, and CPU count. Two
+            additional tables are provided.
           </p>
 
           <p className={styles.bodyText}>
             The first table shows recent activity from that system, including
-            time and date of the most recent communication from that system, as
-            well as if scan data was delivered. In general, systems will only
+            the time and date of the most recent communication from that system,
+            as well as if scan data was delivered. In general, systems will only
             post scan data if scan results have changed from the last scan
             stored in memory. Restarting a system will force the transmission of
             a new scan.
@@ -773,15 +781,15 @@ $ fetter --version`}</pre>
           <p className={styles.bodyText}>
             To the left of the host name of each system is a square button that
             can be used to deactivate the system from inclusion in All System
-            displays. This is often needed for systems that are no longer active
-            or that improperly loaded data to the Tenant. Deactivating a system
-            removes it as an option in the System selector.
+            displays. This is needed for systems that are no longer active or
+            that improperly loaded data to the Tenant. Deactivating a system
+            also removes it as an option in the System selector.
           </p>
 
           <h3 className={styles.sectionTitle}>Reloading Data</h3>
           <p className={styles.bodyText}>
-            The systems tab will automatically update. If an updated is
-            immediately required, the reload button can be pressed.
+            The systems tab will automatically update. If an update is
+            immediately required, the refresh button can be pressed.
           </p>
         </div>
       ),
