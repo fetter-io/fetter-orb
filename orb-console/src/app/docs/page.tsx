@@ -30,7 +30,7 @@ const styles = {
     "bg-yellow-900/20 border border-yellow-800 rounded-sm py-2 px-4 mt-4 leading-tight",
 
   screenshotBox: "px-0 pt-2",
-  screenshotLabel: "text-gray-400 text-sm pl-4",
+  screenshotLabel: "text-gray-400 text-sm px-4",
 
   list: "list-none list-inside text-gray-300 space-y-2 mb-2 px-4 leading-tight",
   orderedList:
@@ -499,12 +499,40 @@ export default function DocsPage() {
             the most recent previous scan of all other systems.
           </p>
 
+
+          <div className={styles.screenshotBox}>
+            <div className={styles.screenshotLabel}>
+              Screenshot: The Packages tab with a plot of packages from one scan.
+            </div>
+            <ImageLightbox
+              src="/doc-packages-chart.png"
+              alt="Account tab"
+              width={1200}
+              height={800}
+            />
+          </div>
+
+
           <h3 className={styles.sectionTitle}>The Search Interface</h3>
           <p className={styles.bodyText}>
             Packages can be searched by name, updating the display to only show
             matching packages. The "Show All" button will clear the search and
             show all packages.
           </p>
+
+
+          <div className={styles.screenshotBox}>
+            <div className={styles.screenshotLabel}>
+              Screenshot: Searching for packages with names that contain &quot;num&quot;.
+            </div>
+            <ImageLightbox
+              src="/doc-packages-search.png"
+              alt="Account tab"
+              width={1200}
+              height={800}
+            />
+          </div>
+
 
           <h3 className={styles.sectionTitle}>Package Details</h3>
           <p className={styles.bodyText}>
@@ -515,6 +543,19 @@ export default function DocsPage() {
             icon will be displayed: clicking that icon will display
             vulnerability details.
           </p>
+
+
+          <div className={styles.screenshotBox}>
+            <div className={styles.screenshotLabel}>
+              Screenshot: Viewing package details.
+            </div>
+            <ImageLightbox
+              src="/doc-packages-detail.png"
+              alt="Account tab"
+              width={1200}
+              height={800}
+            />
+          </div>
 
           <h3 className={styles.sectionTitle}>
             Isolating Systems & Reloading Data
@@ -582,6 +623,18 @@ export default function DocsPage() {
             score range.
           </p>
 
+          <div className={styles.screenshotBox}>
+            <div className={styles.screenshotLabel}>
+              Screenshot: The Vulnerabilities tab with a plot of vulnerability count per CVSS score.
+            </div>
+            <ImageLightbox
+              src="/doc-vulnerabilities-chart.png"
+              alt="Vulnerabilities tab"
+              width={1200}
+              height={800}
+            />
+          </div>
+
           <h3 className={styles.sectionTitle}>Vulnerability Details</h3>
           <p className={styles.bodyText}>
             For each vulnerability, clicking the + icon will display full
@@ -590,6 +643,18 @@ export default function DocsPage() {
             to all other associated references, including (when available)
             details in the NIST National Vulnerability Database.
           </p>
+
+          <div className={styles.screenshotBox}>
+            <div className={styles.screenshotLabel}>
+              Screenshot: Viewing vulnerability details.
+            </div>
+            <ImageLightbox
+              src="/doc-vulnerabilities-detail.png"
+              alt="Vulnerabilities tab"
+              width={1200}
+              height={800}
+            />
+          </div>
 
           <h3 className={styles.sectionTitle}>
             Isolating Systems & Reloading Data
@@ -693,6 +758,7 @@ export default function DocsPage() {
           </div>
 
           <h3 className={styles.sectionTitle}>The Allow List Plot</h3>
+
           <p className={styles.bodyText}>
             The top of the Allow List tab (🔓) displays a horizontal bar chart
             of the counts of packages per validation category: Missing,
@@ -700,21 +766,69 @@ export default function DocsPage() {
             details of packages in that category are displayed.
           </p>
 
+
+          <div className={styles.screenshotBox}>
+            <div className={styles.screenshotLabel}>
+              Screenshot: The Allow List tab with a plot of packages in each validation category.
+            </div>
+            <ImageLightbox
+              src="/doc-allow-chart.png"
+              alt="Allow List tab"
+              width={1200}
+              height={800}
+            />
+          </div>
+
           <h3 className={styles.sectionTitle}>Creating an Allow List</h3>
 
           <p className={styles.bodyText}>
-            The following steps explain how to edit an allow list.
+            The following steps explain how to create or edit an allow list.
           </p>
 
           <ol className={styles.orderedList}>
             <li className="pl-4">Navigate to the Allow List tab (🔓)</li>
             <li className="pl-4">In the Allow List display, click Edit.</li>
             <li className="pl-4">Define allowed package versions.</li>
-            <li className="pl-4">Save your allow list to your Tenant.</li>
+            <li className="pl-4">Submit your allow list to your Tenant.</li>
             <li className="pl-4">
               Review validation results to identify non-compliant packages
             </li>
           </ol>
+
+
+          <p className={styles.bodyText}>
+            When editing an allow list, the "Derive" button can be used to derive the allow list from the minimum version of all observed packages. This is a convenient way to create an initial allow list.
+          </p>
+
+          <div className={styles.screenshotBox}>
+            <div className={styles.screenshotLabel}>
+              Screenshot: Deriving an allow list from the minimum version of all observed packages.
+            </div>
+            <ImageLightbox
+              src="/doc-allow-derive.png"
+              alt="Allow List tab"
+              width={1200}
+              height={800}
+            />
+          </div>
+
+          <p className={styles.bodyText}>
+            After deriving the allow list, as expected, all packages are now shown in the plot as Allowed.
+          </p>
+
+
+          <div className={styles.screenshotBox}>
+            <div className={styles.screenshotLabel}>
+              Screenshot: All packages are allowed after deriving an allow list.
+            </div>
+            <ImageLightbox
+              src="/doc-allow-post.png"
+              alt="Allow List tab"
+              width={1200}
+              height={800}
+            />
+          </div>
+
 
           <h3 className={styles.sectionTitle}>
             Package Details Per Validation Category
@@ -724,6 +838,18 @@ export default function DocsPage() {
             lists every package in that category. Each listing provides a link
             to the package and system from which that package is observed.
           </p>
+
+          <div className={styles.screenshotBox}>
+            <div className={styles.screenshotLabel}>
+              Screenshot: Details of packages within each category.
+            </div>
+            <ImageLightbox
+              src="/doc-allow-category.png"
+              alt="Allow List tab"
+              width={1200}
+              height={800}
+            />
+          </div>
 
           <h3 className={styles.sectionTitle}>
             Isolating Systems & Reloading Data
@@ -787,6 +913,19 @@ export default function DocsPage() {
             architecture and CPU count on the <i>y</i> axis, and the count of
             systems, the <i>z</i> axis, as the size of the plotted point.
           </p>
+
+
+          <div className={styles.screenshotBox}>
+            <div className={styles.screenshotLabel}>
+              Screenshot: The Systems tab with a plot of systems.
+            </div>
+            <ImageLightbox
+              src="/doc-systems-chart.png"
+              alt="Allow List tab"
+              width={1200}
+              height={800}
+            />
+          </div>
 
           <h3 className={styles.sectionTitle}>System Details</h3>
           <p className={styles.bodyText}>
