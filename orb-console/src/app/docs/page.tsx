@@ -326,8 +326,10 @@ export default function DocsPage() {
               installation, use <code>fetter --version</code> to test your
               installation.
             </p>
-            <pre className={styles.codeBlock}>{`$ pip install fetter
-$ fetter --version`}</pre>
+            <pre className={styles.codeBlock}>
+              <span className="text-slate-500">$</span> pip install fetter{"\n"}
+              <span className="text-slate-500">$</span> fetter --version
+            </pre>
 
             <p className={styles.bodyText}>
               Alternatively, <code>fetter</code> can be installed outside of a
@@ -344,9 +346,11 @@ $ fetter --version`}</pre>
               ensure the binary is discoverable.
             </p>
 
-            <pre className={styles.codeBlock}>{`$ pipx install fetter
-$ pipx ensurepath
-$ fetter --version`}</pre>
+            <pre className={styles.codeBlock}>
+              <span className="text-slate-500">$</span> pipx install fetter{"\n"}
+              <span className="text-slate-500">$</span> pipx ensurepath{"\n"}
+              <span className="text-slate-500">$</span> fetter --version
+            </pre>
 
             <p className={styles.bodyText}>
               A lightweight installation is possible with the <code>uvx</code>{" "}
@@ -363,7 +367,9 @@ $ fetter --version`}</pre>
               which commands can be immediately executed.
             </p>
 
-            <pre className={styles.codeBlock}>{`$ uvx fetter --version`}</pre>
+            <pre className={styles.codeBlock}>
+              <span className="text-slate-500">$</span> uvx fetter --version
+            </pre>
           </div>
 
           <div className={styles.infoBox}>
@@ -383,8 +389,10 @@ $ fetter --version`}</pre>
               application in a directory that is already in your search path.
               Use <code>fetter --version</code> to test your installation.
             </p>
-            <pre className={styles.codeBlock}>{`$ cargo install fetter
-$ fetter --version`}</pre>
+            <pre className={styles.codeBlock}>
+              <span className="text-slate-500">$</span> cargo install fetter{"\n"}
+              <span className="text-slate-500">$</span> fetter --version
+            </pre>
 
             <p className={styles.bodyText}>
               To specify an alternative <code>bin</code> location, provide a
@@ -392,10 +400,10 @@ $ fetter --version`}</pre>
               the command below installs <code>fetter</code> in{" "}
               <code>/usr/local/bin</code>:
             </p>
-            <pre
-              className={styles.codeBlock}
-            >{`$ sudo cargo install --root /usr/local fetter
-$ fetter --version`}</pre>
+            <pre className={styles.codeBlock}>
+              <span className="text-slate-500">$</span> sudo cargo install --root /usr/local fetter{"\n"}
+              <span className="text-slate-500">$</span> fetter --version
+            </pre>
           </div>
 
           <h3 className={styles.sectionTitle}>Running Your First Scan</h3>
