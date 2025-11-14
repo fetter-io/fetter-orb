@@ -30,9 +30,7 @@ const styles = {
     "bg-yellow-900/20 border border-yellow-800 rounded-sm py-2 px-4 mt-4 leading-tight",
 
   screenshotBox: "px-0 pt-2",
-  screenshotLabel: "text-gray-400 text-sm",
-  screenshotPlaceholder:
-    "bg-slate-800 h-64 rounded flex items-center justify-center text-gray-500",
+  screenshotLabel: "text-gray-400 text-sm pl-4",
 
   list: "list-none list-inside text-gray-300 space-y-2 mb-2 px-4 leading-tight",
   orderedList:
@@ -132,6 +130,19 @@ export default function DocsPage() {
             scan data.
           </p>
 
+          <div className={styles.screenshotBox}>
+            <div className={styles.screenshotLabel}>
+              Screenshot: On first logging in, the Packages tab will be empty.
+            </div>
+            <ImageLightbox
+              src="/doc-new.png"
+              alt="Empty account"
+              width={1200}
+              height={800}
+            />
+          </div>
+
+
           <h3 className={styles.sectionTitle}>Managing Your Account</h3>
 
           <p className={styles.bodyText}>
@@ -145,6 +156,19 @@ export default function DocsPage() {
             the &quot;Delete Account&quot; button; this operation cannot be
             undone.
           </p>
+
+
+          <div className={styles.screenshotBox}>
+            <div className={styles.screenshotLabel}>
+              Screenshot: The Account tab.
+            </div>
+            <ImageLightbox
+              src="/doc-account.png"
+              alt="Account tab"
+              width={1200}
+              height={800}
+            />
+          </div>
 
           <div className={styles.warningBox}>
             <h3 className={styles.warningBoxTitle}>Note</h3>
@@ -248,7 +272,7 @@ export default function DocsPage() {
               This screenshot depicts...
             </div>
             <ImageLightbox
-              src="/screen-allow.png"
+              src="/doc-tenant.png"
               alt="Tenant Creation Interface"
               width={1200}
               height={800}
