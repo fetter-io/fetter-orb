@@ -142,7 +142,6 @@ export default function DocsPage() {
             />
           </div>
 
-
           <h3 className={styles.sectionTitle}>Managing Your Account</h3>
 
           <p className={styles.bodyText}>
@@ -156,7 +155,6 @@ export default function DocsPage() {
             the &quot;Delete Account&quot; button; this operation cannot be
             undone.
           </p>
-
 
           <div className={styles.screenshotBox}>
             <div className={styles.screenshotLabel}>
@@ -347,7 +345,8 @@ export default function DocsPage() {
             </p>
 
             <pre className={styles.codeBlock}>
-              <span className="text-slate-500">$</span> pipx install fetter{"\n"}
+              <span className="text-slate-500">$</span> pipx install fetter
+              {"\n"}
               <span className="text-slate-500">$</span> pipx ensurepath{"\n"}
               <span className="text-slate-500">$</span> fetter --version
             </pre>
@@ -390,7 +389,8 @@ export default function DocsPage() {
               Use <code>fetter --version</code> to test your installation.
             </p>
             <pre className={styles.codeBlock}>
-              <span className="text-slate-500">$</span> cargo install fetter{"\n"}
+              <span className="text-slate-500">$</span> cargo install fetter
+              {"\n"}
               <span className="text-slate-500">$</span> fetter --version
             </pre>
 
@@ -401,7 +401,8 @@ export default function DocsPage() {
               <code>/usr/local/bin</code>:
             </p>
             <pre className={styles.codeBlock}>
-              <span className="text-slate-500">$</span> sudo cargo install --root /usr/local fetter{"\n"}
+              <span className="text-slate-500">$</span> sudo cargo install
+              --root /usr/local fetter{"\n"}
               <span className="text-slate-500">$</span> fetter --version
             </pre>
           </div>
@@ -499,10 +500,10 @@ export default function DocsPage() {
             the most recent previous scan of all other systems.
           </p>
 
-
           <div className={styles.screenshotBox}>
             <div className={styles.screenshotLabel}>
-              Screenshot: The Packages tab with a plot of packages from one scan.
+              Screenshot: The Packages tab with a plot of packages from one
+              scan.
             </div>
             <ImageLightbox
               src="/doc-packages-chart.png"
@@ -512,18 +513,17 @@ export default function DocsPage() {
             />
           </div>
 
-
           <h3 className={styles.sectionTitle}>The Search Interface</h3>
           <p className={styles.bodyText}>
             Packages can be searched by name, updating the display to only show
-            matching packages. The "Show All" button will clear the search and
-            show all packages.
+            matching packages. The &quot;Show All&quot; button will clear the
+            search and show all packages.
           </p>
-
 
           <div className={styles.screenshotBox}>
             <div className={styles.screenshotLabel}>
-              Screenshot: Searching for packages with names that contain &quot;num&quot;.
+              Screenshot: Searching for packages with names that contain
+              &quot;num&quot;.
             </div>
             <ImageLightbox
               src="/doc-packages-search.png"
@@ -532,7 +532,6 @@ export default function DocsPage() {
               height={800}
             />
           </div>
-
 
           <h3 className={styles.sectionTitle}>Package Details</h3>
           <p className={styles.bodyText}>
@@ -543,7 +542,6 @@ export default function DocsPage() {
             icon will be displayed: clicking that icon will display
             vulnerability details.
           </p>
-
 
           <div className={styles.screenshotBox}>
             <div className={styles.screenshotLabel}>
@@ -625,7 +623,8 @@ export default function DocsPage() {
 
           <div className={styles.screenshotBox}>
             <div className={styles.screenshotLabel}>
-              Screenshot: The Vulnerabilities tab with a plot of vulnerability count per CVSS score.
+              Screenshot: The Vulnerabilities tab with a plot of vulnerability
+              count per CVSS score.
             </div>
             <ImageLightbox
               src="/doc-vulnerabilities-chart.png"
@@ -700,8 +699,8 @@ export default function DocsPage() {
 
           <p className={styles.bodyText}>
             Alternatively, a core set of packages might be defined with the
-            "Allow superset" configuration set: this would permit packages
-            beyond those explicitly defined.
+            &quot;Allow superset&quot; configuration set: this would permit
+            packages beyond those explicitly defined.
           </p>
 
           <div className={styles.infoBox}>
@@ -766,10 +765,10 @@ export default function DocsPage() {
             details of packages in that category are displayed.
           </p>
 
-
           <div className={styles.screenshotBox}>
             <div className={styles.screenshotLabel}>
-              Screenshot: The Allow List tab with a plot of packages in each validation category.
+              Screenshot: The Allow List tab with a plot of packages in each
+              validation category.
             </div>
             <ImageLightbox
               src="/doc-allow-chart.png"
@@ -795,14 +794,17 @@ export default function DocsPage() {
             </li>
           </ol>
 
-
           <p className={styles.bodyText}>
-            When editing an allow list, the "Derive" button can be used to derive the allow list from the minimum version of all observed packages. This is a convenient way to create an initial allow list.
+            When editing an allow list, the &quot;Derive&quot; button can be
+            used to derive the allow list from the minimum version of all
+            observed packages. This is a convenient way to create an initial
+            allow list.
           </p>
 
           <div className={styles.screenshotBox}>
             <div className={styles.screenshotLabel}>
-              Screenshot: Deriving an allow list from the minimum version of all observed packages.
+              Screenshot: Deriving an allow list from the minimum version of all
+              observed packages.
             </div>
             <ImageLightbox
               src="/doc-allow-derive.png"
@@ -813,9 +815,9 @@ export default function DocsPage() {
           </div>
 
           <p className={styles.bodyText}>
-            After deriving the allow list, as expected, all packages are now shown in the plot as Allowed.
+            After deriving the allow list, as expected, all packages are now
+            shown in the plot as Allowed.
           </p>
-
 
           <div className={styles.screenshotBox}>
             <div className={styles.screenshotLabel}>
@@ -828,7 +830,6 @@ export default function DocsPage() {
               height={800}
             />
           </div>
-
 
           <h3 className={styles.sectionTitle}>
             Package Details Per Validation Category
@@ -913,7 +914,6 @@ export default function DocsPage() {
             architecture and CPU count on the <i>y</i> axis, and the count of
             systems, the <i>z</i> axis, as the size of the plotted point.
           </p>
-
 
           <div className={styles.screenshotBox}>
             <div className={styles.screenshotLabel}>
