@@ -15,7 +15,7 @@ export function Footer() {
         {/* Column 2: Link to org */}
         <div className="flex justify-center">
           <a
-            className="flex gap-2 hover:underline hover:underline-offset-4"
+            className="flex gap-2 hover:text-gray-400"
             href="https://github.com/fetter-io"
             target="_blank"
             rel="noopener noreferrer"
@@ -26,12 +26,7 @@ export function Footer() {
 
         {/* Column 3: Link to docs */}
         <div className="flex justify-center">
-          <a
-            className="flex gap-2 hover:underline hover:underline-offset-4"
-            href="https://github.com/fetter-io/fetter-orb/blob/default/README.md"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a className="flex gap-2 hover:text-gray-400" href="/docs">
             Docs
           </a>
         </div>
@@ -40,7 +35,7 @@ export function Footer() {
         <div className="flex justify-center">
           <button
             onClick={() => setShowTerms(true)}
-            className="hover:underline hover:underline-offset-4"
+            className="cursor-pointer hover:text-gray-400"
           >
             Terms
           </button>
@@ -50,7 +45,7 @@ export function Footer() {
         <div className="flex justify-center">
           <button
             onClick={() => setShowPrivacy(true)}
-            className="hover:underline hover:underline-offset-4"
+            className="cursor-pointer hover:text-gray-400"
           >
             Privacy
           </button>

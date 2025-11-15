@@ -488,10 +488,10 @@ pub async fn require_internal_header(
 async fn main() {
     load_env(); // Loads .env, .env.local
     let pool = pick_db_pool().await;
-    let dbx = DBContext::new(pool, None);
+    // let dbx = DBContext::new(pool, None);
 
     // TODO: only if testing
-    // dbx.tables_drop().await.expect("failed to drop tables");
+    dbx.tables_drop().await.expect("failed to drop tables");
     dbx.tables_create(true)
         .await
         .expect("failed to create tables");

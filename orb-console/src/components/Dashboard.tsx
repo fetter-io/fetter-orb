@@ -701,7 +701,7 @@ export default function Dashboard() {
       </header>
 
       {/* Main scrollable content */}
-      <main className="flex-1 overflow-y-auto px-6 py-4">
+      <main className="flex-1 overflow-y-auto px-6 py-4 pb-12">
         <div className="max-w-4xl mx-auto flex flex-col gap-4">
           {activeTab === "packages" && (
             <TabPackages
@@ -800,8 +800,8 @@ export default function Dashboard() {
         </div>
       </main>
 
-      {/* Sticky footer */}
-      <footer className="bg-slate-950 border-t border-slate-700 px-6 py-4">
+      {/* Fixed footer */}
+      <footer className="fixed bottom-0 left-0 right-0 z-10 bg-slate-950 border-t border-slate-700 px-6 py-2">
         <Footer />
       </footer>
     </div>
