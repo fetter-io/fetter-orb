@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSession, signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -42,7 +42,8 @@ const styles = {
   link: "text-slate-400 hover:text-blue-300",
 };
 
-export default function DocsPage() {
+// Inner component that uses searchParams
+function DocsContent() {
   const { status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -1115,5 +1116,20 @@ export default function DocsPage() {
         </div>
       </footer>
     </div>
+  );
+}
+
+// Main export with Suspense wrapper
+export default function DocsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-slate-950 to-slate-900">
+          <div className="text-slate-400">Loading...</div>
+        </div>
+      }
+    >
+      <DocsContent />
+    </Suspense>
   );
 }
