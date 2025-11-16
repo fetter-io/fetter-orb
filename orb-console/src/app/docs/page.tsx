@@ -252,9 +252,9 @@ function DocsContent() {
 
           <p className={styles.bodyText}>
             Every Tenant associated with your account will be listed in the
-            Tenant tab (🏢). The Tenant display provides the name, key, and
-            number of updates per day, as well as information on two ways to
-            post package scan data to the Tenant:
+            Tenant tab (🏢). The Tenant display provides the name, updates per
+            day, and key, as well as information on two ways to post package
+            scan data to the Tenant:
           </p>
 
           <ol className={styles.orderedList}>
@@ -268,7 +268,7 @@ function DocsContent() {
 
           <div className={styles.screenshotBox}>
             <div className={styles.screenshotLabel}>
-              This screenshot depicts...
+              Screenshot: The Tenant tab, showing details on an active Tenant.
             </div>
             <ImageLightbox
               src="/doc-tenant.png"
@@ -277,6 +277,19 @@ function DocsContent() {
               height={800}
             />
           </div>
+
+          <h3 className={styles.sectionTitle}>Renaming a Tenant</h3>
+
+          <p className={styles.bodyText}>
+            Tenants can be renamed at any time, but users can only rename
+            Tenants they have created.
+          </p>
+
+          <ol className={styles.orderedList}>
+            <li>Navigate to the Tenant tab (🏢)</li>
+            <li>Click the &quot;Rename&quot; button.</li>
+            <li>Provide a valid name and select &quot;Rename&quot;</li>
+          </ol>
 
           <h3 className={styles.sectionTitle}>Up Next</h3>
 
@@ -422,18 +435,25 @@ function DocsContent() {
             terminal. The command will look something like this (your Tenant key
             will not be <code>ffff...</code>) :
           </p>
-          <pre
-            className={styles.codeBlock}
-          >{`fetter monitor-scan --url https://fetter.io/monitor_scan --tenant ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff`}</pre>
+
+          <pre className={styles.codeBlock}>
+            <span className="text-slate-500">$</span> fetter monitor-scan --url
+            https://fetter.io/monitor_scan --tenant
+            ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+            {"\n"}
+          </pre>
 
           <p className={styles.bodyText}>
             No additional output will be provided by default. To see logging
             information, provide the <code>--log</code> flag.
           </p>
 
-          <pre
-            className={styles.codeBlock}
-          >{`fetter --log monitor-scan --url https://fetter.io/monitor_scan --tenant ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff`}</pre>
+          <pre className={styles.codeBlock}>
+            <span className="text-slate-500">$</span> fetter --log monitor-scan
+            --url https://fetter.io/monitor_scan --tenant
+            ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+            {"\n"}
+          </pre>
 
           <h3 className={styles.sectionTitle}>Automating Scans</h3>
 
