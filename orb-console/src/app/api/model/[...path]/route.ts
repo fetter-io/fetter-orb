@@ -13,6 +13,14 @@ function joinPath(parts: string[] = []) {
   return parts.map(encodeURIComponent).join("/");
 }
 
+// Endpoints that don't require authentication
+const PUBLIC_ENDPOINTS = new Set(["lookup"]);
+
+function isPublicEndpoint(path: string[]): boolean {
+  const first = path[0];
+  return first !== undefined && PUBLIC_ENDPOINTS.has(first);
+}
+
 async function ensureSession() {
   const session = await getServerSession(authOptions);
   if (!session) {
@@ -22,6 +30,41 @@ async function ensureSession() {
     };
   }
   return { ok: true as const, session };
+}
+
+async function forwardPublic(req: Request, method: string, path: string[]) {
+  const url = new URL(req.url);
+  const backendUrl = `${PRIVATE_ORB_MODEL}/${joinPath(path)}${url.search}`;
+
+  const headers = new Headers();
+  const accept = req.headers.get("accept");
+  if (accept) headers.set("accept", accept);
+
+  const ct = req.headers.get("content-type");
+  if (ct) headers.set("content-type", ct);
+
+  const fetchOptions: RequestInit & {
+    next?: { revalidate: number };
+    duplex?: "half";
+  } = {
+    method,
+    headers,
+    next: { revalidate: 0 },
+  };
+
+  if (method !== "GET" && method !== "HEAD") {
+    fetchOptions.body = req.body;
+    fetchOptions.duplex = "half" as const;
+  }
+
+  const r = await fetch(backendUrl, fetchOptions);
+
+  const outHeaders = new Headers();
+  const rct = r.headers.get("content-type");
+  if (rct) outHeaders.set("content-type", rct);
+  const rcc = r.headers.get("cache-control");
+  if (rcc) outHeaders.set("cache-control", rcc);
+  return new NextResponse(r.body, { status: r.status, headers: outHeaders });
 }
 
 async function forward(
@@ -88,10 +131,15 @@ async function extractPath(ctx: unknown): Promise<string[]> {
 }
 
 async function handleRequest(req: Request, ctx: unknown, method: string) {
+  const path = await extractPath(ctx);
+
+  // Allow public endpoints without authentication
+  if (isPublicEndpoint(path)) {
+    return forwardPublic(req, method, path);
+  }
+
   const gate = await ensureSession();
   if (!gate.ok) return gate.res;
-
-  const path = await extractPath(ctx);
 
   const github_id = gate.session.user?.github_id;
   if (!github_id) {

@@ -3,7 +3,7 @@ use chrono::{DateTime, Utc};
 use std::env;
 
 use fetter::{
-    path_cache, AuditReport, CacheConfig, CliAnchor, CvssFilter, DepManifest, DirectURL,
+    path_cache, AuditReport, CacheConfig, CliAnchor, CvssFilter, DepManifest, DepSpec, DirectURL,
     FlagCacheRefresh, FlagLog, FlagRetainPassing, LockFile, LookupReport, Package, PathShared,
     ResultDynError, ScanFS, SystemTag, Tableable, UreqClientLive, ValidationExplain,
     ValidationFlags, ValidationReport, VcsInfo, VersionSpec,
@@ -1457,47 +1457,46 @@ impl DBContext {
         &self,
         dep_specs: Vec<String>,
         retain_passing: bool,
-        system_tag_id: Option<i32>,
-        tenant_id: Option<i32>,
+        _system_tag_id: Option<i32>,
+        _tenant_id: Option<i32>,
     ) -> ResultDynError<Value> {
         if dep_specs.is_empty() {
             let empty: Vec<Value> = vec![];
             return Ok(json!(empty));
         }
+        // TODO: when _system_tag_id, _tenant_id provided call get_latest_packages
         let client = Arc::new(UreqClientLive);
-        let dep_manifest = DepManifest::try_from_iter(dep_specs.iter())?;
 
-        let audit = LookupReport::from_dep_manifest(
-            client,
-            &dep_manifest,
-            None,
-            &self.cache_config,
-            FlagCacheRefresh(false), // keep vuln-level caches
-            FlagLog(false),
-            CvssFilter::All, // make this UI selectable?
-            FlagRetainPassing(retain_passing),
-        )?;
-        let records = &audit.records;
-
-        // Optionally get package_to_id mapping if tenant_id is provided
-        let package_to_id = if tenant_id.is_some() {
-            let (_, pkg_map) = self
-                .get_latest_packages_to_sites(system_tag_id, tenant_id)
-                .await?;
-            Some(pkg_map)
-        } else {
-            None
-        };
-
-        let paired: Vec<Value> = records
-            .iter()
+        // Process each dep_spec string individually to get multiple versions
+        let mut all_records = Vec::new();
+        for spec_str in &dep_specs {
+            if let Ok(ds) = DepSpec::from_string(spec_str) {
+                if let Ok(report) = LookupReport::from_dep_spec(
+                    client.clone(),
+                    &ds,
+                    Some(100), // return up to 100 versions per package
+                    &self.cache_config,
+                    FlagCacheRefresh(false),
+                    FlagLog(false),
+                    CvssFilter::All,
+                    FlagRetainPassing(retain_passing),
+                ) {
+                    for record in report.records.iter() {
+                        all_records.push(json!({
+                            "package": &record.package,
+                            "vuln_ids": &record.vuln_ids,
+                            "vuln_infos": &record.vuln_infos,
+                        }));
+                    }
+                }
+            }
+        }
+        // Build response with package_id = -1 (no tenant association for public lookup)
+        let paired: Vec<Value> = all_records
+            .into_iter()
             .map(|record| {
-                let pkg_id = package_to_id
-                    .as_ref()
-                    .and_then(|map| map.get(&record.package))
-                    .unwrap_or(&-1);
                 json!({
-                    "package_id": pkg_id,
+                    "package_id": -1,
                     "record": record
                 })
             })
