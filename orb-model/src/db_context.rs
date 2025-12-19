@@ -4,9 +4,9 @@ use std::env;
 
 use fetter::{
     path_cache, AuditReport, CacheConfig, CliAnchor, CvssFilter, DepManifest, DirectURL,
-    FlagCacheRefresh, FlagLog, LockFile, Package, PathShared, ResultDynError, ScanFS, SystemTag,
-    Tableable, UreqClientLive, ValidationExplain, ValidationFlags, ValidationReport, VcsInfo,
-    VersionSpec,
+    FlagCacheRefresh, FlagLog, FlagRetainPassing, LockFile, Package, PathShared, ResultDynError,
+    ScanFS, SystemTag, Tableable, UreqClientLive, ValidationExplain, ValidationFlags,
+    ValidationReport, VcsInfo, VersionSpec,
 };
 
 use serde::{Deserialize, Serialize};
@@ -1425,9 +1425,10 @@ impl DBContext {
             client,
             &packages,
             FlagCacheRefresh(false), // keep vuln-level caches
-            self.cache_config.clone(),
+            &self.cache_config,
             FlagLog(false),
             CvssFilter::All,
+            FlagRetainPassing(false),
         );
         let mut records = audit.records;
 

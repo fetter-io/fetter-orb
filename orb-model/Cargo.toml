@@ -8,7 +8,7 @@ default = [] # for DBContext as library only
 server = ["dep:axum", "dep:tower", "dep:tower-http"]
 
 [dependencies]
-fetter = "2.9.0" # update to 3.0
+fetter = "3.0.0"
 
 axum = {version = "0.8.3", optional = true}
 tower = {version = "0.5.2", optional = true}
