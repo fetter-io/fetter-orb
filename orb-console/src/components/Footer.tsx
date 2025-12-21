@@ -8,7 +8,7 @@ export function Footer() {
 
   return (
     <>
-      <footer className="grid grid-cols-6 gap-4 text-gray-500 text-sm">
+      <footer className="grid grid-cols-7 gap-2 text-gray-500 text-sm">
         {/* Empty first column for spacing */}
         <div></div>
 
@@ -24,7 +24,14 @@ export function Footer() {
           </a>
         </div>
 
-        {/* Column 3: Link to docs */}
+        {/*  Link to docs */}
+        <div className="flex justify-center">
+          <a className="flex gap-2 hover:text-gray-400" href="/lookup">
+            Lookup
+          </a>
+        </div>
+
+        {/*  Link to docs */}
         <div className="flex justify-center">
           <a className="flex gap-2 hover:text-gray-400" href="/docs">
             Docs
