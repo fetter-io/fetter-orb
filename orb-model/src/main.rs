@@ -247,6 +247,7 @@ pub async fn get_lookup(
     State(db): State<Arc<DBContext>>,
     Query(params): Query<LookupParams>,
 ) -> Result<Json<Value>, (StatusCode, String)> {
+    // might replace comma with new line to support
     match params.dep_specs {
         Some(dep_specs_str) => {
             let dep_specs: Vec<String> = dep_specs_str
@@ -594,6 +595,7 @@ async fn main() {
         }
     };
 
+    // unprotected here only means that the back-end server an be called without going through the NextJS api
     let route_unprotected = Router::new()
         .route("/health", get(get_health))
         .route("/lookup", get(get_lookup))
