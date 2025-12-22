@@ -110,7 +110,7 @@ export function AllowListEditor({
           <div className="flex gap-4 text-xs text-gray-400">
             <div className="flex items-center gap-2">
               <div
-                className={`w-4 h-4 border-2 rounded ${
+                className={`w-4 h-4 border-2 rounded-sm ${
                   initialSuperset
                     ? "bg-green-600 border-green-500"
                     : "bg-slate-700 border-slate-500"
@@ -148,7 +148,7 @@ export function AllowListEditor({
                 onChange={(e) =>
                   setDraft((d) => ({ ...d, superset: e.target.checked }))
                 }
-                className="w-4 h-4 accent-blue-500 bg-slate-700 border-2 border-slate-500 rounded"
+                className="checkbox-live"
               />
               Allow superset
             </label>
@@ -159,7 +159,7 @@ export function AllowListEditor({
                 onChange={(e) =>
                   setDraft((d) => ({ ...d, subset: e.target.checked }))
                 }
-                className="w-4 h-4 accent-blue-500 bg-slate-700 border-2 border-slate-500 rounded"
+                className="checkbox-live"
               />
               Allow subset
             </label>
