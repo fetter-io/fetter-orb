@@ -101,7 +101,7 @@ export function VulnCard({
             {pkg.name}
           </h3>
           <span className="text-gray-400 text-sm">{pkg.version}</span>
-          {package_id === -1 ? (
+          {package_id < 0 ? (
             <a
               href={`https://pypi.org/project/${pkg.key}/${pkg.version}`}
               target="_blank"
