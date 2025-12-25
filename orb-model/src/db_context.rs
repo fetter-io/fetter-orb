@@ -1457,18 +1457,29 @@ impl DBContext {
         &self,
         dep_specs: Vec<String>,
         retain_passing: bool,
-        _system_tag_id: Option<i32>,
-        _tenant_id: Option<i32>,
+        system_tag_id: Option<i32>,
+        tenant_id: Option<i32>,
     ) -> ResultDynError<Value> {
         if dep_specs.is_empty() {
             let empty: Vec<Value> = vec![];
             return Ok(json!(empty));
         }
-        // TODO: when _system_tag_id, _tenant_id provided call get_latest_packages
+
+        // If system_tag_id or tenant_id provided, get package_to_id mapping
+        let package_to_id: HashMap<Package, i32> =
+            if system_tag_id.is_some() || tenant_id.is_some() {
+                self.get_latest_packages(system_tag_id, tenant_id)
+                    .await
+                    .map(|(_, map)| map)
+                    .unwrap_or_default()
+            } else {
+                HashMap::new()
+            };
+
         let client = Arc::new(UreqClientLive);
 
         // Process each dep_spec string individually to get multiple versions
-        let mut all_records = Vec::new();
+        let mut all_records: Vec<(Package, Value)> = Vec::new();
         for spec_str in &dep_specs {
             if let Ok(ds) = DepSpec::from_string(spec_str) {
                 if let Ok(report) = LookupReport::from_dep_spec(
@@ -1482,21 +1493,25 @@ impl DBContext {
                     FlagRetainPassing(retain_passing),
                 ) {
                     for record in report.records.iter() {
-                        all_records.push(json!({
-                            "package": &record.package,
-                            "vuln_ids": &record.vuln_ids,
-                            "vuln_infos": &record.vuln_infos,
-                        }));
+                        all_records.push((
+                            record.package.clone(),
+                            json!({
+                                "package": &record.package,
+                                "vuln_ids": &record.vuln_ids,
+                                "vuln_infos": &record.vuln_infos,
+                            }),
+                        ));
                     }
                 }
             }
         }
-        // Build response with package_id = -1 (no tenant association for public lookup)
+
+        // Build response, using package_to_id mapping if available
         let paired: Vec<Value> = all_records
             .into_iter()
-            .map(|record| {
+            .map(|(package, record)| {
                 json!({
-                    "package_id": -1,
+                    "package_id": package_to_id.get(&package).unwrap_or(&-1),
                     "record": record
                 })
             })

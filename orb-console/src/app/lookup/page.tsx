@@ -2,6 +2,7 @@
 
 import { useState, Suspense, useCallback, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
+import { useSession } from "next-auth/react";
 import { HeaderPreAuth } from "@/components/HeaderPreAuth";
 import { Footer } from "@/components/Footer";
 import { VulnCard } from "@/components/VulnCard";
@@ -18,6 +19,7 @@ const VIEWPORT_FRACTION = 1.0;
 const MIN_LIST_PX = 280;
 
 function LookupContent() {
+  const { data: session, status } = useSession();
   const [inputText, setInputText] = useState("");
   const [retainPassing, setRetainPassing] = useState(false);
   const [results, setResults] = useState<AuditEntry[] | null>(null);
@@ -26,6 +28,26 @@ function LookupContent() {
   const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set());
   const [minVulnScore, setMinVulnScore] = useState(0);
   const [maxVulnScore, setMaxVulnScore] = useState(10);
+  const [tenantId, setTenantId] = useState<number | null>(null);
+  const [systemTagId, setSystemTagId] = useState<number | null>(null);
+
+  // Fetch user's last tenant when logged in
+  useEffect(() => {
+    if (status !== "authenticated" || !session?.user?.user_id) return;
+
+    const apiBase = process.env.NEXT_PUBLIC_ORB_MODEL!;
+    fetch(`${apiBase}/user_tenant_last?user_id=${session.user.user_id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.tenant_id != null) {
+          setTenantId(data.tenant_id);
+        }
+        if (data.system_tag_id != null) {
+          setSystemTagId(data.system_tag_id);
+        }
+      })
+      .catch((err) => console.error("Failed to load user preferences", err));
+  }, [status, session?.user?.user_id]);
 
   // Add unique pseudo package_ids for chart functionality (since lookup returns -1 when not logged in)
   const resultsWithIds = useMemo(() => {
@@ -111,6 +133,12 @@ function LookupContent() {
       params.set("dep_specs", lines.join("\n"));
       if (retainPassing) {
         params.set("retain_passing", "true");
+      }
+      if (tenantId !== null) {
+        params.set("tenant_id", tenantId.toString());
+      }
+      if (systemTagId !== null) {
+        params.set("system_tag_id", systemTagId.toString());
       }
 
       const res = await fetch(`${apiBase}/lookup?${params.toString()}`);
