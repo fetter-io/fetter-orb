@@ -2,6 +2,7 @@
 
 import { useState, Suspense, useCallback, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { HeaderPreAuth } from "@/components/HeaderPreAuth";
 import { Footer } from "@/components/Footer";
@@ -19,6 +20,7 @@ const VIEWPORT_FRACTION = 1.0;
 const MIN_LIST_PX = 280;
 
 function LookupContent() {
+  const router = useRouter();
   const { data: session, status } = useSession();
   const [inputText, setInputText] = useState("");
   const [retainPassing, setRetainPassing] = useState(false);
@@ -171,6 +173,13 @@ function LookupContent() {
     [],
   );
 
+  const handlePackageClick = useCallback(
+    (key: string) => {
+      router.push(`/app?tab=packages&package=${encodeURIComponent(key)}`);
+    },
+    [router],
+  );
+
   const renderItem = useCallback(
     (_index: number, entry: AuditEntry) => {
       if (!entry) return null;
@@ -180,6 +189,8 @@ function LookupContent() {
           key={`lookup-vuln-${entry.package_id}`}
           record={entry.record}
           package_id={entry.package_id}
+          highlight={entry.package_id >= 0}
+          onPackageClick={handlePackageClick}
           vulnerabilityScore={score}
           isExpanded={expandedCards.has(entry.package_id)}
           onToggle={(isExpanded) =>
@@ -188,7 +199,7 @@ function LookupContent() {
         />
       );
     },
-    [expandedCards, handleCardToggle],
+    [expandedCards, handleCardToggle, handlePackageClick],
   );
 
   return (
@@ -241,9 +252,9 @@ function LookupContent() {
           {/* Error Display */}
           {error && (
             <div className="pt-4">
-            <div className="bg-red-900/20 border border-red-800/40 rounded-sm px-4 py-2 text-red-400">
-              {error}
-            </div>
+              <div className="bg-red-900/20 border border-red-800/40 rounded-sm px-4 py-2 text-red-400">
+                {error}
+              </div>
             </div>
           )}
 
@@ -260,7 +271,8 @@ function LookupContent() {
                     maxVulnScore={maxVulnScore}
                     onFilterChange={(minBin, maxBin) => {
                       const minScore = minBin;
-                      const maxScore = maxBin >= 9 ? maxBin + 1.0 : maxBin + 0.99;
+                      const maxScore =
+                        maxBin >= 9 ? maxBin + 1.0 : maxBin + 0.99;
                       setMinVulnScore(minScore);
                       setMaxVulnScore(maxScore);
                     }}
@@ -269,7 +281,8 @@ function LookupContent() {
                   {/* Filter Status and Reset */}
                   <div className="flex items-center justify-between px-1">
                     <span className="text-xs text-gray-600">
-                      Showing {filteredResults.length} of {resultsWithIds.length} package
+                      Showing {filteredResults.length} of{" "}
+                      {resultsWithIds.length} package
                       {resultsWithIds.length === 1 ? "" : "s"}
                     </span>
                     {(minVulnScore > 0 || maxVulnScore < 10) && (
