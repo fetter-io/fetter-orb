@@ -16,64 +16,30 @@ function joinPath(parts: string[] = []) {
 // Endpoints that don't require authentication
 const PUBLIC_ENDPOINTS = new Set(["lookup"]);
 
-
 //-----------------------------------------------------------------
-async function forwardPublic(req: Request, method: string, path: string[]) {
-  const url = new URL(req.url);
-  const backendUrl = `${PRIVATE_ORB_MODEL}/${joinPath(path)}${url.search}`;
+type AuthInfo = { user_id: string; github_id: number } | null;
 
-  const headers = new Headers();
-  const accept = req.headers.get("accept");
-  if (accept) headers.set("accept", accept);
-
-  const ct = req.headers.get("content-type");
-  if (ct) headers.set("content-type", ct);
-
-  headers.set("x-orb-internal", TENANT_SECRET);
-
-  const fetchOptions: RequestInit & {
-    next?: { revalidate: number };
-    duplex?: "half";
-  } = {
-    method,
-    headers,
-    next: { revalidate: 0 },
-  };
-
-  if (method !== "GET" && method !== "HEAD") {
-    fetchOptions.body = req.body;
-    fetchOptions.duplex = "half" as const;
-  }
-
-  const r = await fetch(backendUrl, fetchOptions);
-
-  const outHeaders = new Headers();
-  const rct = r.headers.get("content-type");
-  if (rct) outHeaders.set("content-type", rct);
-  const rcc = r.headers.get("cache-control");
-  if (rcc) outHeaders.set("cache-control", rcc);
-  return new NextResponse(r.body, { status: r.status, headers: outHeaders });
-}
-
-async function forward(
+async function forwardRequest(
   req: Request,
   method: string,
   path: string[],
-  user_id: string,
-  github_id: number,
+  auth: AuthInfo,
 ) {
   const url = new URL(req.url);
 
-  // Validate user_id parameter if present
-  const urlUserId = url.searchParams.get("user_id");
-  if (urlUserId && urlUserId !== user_id) {
-    return new NextResponse(
-      JSON.stringify({
-        error: "user_id parameter does not match authenticated user",
-      }),
-      { status: 403, headers: { "content-type": "application/json" } },
-    );
+  // Validate user_id parameter if present (only for authenticated requests)
+  if (auth) {
+    const urlUserId = url.searchParams.get("user_id");
+    if (urlUserId && urlUserId !== auth.user_id) {
+      return new NextResponse(
+        JSON.stringify({
+          error: "user_id parameter does not match authenticated user",
+        }),
+        { status: 403, headers: { "content-type": "application/json" } },
+      );
+    }
   }
+
   const backendUrl = `${PRIVATE_ORB_MODEL}/${joinPath(path)}${url.search}`;
 
   const headers = new Headers();
@@ -84,7 +50,9 @@ async function forward(
   if (ct) headers.set("content-type", ct);
 
   headers.set("x-orb-internal", TENANT_SECRET);
-  headers.set("x-orb-github-id", github_id.toString());
+  if (auth) {
+    headers.set("x-orb-github-id", auth.github_id.toString());
+  }
 
   const fetchOptions: RequestInit & {
     next?: { revalidate: number };
@@ -109,8 +77,6 @@ async function forward(
   if (rcc) outHeaders.set("cache-control", rcc);
   return new NextResponse(r.body, { status: r.status, headers: outHeaders });
 }
-
-
 
 //-----------------------------------------------------------------
 
@@ -130,7 +96,6 @@ async function ensureSession() {
   return { ok: true as const, session };
 }
 
-
 // Narrow `ctx` without `any` and satisfy Next's "await params" rule
 type RouteContext = { params: Promise<{ path?: string[] }> };
 async function extractPath(ctx: unknown): Promise<string[]> {
@@ -144,7 +109,7 @@ async function handleRequest(req: Request, ctx: unknown, method: string) {
 
   // Allow public endpoints without authentication
   if (isPublicEndpoint(path)) {
-    return forwardPublic(req, method, path);
+    return forwardRequest(req, method, path, null);
   }
 
   const gate = await ensureSession();
@@ -160,7 +125,7 @@ async function handleRequest(req: Request, ctx: unknown, method: string) {
     return NextResponse.json({ error: "missing user_id" }, { status: 401 });
   }
 
-  return forward(req, method, path, user_id, github_id);
+  return forwardRequest(req, method, path, { user_id, github_id });
 }
 
 export async function GET(req: Request, ctx: unknown) {
