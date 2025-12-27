@@ -1466,15 +1466,15 @@ impl DBContext {
         }
 
         // If system_tag_id or tenant_id provided, get package_to_id mapping
-        let package_to_id: HashMap<Package, i32> =
-            if system_tag_id.is_some() || tenant_id.is_some() {
-                self.get_latest_packages(system_tag_id, tenant_id)
-                    .await
-                    .map(|(_, map)| map)
-                    .unwrap_or_default()
-            } else {
-                HashMap::new()
-            };
+        let package_to_id: HashMap<Package, i32> = if system_tag_id.is_some() || tenant_id.is_some()
+        {
+            self.get_latest_packages(system_tag_id, tenant_id)
+                .await
+                .map(|(_, map)| map)
+                .unwrap_or_default()
+        } else {
+            HashMap::new()
+        };
 
         let client = Arc::new(UreqClientLive);
 
