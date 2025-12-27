@@ -548,8 +548,10 @@ async fn main() {
         .allow_methods(Any)
         .allow_headers(Any);
 
+    // protercted routes validate the x-orb-internal header
     let route_protected = Router::new()
         .route("/audit", get(get_audit))
+        .route("/lookup", get(get_lookup))
         .route("/dep_manifest", post(post_dep_manifest))
         .route("/dep_manifest_derive", get(get_dep_manifest_derive))
         .route("/on_login", post(post_on_login))
@@ -598,7 +600,6 @@ async fn main() {
     // unprotected here only means that the back-end server an be called without going through the NextJS api
     let route_unprotected = Router::new()
         .route("/health", get(get_health))
-        .route("/lookup", get(get_lookup))
         .with_state(app_state.clone());
 
     let app = route_unprotected

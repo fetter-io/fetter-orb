@@ -43,6 +43,8 @@ async function forwardPublic(req: Request, method: string, path: string[]) {
   const ct = req.headers.get("content-type");
   if (ct) headers.set("content-type", ct);
 
+  headers.set("x-orb-internal", TENANT_SECRET);
+
   const fetchOptions: RequestInit & {
     next?: { revalidate: number };
     duplex?: "half";
