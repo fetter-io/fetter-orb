@@ -189,7 +189,7 @@ function LookupContent() {
           key={`lookup-vuln-${entry.package_id}`}
           record={entry.record}
           package_id={entry.package_id}
-          highlight={entry.package_id >= 0}
+          // highlight={entry.package_id >= 0}
           onPackageClick={handlePackageClick}
           vulnerabilityScore={score}
           isExpanded={expandedCards.has(entry.package_id)}

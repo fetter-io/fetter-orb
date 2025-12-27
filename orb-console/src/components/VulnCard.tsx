@@ -100,18 +100,16 @@ export function VulnCard({
           <h3 className="text-white font-semibold text-base truncate text-sm">
             {pkg.name}
           </h3>
-          <span className="text-gray-400 text-sm">{pkg.version}</span>
-          {package_id < 0 ? (
-            <a
-              href={`https://pypi.org/project/${pkg.key}/${pkg.version}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              title="View on PyPI"
-              className="border-b border-transparent hover:border-blue-400 text-sm"
-            >
-              📦
-            </a>
-          ) : (
+          <a
+            href={`https://pypi.org/project/${pkg.key}/${pkg.version}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="View on PyPI"
+            className="text-gray-400 text-sm hover:text-gray-300 hover:underline"
+          >
+            {pkg.version}
+          </a>
+          {package_id >= 0 && (
             <button
               title="Package details"
               className="border-b border-transparent hover:border-blue-400 cursor-pointer text-sm"
