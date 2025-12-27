@@ -16,22 +16,8 @@ function joinPath(parts: string[] = []) {
 // Endpoints that don't require authentication
 const PUBLIC_ENDPOINTS = new Set(["lookup"]);
 
-function isPublicEndpoint(path: string[]): boolean {
-  const first = path[0];
-  return first !== undefined && PUBLIC_ENDPOINTS.has(first);
-}
 
-async function ensureSession() {
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    return {
-      ok: false as const,
-      res: NextResponse.json({ error: "unauthenticated" }, { status: 401 }),
-    };
-  }
-  return { ok: true as const, session };
-}
-
+//-----------------------------------------------------------------
 async function forwardPublic(req: Request, method: string, path: string[]) {
   const url = new URL(req.url);
   const backendUrl = `${PRIVATE_ORB_MODEL}/${joinPath(path)}${url.search}`;
@@ -124,7 +110,28 @@ async function forward(
   return new NextResponse(r.body, { status: r.status, headers: outHeaders });
 }
 
-/** Narrow `ctx` without `any` and satisfy Next's "await params" rule */
+
+
+//-----------------------------------------------------------------
+
+function isPublicEndpoint(path: string[]): boolean {
+  const first = path[0];
+  return first !== undefined && PUBLIC_ENDPOINTS.has(first);
+}
+
+async function ensureSession() {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return {
+      ok: false as const,
+      res: NextResponse.json({ error: "unauthenticated" }, { status: 401 }),
+    };
+  }
+  return { ok: true as const, session };
+}
+
+
+// Narrow `ctx` without `any` and satisfy Next's "await params" rule
 type RouteContext = { params: Promise<{ path?: string[] }> };
 async function extractPath(ctx: unknown): Promise<string[]> {
   const { params } = ctx as RouteContext; // narrow once
