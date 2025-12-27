@@ -56,6 +56,9 @@ export default function Dashboard() {
   const searchParams = useSearchParams();
   const searchParamsString = searchParams?.toString() ?? "";
   const tabParam = searchParams?.get("tab") ?? null;
+  const packageParam = searchParams?.get("package") ?? null;
+  // package query param from external navigation (e.g., from /lookup)
+  const handledPackageParam = useRef<string | null>(null);
 
   //----------------------------------------------------------------------------
   // states
@@ -168,7 +171,6 @@ export default function Dashboard() {
       params.delete("tab");
       const queryString = params.toString();
       const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
-
       if (newUrl) {
         // replace does not add to browser history
         router.replace(newUrl, { scroll: false });
@@ -328,6 +330,7 @@ export default function Dashboard() {
     if (selectedSystemId !== null) {
       params.set("system_tag_id", selectedSystemId.toString());
     }
+
     const query = params.toString();
     const res = await fetch(`${apiBase}/validate${query ? `?${query}` : ""}`);
     return await res.json();
@@ -615,10 +618,6 @@ export default function Dashboard() {
     },
     [packagesState.data, setActiveTab],
   );
-
-  // Handle package query param from external navigation (e.g., from /lookup)
-  const packageParam = searchParams?.get("package") ?? null;
-  const handledPackageParam = useRef<string | null>(null);
 
   useEffect(() => {
     if (
