@@ -88,22 +88,36 @@ export function VulnCard({
     >
       <div className="flex items-center pr-1">
         <div className="flex items-center gap-2 w-5/6">
-          <CollapseButton
-            isExpanded={isExpanded}
-            onToggle={() => onToggle(!isExpanded)}
-            className="ml-0"
-          />
+          {vulnerabilityScore > 0 ? (
+            <CollapseButton
+              isExpanded={isExpanded}
+              onToggle={() => onToggle(!isExpanded)}
+              className="ml-0"
+            />
+          ) : (
+            <div className="w-4 h-4 flex-shrink-0" />
+          )}
           <h3 className="text-white font-semibold text-base truncate text-sm">
             {pkg.name}
           </h3>
-          <span className="text-gray-400 text-sm">{pkg.version}</span>
-          <button
-            title="Package details"
-            className="border-b border-transparent hover:border-blue-400 cursor-pointer text-sm"
-            onClick={() => onPackageClick?.(pkg.key)}
+          <a
+            href={`https://pypi.org/project/${pkg.key}/${pkg.version}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="View on PyPI"
+            className="text-gray-400 text-sm hover:text-gray-300 hover:underline"
           >
-            📦
-          </button>
+            {pkg.version}
+          </a>
+          {package_id >= 0 && (
+            <button
+              title="Package details"
+              className="border-b border-transparent hover:border-blue-400 cursor-pointer text-sm"
+              onClick={() => onPackageClick?.(pkg.key)}
+            >
+              📦
+            </button>
+          )}
         </div>
         <div className="w-1/6 flex justify-end">
           <VulnScoreIcon score={vulnerabilityScore} />

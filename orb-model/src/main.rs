@@ -235,6 +235,45 @@ pub async fn get_audit(
 
 //------------------------------------------------------------------------------
 
+#[derive(Deserialize)]
+pub struct LookupParams {
+    pub dep_specs: Option<String>, // newline-separated dependency specs
+    pub retain_passing: Option<bool>,
+    pub system_tag_id: Option<i32>,
+    pub tenant_id: Option<i32>,
+}
+
+pub async fn get_lookup(
+    State(db): State<Arc<DBContext>>,
+    Query(params): Query<LookupParams>,
+) -> Result<Json<Value>, (StatusCode, String)> {
+    // might replace comma with new line to support
+    match params.dep_specs {
+        Some(dep_specs_str) => {
+            let dep_specs: Vec<String> = dep_specs_str
+                .lines()
+                .map(|s| s.trim().to_string())
+                .filter(|s| !s.is_empty())
+                .collect();
+            if dep_specs.is_empty() {
+                return Ok(Json(serde_json::json!([])));
+            }
+            db.lookup(
+                dep_specs,
+                params.retain_passing.unwrap_or(false), // default to false
+                params.system_tag_id,
+                params.tenant_id,
+            )
+            .await
+            .map(Json)
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
+        }
+        None => Ok(Json(serde_json::json!([]))),
+    }
+}
+
+//------------------------------------------------------------------------------
+
 #[derive(Deserialize, Debug)]
 pub struct OnLoginParams {
     pub github_login: String,
@@ -488,10 +527,10 @@ pub async fn require_internal_header(
 async fn main() {
     load_env(); // Loads .env, .env.local
     let pool = pick_db_pool().await;
-    // let dbx = DBContext::new(pool, None);
+    let dbx = DBContext::new(pool, None);
 
     // TODO: only if testing
-    dbx.tables_drop().await.expect("failed to drop tables");
+    // dbx.tables_drop().await.expect("failed to drop tables");
     dbx.tables_create(true)
         .await
         .expect("failed to create tables");
@@ -509,8 +548,10 @@ async fn main() {
         .allow_methods(Any)
         .allow_headers(Any);
 
+    // protercted routes validate the x-orb-internal header
     let route_protected = Router::new()
         .route("/audit", get(get_audit))
+        .route("/lookup", get(get_lookup))
         .route("/dep_manifest", post(post_dep_manifest))
         .route("/dep_manifest_derive", get(get_dep_manifest_derive))
         .route("/on_login", post(post_on_login))
@@ -556,7 +597,10 @@ async fn main() {
         }
     };
 
-    let route_unprotected = Router::new().route("/health", get(get_health));
+    // unprotected here only means that the back-end server an be called without going through the NextJS api
+    let route_unprotected = Router::new()
+        .route("/health", get(get_health))
+        .with_state(app_state.clone());
 
     let app = route_unprotected
         .merge(route_protected)

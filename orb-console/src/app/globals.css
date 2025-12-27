@@ -67,6 +67,10 @@ body {
   border border-blue-600 hover:border-blue-500;
 }
 
+.checkbox-live {
+  @apply appearance-none w-4 h-4 rounded-sm border border-2 border-slate-600 bg-slate-900 checked:bg-blue-700 checked:border-blue-500 cursor-pointer relative checked:after:content-['✓'] checked:after:text-gray-200 checked:after:text-xs checked:after:absolute checked:after:inset-0 checked:after:flex checked:after:items-center checked:after:justify-center;
+}
+
 code {
   @apply px-0.5
   font-semibold

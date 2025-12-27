@@ -178,7 +178,7 @@ export function TabVulns({
                     onVulnCardToggle(packageId, false);
                   });
                 }}
-                className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                className="text-xs text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
               >
                 Show All
               </button>

@@ -56,6 +56,9 @@ export default function Dashboard() {
   const searchParams = useSearchParams();
   const searchParamsString = searchParams?.toString() ?? "";
   const tabParam = searchParams?.get("tab") ?? null;
+  const packageParam = searchParams?.get("package") ?? null;
+  // package query param from external navigation (e.g., from /lookup)
+  const handledPackageParam = useRef<string | null>(null);
 
   //----------------------------------------------------------------------------
   // states
@@ -168,7 +171,6 @@ export default function Dashboard() {
       params.delete("tab");
       const queryString = params.toString();
       const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
-
       if (newUrl) {
         // replace does not add to browser history
         router.replace(newUrl, { scroll: false });
@@ -328,6 +330,7 @@ export default function Dashboard() {
     if (selectedSystemId !== null) {
       params.set("system_tag_id", selectedSystemId.toString());
     }
+
     const query = params.toString();
     const res = await fetch(`${apiBase}/validate${query ? `?${query}` : ""}`);
     return await res.json();
@@ -585,33 +588,63 @@ export default function Dashboard() {
     }, 100);
   };
 
-  const handlePackageClick = (key: string) => {
-    setHighlightedPackageKey(key);
-    setActiveTab("packages");
+  const handlePackageClick = useCallback(
+    (key: string) => {
+      setHighlightedPackageKey(key);
+      setActiveTab("packages");
 
-    // Expand the target package
-    setExpandedPackageCards((prev) => {
-      const newSet = new Set(prev);
-      newSet.add(key);
-      return newSet;
-    });
+      // Expand the target package
+      setExpandedPackageCards((prev) => {
+        const newSet = new Set(prev);
+        newSet.add(key);
+        return newSet;
+      });
 
-    // Filter to show only the target package by key (exact match)
-    const targetPackage = packagesState.data?.find((pkg) => pkg.key === key);
-    if (targetPackage) {
-      setFilteredPackagesForDisplay([targetPackage]);
-    }
-    // Clear any existing search term since we're showing a specific package
-    setPackageSearchTerm("");
+      // Filter to show only the target package by key (exact match)
+      const targetPackage = packagesState.data?.find((pkg) => pkg.key === key);
+      if (targetPackage) {
+        setFilteredPackagesForDisplay([targetPackage]);
+      }
+      // Clear any existing search term since we're showing a specific package
+      setPackageSearchTerm("");
 
-    // Scroll to top of the window to ensure the filtered package is visible
-    setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      // Scroll to top of the window to ensure the filtered package is visible
       setTimeout(() => {
-        setHighlightedPackageKey(null);
-      }, 2000); // Reduced from 5000ms to 2000ms since we're scrolling to show it
-    }, 100);
-  };
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        setTimeout(() => {
+          setHighlightedPackageKey(null);
+        }, 2000);
+      }, 100);
+    },
+    [packagesState.data, setActiveTab],
+  );
+
+  useEffect(() => {
+    if (
+      packageParam &&
+      packagesState.data &&
+      handledPackageParam.current !== packageParam
+    ) {
+      handledPackageParam.current = packageParam;
+      handlePackageClick(packageParam);
+
+      // Remove the package param from URL after handling
+      const params = new URLSearchParams(searchParamsString);
+      params.delete("package");
+      const queryString = params.toString();
+      const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
+      if (newUrl) {
+        router.replace(newUrl, { scroll: false });
+      }
+    }
+  }, [
+    packageParam,
+    packagesState.data,
+    handlePackageClick,
+    searchParamsString,
+    pathname,
+    router,
+  ]);
 
   const handleVulnClick = (id: number) => {
     setHighlightedVulnId(`vuln-pkg-${id}`);

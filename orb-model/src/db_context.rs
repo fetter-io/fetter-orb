@@ -3,10 +3,10 @@ use chrono::{DateTime, Utc};
 use std::env;
 
 use fetter::{
-    path_cache, AuditReport, CacheConfig, CliAnchor, CvssFilter, DepManifest, DirectURL,
-    FlagCacheRefresh, FlagLog, LockFile, Package, PathShared, ResultDynError, ScanFS, SystemTag,
-    Tableable, UreqClientLive, ValidationExplain, ValidationFlags, ValidationReport, VcsInfo,
-    VersionSpec,
+    path_cache, AuditReport, CacheConfig, CliAnchor, CvssFilter, DepManifest, DepSpec, DirectURL,
+    FlagCacheRefresh, FlagLog, FlagRetainPassing, LockFile, LookupReport, Package, PathShared,
+    ResultDynError, ScanFS, SystemTag, Tableable, UreqClientLive, ValidationExplain,
+    ValidationFlags, ValidationReport, VcsInfo, VersionSpec,
 };
 
 use serde::{Deserialize, Serialize};
@@ -149,7 +149,7 @@ impl DBContext {
         let salt = env::var("TENANT_SECRET").unwrap_or_else(|_| "".to_string());
 
         // NOTE: as we defer updating audit data unless (a) user explicitly asks for it or (b) shouldAuditUpdate is true (packages change / duration limit passed), we may not need to use cache_dur here, which will use file-based caching on the back-end
-        let cache_dur = Duration::from_secs(0);
+        let cache_dur = Duration::from_secs(60);
         let cache_dir = path_cache(true).expect("Could not create path");
         let cache_config = CacheConfig::new(cache_dur, cache_dir);
 
@@ -1425,9 +1425,10 @@ impl DBContext {
             client,
             &packages,
             FlagCacheRefresh(false), // keep vuln-level caches
-            self.cache_config.clone(),
+            &self.cache_config,
             FlagLog(false),
             CvssFilter::All,
+            FlagRetainPassing(false),
         );
         let mut records = audit.records;
 
@@ -1444,6 +1445,73 @@ impl DBContext {
             .map(|record| {
                 json!({
                     "package_id": package_to_id.get(&record.package).unwrap_or(&-1),
+                    "record": record
+                })
+            })
+            .collect();
+
+        Ok(json!(paired))
+    }
+
+    pub async fn lookup(
+        &self,
+        dep_specs: Vec<String>,
+        retain_passing: bool,
+        system_tag_id: Option<i32>,
+        tenant_id: Option<i32>,
+    ) -> ResultDynError<Value> {
+        if dep_specs.is_empty() {
+            let empty: Vec<Value> = vec![];
+            return Ok(json!(empty));
+        }
+
+        // If system_tag_id or tenant_id provided, get package_to_id mapping
+        let package_to_id: HashMap<Package, i32> = if system_tag_id.is_some() || tenant_id.is_some()
+        {
+            self.get_latest_packages(system_tag_id, tenant_id)
+                .await
+                .map(|(_, map)| map)
+                .unwrap_or_default()
+        } else {
+            HashMap::new()
+        };
+
+        let client = Arc::new(UreqClientLive);
+
+        // Process each dep_spec string individually to get multiple versions
+        let mut all_records: Vec<(Package, Value)> = Vec::new();
+        for spec_str in &dep_specs {
+            if let Ok(ds) = DepSpec::from_string(spec_str) {
+                if let Ok(report) = LookupReport::from_dep_spec(
+                    client.clone(),
+                    &ds,
+                    Some(100), // return up to 100 versions per package
+                    &self.cache_config,
+                    FlagCacheRefresh(false),
+                    FlagLog(false),
+                    CvssFilter::All,
+                    FlagRetainPassing(retain_passing),
+                ) {
+                    for record in report.records.iter() {
+                        all_records.push((
+                            record.package.clone(),
+                            json!({
+                                "package": &record.package,
+                                "vuln_ids": &record.vuln_ids,
+                                "vuln_infos": &record.vuln_infos,
+                            }),
+                        ));
+                    }
+                }
+            }
+        }
+
+        // Build response, using package_to_id mapping if available
+        let paired: Vec<Value> = all_records
+            .into_iter()
+            .map(|(package, record)| {
+                json!({
+                    "package_id": package_to_id.get(&package).unwrap_or(&-1),
                     "record": record
                 })
             })
