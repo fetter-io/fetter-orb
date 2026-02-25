@@ -152,6 +152,10 @@ function McpContent() {
                 and safe versions so your agent can make informed dependency
                 decisions as it writes code.
               </p>
+              <p className={styles.bodyText}>
+                To explore related functionality directly in the browser, visit{" "}
+                <a href="/lookup" className={styles.link}>Fetter IO Lookup</a>.
+              </p>
               <div className={styles.infoBox}>
                 <h3 className={styles.infoBoxTitle}>Tools</h3>
                 <ul className={styles.list}>
