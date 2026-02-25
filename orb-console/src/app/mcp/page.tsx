@@ -154,7 +154,10 @@ function McpContent() {
               </p>
               <p className={styles.bodyText}>
                 To explore related functionality directly in the browser, visit{" "}
-                <a href="/lookup" className={styles.link}>Fetter IO Lookup</a>.
+                <a href="/lookup" className={styles.link}>
+                  Fetter IO Lookup
+                </a>
+                .
               </p>
               <div className={styles.infoBox}>
                 <h3 className={styles.infoBoxTitle}>Tools</h3>
