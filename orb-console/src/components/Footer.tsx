@@ -12,15 +12,10 @@ export function Footer() {
         {/* Empty first column for spacing */}
         <div></div>
 
-        {/* Column 2: Link to org */}
+        {/*  Link to docs */}
         <div className="flex justify-center">
-          <a
-            className="flex gap-2 hover:text-gray-400"
-            href="https://github.com/fetter-io"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            GitHub
+          <a className="flex gap-2 hover:text-gray-400" href="/docs">
+            Docs
           </a>
         </div>
 
@@ -38,10 +33,15 @@ export function Footer() {
           </a>
         </div>
 
-        {/*  Link to docs */}
+        {/* Column 2: Link to org */}
         <div className="flex justify-center">
-          <a className="flex gap-2 hover:text-gray-400" href="/docs">
-            Docs
+          <a
+            className="flex gap-2 hover:text-gray-400"
+            href="https://github.com/fetter-io"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            GitHub
           </a>
         </div>
 

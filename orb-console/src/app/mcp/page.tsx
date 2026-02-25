@@ -34,11 +34,20 @@ function McpContent() {
   const [activeSection, setActiveSection] = useState<string>(
     NAV_SECTIONS[0].id,
   );
+  const [highlightedSection, setHighlightedSection] = useState<string | null>(
+    null,
+  );
   const suppressObserver = useRef(false);
   const suppressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const highlightTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Highlight TOC entry as sections scroll into view
   useEffect(() => {
+    suppressObserver.current = true;
+    const initTimer = setTimeout(() => {
+      suppressObserver.current = false;
+    }, 200);
+
     const observer = new IntersectionObserver(
       (entries) => {
         if (suppressObserver.current) return;
@@ -54,11 +63,25 @@ function McpContent() {
       const el = document.getElementById(id);
       if (el) observer.observe(el);
     }
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      clearTimeout(initTimer);
+    };
   }, []);
+
+  const sectionClass = (id: string) =>
+    `scroll-mt-19 bg-slate-800/30 rounded-sm px-4 py-2 pb-4 border transition-colors duration-1000 space-y-4 ${
+      highlightedSection === id ? "border-blue-500" : "border-slate-700"
+    }`;
 
   const scrollTo = (id: string) => {
     setActiveSection(id);
+    setHighlightedSection(id);
+    if (highlightTimer.current) clearTimeout(highlightTimer.current);
+    highlightTimer.current = setTimeout(
+      () => setHighlightedSection(null),
+      1500,
+    );
     suppressObserver.current = true;
     if (suppressTimer.current) clearTimeout(suppressTimer.current);
     suppressTimer.current = setTimeout(() => {
@@ -99,10 +122,7 @@ function McpContent() {
           {/* Right Column — All sections */}
           <div className="sm:col-span-3 space-y-4">
             {/* Overview */}
-            <div
-              id="overview"
-              className="scroll-mt-19 bg-slate-800/30 rounded-sm px-4 py-2 pb-4 border border-slate-700 space-y-4"
-            >
+            <div id="overview" className={sectionClass("overview")}>
               <h2 className={styles.chapterTitle}>Fetter MCP</h2>
               <p className={styles.bodyText}>
                 Fetter provides a remote{" "}
@@ -136,17 +156,6 @@ function McpContent() {
                 <h3 className={styles.infoBoxTitle}>Tools</h3>
                 <ul className={styles.list}>
                   <li>
-                    <code className={styles.inlineCode}>lookup</code>
-                    {": "}
-                    find available versions and their vulnerabilities for any
-                    package or specifier
-                  </li>
-                  <li>
-                    <code className={styles.inlineCode}>is_vulnerable</code>
-                    {": "}
-                    check whether a specific pinned version has known CVEs
-                  </li>
-                  <li>
                     <code className={styles.inlineCode}>
                       most_recent_not_vulnerable
                     </code>
@@ -154,15 +163,23 @@ function McpContent() {
                     find the latest release of a package that is free of known
                     vulnerabilities
                   </li>
+                  <li>
+                    <code className={styles.inlineCode}>is_vulnerable</code>
+                    {": "}
+                    check whether a specific pinned version has known CVEs
+                  </li>
+                  <li>
+                    <code className={styles.inlineCode}>lookup</code>
+                    {": "}
+                    find available versions and their vulnerabilities for any
+                    package or specifier
+                  </li>
                 </ul>
               </div>
             </div>
 
             {/* Installation */}
-            <div
-              id="installation"
-              className="scroll-mt-19 bg-slate-800/30 rounded-sm px-4 py-2 pb-4 border border-slate-700 space-y-4"
-            >
+            <div id="installation" className={sectionClass("installation")}>
               <h2 className={styles.chapterTitle}>Installation</h2>
               <p className={styles.bodyText}>
                 The Fetter MCP server uses the HTTP transport and requires no
@@ -194,10 +211,7 @@ function McpContent() {
             </div>
 
             {/* Agent Usage */}
-            <div
-              id="agent-usage"
-              className="scroll-mt-19 bg-slate-800/30 rounded-sm px-4 py-2 pb-4 border border-slate-700 space-y-4"
-            >
+            <div id="agent-usage" className={sectionClass("agent-usage")}>
               <h2 className={styles.chapterTitle}>Agent Usage</h2>
               <p className={styles.bodyText}>
                 Once installed, the Fetter MCP tools are available to your AI
@@ -236,17 +250,17 @@ function McpContent() {
                   <code className={styles.inlineCode}>
                     most_recent_not_vulnerable
                   </code>{" "}
-                  to find a safe version to pin
-                </li>
-                <li>
-                  Auditing an existing specifier:{" "}
-                  <code className={styles.inlineCode}>lookup</code> to see
-                  affected versions
+                  to find a safe version
                 </li>
                 <li>
                   Validating a specific pinned version:{" "}
                   <code className={styles.inlineCode}>is_vulnerable</code> for a
                   definitive answer
+                </li>
+                <li>
+                  Auditing an existing specifier:{" "}
+                  <code className={styles.inlineCode}>lookup</code> to see
+                  affected versions
                 </li>
               </ul>
             </div>
@@ -254,7 +268,7 @@ function McpContent() {
             {/* most_recent_not_vulnerable */}
             <div
               id="most-recent-not-vulnerable"
-              className="scroll-mt-19 bg-slate-800/30 rounded-sm px-4 py-2 pb-4 border border-slate-700 space-y-4"
+              className={sectionClass("most-recent-not-vulnerable")}
             >
               <h2 className={styles.chapterTitle}>
                 Most Recent Not Vulnerable
@@ -275,7 +289,7 @@ function McpContent() {
                   <li className={styles.paramRow}>
                     <span className={styles.paramName}>package_name</span>
                     <span className={styles.paramDesc}>
-                      Package name only — no version specifier, e.g.{" "}
+                      Package name only (no version specifier), e.g.{" "}
                       <code className="font-mono text-slate-400">
                         &quot;requests&quot;
                       </code>
@@ -295,10 +309,7 @@ most_recent_not_vulnerable(package_name="cryptography")`}
             </div>
 
             {/* is_vulnerable */}
-            <div
-              id="is-vulnerable"
-              className="scroll-mt-19 bg-slate-800/30 rounded-sm px-4 py-2 pb-4 border border-slate-700 space-y-4"
-            >
+            <div id="is-vulnerable" className={sectionClass("is-vulnerable")}>
               <h2 className={styles.chapterTitle}>Find Vulnerabilities</h2>
               <p className={styles.bodyText}>
                 The <span className={styles.inlineCode}>is_vulnerable</span>{" "}
@@ -333,10 +344,7 @@ is_vulnerable(dep_spec="numpy==1.24.0")`}
             </div>
 
             {/* lookup */}
-            <div
-              id="lookup"
-              className="scroll-mt-19 bg-slate-800/30 rounded-sm px-4 py-2 pb-4 border border-slate-700 space-y-4"
-            >
+            <div id="lookup" className={sectionClass("lookup")}>
               <h2 className={styles.chapterTitle}>Search Packages</h2>
               <p className={styles.bodyText}>
                 The <span className={styles.inlineCode}>lookup</span> tool looks
