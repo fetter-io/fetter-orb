@@ -55,7 +55,9 @@ function McpContent() {
   }, []);
 
   const scrollTo = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    document
+      .getElementById(id)
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   return (
@@ -64,7 +66,6 @@ function McpContent() {
 
       <main className="flex-grow px-6 w-full pb-20">
         <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-4 gap-4 mt-4">
-
           {/* Left Column — TOC */}
           <aside className="sm:col-span-1 sm:self-start sm:sticky sm:top-19">
             <div className="bg-slate-900 p-2 border border-slate-800 rounded-sm">
@@ -88,7 +89,6 @@ function McpContent() {
 
           {/* Right Column — All sections */}
           <div className="sm:col-span-3 space-y-4">
-
             {/* Overview */}
             <div
               id="overview"
@@ -127,24 +127,23 @@ function McpContent() {
                 <h3 className={styles.infoBoxTitle}>Tools</h3>
                 <ul className={styles.list}>
                   <li>
-                    <code className={styles.inlineCode}>
-                      lookup
-                    </code>{": "}
+                    <code className={styles.inlineCode}>lookup</code>
+                    {": "}
                     find available versions and their vulnerabilities for any
                     package or specifier
                   </li>
                   <li>
-                    <code className={styles.inlineCode}>
-                      is_vulnerable
-                    </code>{": "}
+                    <code className={styles.inlineCode}>is_vulnerable</code>
+                    {": "}
                     check whether a specific pinned version has known CVEs
                   </li>
                   <li>
                     <code className={styles.inlineCode}>
                       most_recent_not_vulnerable
-                    </code>{": "}
-                    find the latest release of a package that is free of
-                    known vulnerabilities
+                    </code>
+                    {": "}
+                    find the latest release of a package that is free of known
+                    vulnerabilities
                   </li>
                 </ul>
               </div>
@@ -179,10 +178,11 @@ function McpContent() {
                   For any other MCP-compatible client, provide the following
                   remote server URL using the HTTP transport:
                 </p>
-                <pre className={styles.codeBlock}>{`https://mcp.fetter.io/mcp`}</pre>
+                <pre
+                  className={styles.codeBlock}
+                >{`https://mcp.fetter.io/mcp`}</pre>
               </div>
             </div>
-
 
             {/* Agent Usage */}
             <div
@@ -193,16 +193,28 @@ function McpContent() {
               <p className={styles.bodyText}>
                 Once installed, the Fetter MCP tools are available to your AI
                 agent during coding sessions. The agent can call them
-                automatically when adding or auditing dependencies; no
-                explicit tool invocation is required in your prompts.
+                automatically when adding or auditing dependencies; no explicit
+                tool invocation is required in your prompts.
               </p>
               <div className={styles.infoBox}>
                 <h3 className={styles.infoBoxTitle}>Example Prompts</h3>
                 <ul className={styles.list}>
-                  <li>&ldquo;Add the latest safe version of requests to requirements.txt&rdquo;</li>
-                  <li>&ldquo;Are there any known vulnerabilities in my current dependencies?&rdquo;</li>
-                  <li>&ldquo;What is the most recent version of pillow with no CVEs?&rdquo;</li>
-                  <li>&ldquo;Before pinning cryptography, check whether 42.0.5 is vulnerable&rdquo;</li>
+                  <li>
+                    &ldquo;Add the latest safe version of requests to
+                    requirements.txt&rdquo;
+                  </li>
+                  <li>
+                    &ldquo;Are there any known vulnerabilities in my current
+                    dependencies?&rdquo;
+                  </li>
+                  <li>
+                    &ldquo;What is the most recent version of pillow with no
+                    CVEs?&rdquo;
+                  </li>
+                  <li>
+                    &ldquo;Before pinning cryptography, check whether 42.0.5 is
+                    vulnerable&rdquo;
+                  </li>
                 </ul>
               </div>
               <h3 className={styles.sectionTitle}>How It Works</h3>
@@ -211,25 +223,21 @@ function McpContent() {
               </p>
               <ul className={styles.list}>
                 <li>
-                  Adding a new package: {" "}
+                  Adding a new package:{" "}
                   <code className={styles.inlineCode}>
                     most_recent_not_vulnerable
                   </code>{" "}
                   to find a safe version to pin
                 </li>
                 <li>
-                  Auditing an existing specifier: {" "}
-                  <code className={styles.inlineCode}>
-                    lookup
-                  </code>{" "}
-                  to see affected versions
+                  Auditing an existing specifier:{" "}
+                  <code className={styles.inlineCode}>lookup</code> to see
+                  affected versions
                 </li>
                 <li>
-                  Validating a specific pinned version: {" "}
-                  <code className={styles.inlineCode}>
-                    is_vulnerable
-                  </code>{" "}
-                  for a definitive answer
+                  Validating a specific pinned version:{" "}
+                  <code className={styles.inlineCode}>is_vulnerable</code> for a
+                  definitive answer
                 </li>
               </ul>
             </div>
@@ -239,12 +247,18 @@ function McpContent() {
               id="most-recent-not-vulnerable"
               className="scroll-mt-19 bg-slate-800/30 rounded-sm px-4 py-2 pb-4 border border-slate-700 space-y-4"
             >
-              <h2 className={styles.chapterTitle}>Most Recent Not Vulnerable</h2>
+              <h2 className={styles.chapterTitle}>
+                Most Recent Not Vulnerable
+              </h2>
               <p className={styles.bodyText}>
-                The <span className={styles.inlineCode}>most_recent_not_vulnerable</span> tool finds the most recent version of a package that has no known
-                vulnerabilities. Provide only a package name and the server
-                will search recent releases for a safe version. Useful when
-                pinning a dependency to the latest clean release.
+                The{" "}
+                <span className={styles.inlineCode}>
+                  most_recent_not_vulnerable
+                </span>{" "}
+                tool finds the most recent version of a package that has no
+                known vulnerabilities. Provide only a package name and the
+                server will search recent releases for a safe version. Useful
+                when pinning a dependency to the latest clean release.
               </p>
               <div className={styles.infoBox}>
                 <h3 className={styles.infoBoxTitle}>Parameters</h3>
@@ -271,7 +285,6 @@ most_recent_not_vulnerable(package_name="cryptography")`}
               </pre>
             </div>
 
-
             {/* is_vulnerable */}
             <div
               id="is-vulnerable"
@@ -279,9 +292,11 @@ most_recent_not_vulnerable(package_name="cryptography")`}
             >
               <h2 className={styles.chapterTitle}>Find Vulnerabilities</h2>
               <p className={styles.bodyText}>
-                The <span className={styles.inlineCode}>is_vulnerable</span> tool checks if a specific package version has known vulnerabilities.
-                Requires an exact version specifier. Returns vulnerability IDs,
-                summaries, CVSS scores, severity ratings, and reference URLs.
+                The <span className={styles.inlineCode}>is_vulnerable</span>{" "}
+                tool checks if a specific package version has known
+                vulnerabilities. Requires an exact version specifier. Returns
+                vulnerability IDs, summaries, CVSS scores, severity ratings, and
+                reference URLs.
               </p>
               <div className={styles.infoBox}>
                 <h3 className={styles.infoBoxTitle}>Parameters</h3>
@@ -315,13 +330,11 @@ is_vulnerable(dep_spec="numpy==1.24.0")`}
             >
               <h2 className={styles.chapterTitle}>Search Packages</h2>
               <p className={styles.bodyText}>
-                The <span className={styles.inlineCode}>lookup</span> tool looks up a package by name and optional version specifier to
-                find which versions are available and whether they have known
+                The <span className={styles.inlineCode}>lookup</span> tool looks
+                up a package by name and optional version specifier to find
+                which versions are available and whether they have known
                 vulnerabilities. Supports specifiers such as{" "}
-                <code className={styles.inlineCode}>
-                  &quot;requests&quot;
-                </code>
-                ,{" "}
+                <code className={styles.inlineCode}>&quot;requests&quot;</code>,{" "}
                 <code className={styles.inlineCode}>
                   &quot;numpy&gt;=2.0&quot;
                 </code>
@@ -350,8 +363,8 @@ is_vulnerable(dep_spec="numpy==1.24.0")`}
                   <li className={styles.paramRow}>
                     <span className={styles.paramName}>max_observed_score</span>
                     <span className={styles.paramDesc}>
-                      Return only the highest CVSS score per version rather
-                      than all individual vulnerabilities.
+                      Return only the highest CVSS score per version rather than
+                      all individual vulnerabilities.
                     </span>
                   </li>
                   <li className={styles.paramRow}>
@@ -384,7 +397,6 @@ lookup(dep_specs="flask==3.0.0", retain_passing=True)
 lookup(dep_specs="pillow", count=5)`}
               </pre>
             </div>
-
           </div>
         </div>
       </main>
