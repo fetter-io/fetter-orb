@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { HeaderPreAuth } from "@/components/HeaderPreAuth";
 import { Footer } from "@/components/Footer";
 
@@ -34,11 +34,14 @@ function McpContent() {
   const [activeSection, setActiveSection] = useState<string>(
     NAV_SECTIONS[0].id,
   );
+  const suppressObserver = useRef(false);
+  const suppressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Highlight TOC entry as sections scroll into view
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
+        if (suppressObserver.current) return;
         for (const entry of entries) {
           if (entry.isIntersecting) {
             setActiveSection(entry.target.id);
@@ -55,6 +58,12 @@ function McpContent() {
   }, []);
 
   const scrollTo = (id: string) => {
+    setActiveSection(id);
+    suppressObserver.current = true;
+    if (suppressTimer.current) clearTimeout(suppressTimer.current);
+    suppressTimer.current = setTimeout(() => {
+      suppressObserver.current = false;
+    }, 800);
     document
       .getElementById(id)
       ?.scrollIntoView({ behavior: "smooth", block: "start" });
