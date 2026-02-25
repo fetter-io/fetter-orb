@@ -16,7 +16,13 @@ Dev config:
 NEXT_PUBLIC_ORB_MODEL=http://localhost:3001
 ```
 
-## Learn More
+if Debug info:
+- Execution of TaskId { id: 2147483648 } transient failed
+- Too many open files (os error 24)] {
+  code: 'GenericFailure'
+}
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+sudo sysctl fs.inotify.max_user_instances=512
+```
+
