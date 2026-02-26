@@ -21,6 +21,38 @@ const styles = {
   inlineCode: "font-mono text-blue-300/80 text-sm",
 };
 
+function CopyBlock({ children, className }: { children: string; className: string }) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(children.trim());
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+  return (
+    <div className="relative group cursor-pointer" onClick={handleCopy}>
+      <pre className={className}>{children}</pre>
+      <span
+        className={`absolute top-2 right-2 pointer-events-none transition-colors ${
+          copied ? "text-blue-400" : "text-slate-600 group-hover:text-slate-400"
+        }`}
+      >
+        {copied ? (
+          // checkmark
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        ) : (
+          // clipboard
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="9" y="2" width="6" height="4" rx="1" />
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+          </svg>
+        )}
+      </span>
+    </div>
+  );
+}
+
 const NAV_SECTIONS = [
   { id: "overview", title: "Overview" },
   { id: "installation", title: "Installation" },
@@ -207,15 +239,15 @@ function McpContent() {
               </p>
               <div className={styles.infoBox}>
                 <h3 className={styles.infoBoxTitle}>Claude Code</h3>
-                <pre className={styles.codeBlock}>
+                <CopyBlock className={styles.codeBlock}>
                   {`claude mcp add --transport http fetter https://mcp.fetter.io/mcp`}
-                </pre>
+                </CopyBlock>
               </div>
               <div className={styles.infoBox}>
                 <h3 className={styles.infoBoxTitle}>Codex</h3>
-                <pre className={styles.codeBlock}>
+                <CopyBlock className={styles.codeBlock}>
                   {`codex mcp add fetter --url https://mcp.fetter.io/mcp`}
-                </pre>
+                </CopyBlock>
               </div>
               <div className={styles.infoBox}>
                 <h3 className={styles.infoBoxTitle}>Other MCP Clients</h3>
@@ -223,9 +255,7 @@ function McpContent() {
                   For any other MCP-compatible client, provide the following
                   remote server URL using the HTTP transport:
                 </p>
-                <pre
-                  className={styles.codeBlock}
-                >{`https://mcp.fetter.io/mcp`}</pre>
+                <CopyBlock className={styles.codeBlock}>{`https://mcp.fetter.io/mcp`}</CopyBlock>
               </div>
             </div>
 
