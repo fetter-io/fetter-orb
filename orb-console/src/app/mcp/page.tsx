@@ -19,7 +19,64 @@ const styles = {
   paramName: "font-mono text-slate-300 text-sm shrink-0 ",
   paramDesc: "text-gray-400 text-sm",
   inlineCode: "font-mono text-blue-300/80 text-sm",
+  codeLabel: "text-sm text-slate-500 mt-2 mb-0.5 ml-2",
 };
+
+function CopyBlock({
+  children,
+  className,
+}: {
+  children: string;
+  className: string;
+}) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(children.trim());
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+  return (
+    <div className="relative group cursor-pointer" onClick={handleCopy}>
+      <pre className={className}>{children}</pre>
+      <span
+        className={`absolute top-2 right-2 pointer-events-none transition-colors ${
+          copied ? "text-blue-400" : "text-slate-600 group-hover:text-slate-400"
+        }`}
+      >
+        {copied ? (
+          // checkmark
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-3.5 h-3.5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        ) : (
+          // clipboard
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-3.5 h-3.5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <rect x="9" y="2" width="6" height="4" rx="1" />
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+          </svg>
+        )}
+      </span>
+    </div>
+  );
+}
 
 const NAV_SECTIONS = [
   { id: "overview", title: "Overview" },
@@ -159,6 +216,18 @@ function McpContent() {
                 </a>
                 .
               </p>
+              <p className={styles.bodyText}>
+                For implementation details, issues, or feature requests, visit{" "}
+                <a
+                  href="https://github.com/fetter-io/fetter-mcp"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.link}
+                >
+                  fetter-mcp
+                </a>
+                .
+              </p>
               <div className={styles.infoBox}>
                 <h3 className={styles.infoBoxTitle}>Tools</h3>
                 <ul className={styles.list}>
@@ -195,15 +264,15 @@ function McpContent() {
               </p>
               <div className={styles.infoBox}>
                 <h3 className={styles.infoBoxTitle}>Claude Code</h3>
-                <pre className={styles.codeBlock}>
+                <CopyBlock className={styles.codeBlock}>
                   {`claude mcp add --transport http fetter https://mcp.fetter.io/mcp`}
-                </pre>
+                </CopyBlock>
               </div>
               <div className={styles.infoBox}>
                 <h3 className={styles.infoBoxTitle}>Codex</h3>
-                <pre className={styles.codeBlock}>
+                <CopyBlock className={styles.codeBlock}>
                   {`codex mcp add fetter --url https://mcp.fetter.io/mcp`}
-                </pre>
+                </CopyBlock>
               </div>
               <div className={styles.infoBox}>
                 <h3 className={styles.infoBoxTitle}>Other MCP Clients</h3>
@@ -211,9 +280,9 @@ function McpContent() {
                   For any other MCP-compatible client, provide the following
                   remote server URL using the HTTP transport:
                 </p>
-                <pre
+                <CopyBlock
                   className={styles.codeBlock}
-                >{`https://mcp.fetter.io/mcp`}</pre>
+                >{`https://mcp.fetter.io/mcp`}</CopyBlock>
               </div>
             </div>
 
@@ -305,14 +374,34 @@ function McpContent() {
                   </li>
                 </ul>
               </div>
-              <h3 className={styles.sectionTitle}>Examples</h3>
-              <pre className={styles.codeBlock}>
-                {`# Before adding a new dependency, find a safe version to pin
-most_recent_not_vulnerable(package_name="pillow")
-
-# Use the result to write a pinned requirement
-most_recent_not_vulnerable(package_name="cryptography")`}
-              </pre>
+              <h3 className={styles.sectionTitle}>Example</h3>
+              <p className={styles.codeLabel}>Request</p>
+              <pre className={styles.codeBlock}>{`{
+  "jsonrpc": "2.0",
+  "method": "tools/call",
+  "id": 2,
+  "params": {
+    "name": "most_recent_not_vulnerable",
+    "arguments": {
+      "name": "cryptography"
+    }
+  }
+}`}</pre>
+              <p className={styles.codeLabel}>Response</p>
+              <pre className={styles.codeBlock}>{`{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": {
+    "content": [],
+    "structuredContent": {
+      "package": "cryptography",
+      "version": "46.0.5",
+      "vulnerabilities": [],
+      "vulnerable": false
+    },
+    "isError": false
+  }
+}`}</pre>
             </div>
 
             {/* is_vulnerable */}
@@ -340,14 +429,77 @@ most_recent_not_vulnerable(package_name="cryptography")`}
                   </li>
                 </ul>
               </div>
-              <h3 className={styles.sectionTitle}>Examples</h3>
-              <pre className={styles.codeBlock}>
-                {`# Check a specific version of requests
-is_vulnerable(dep_spec="requests==2.31.0")
-
-# Verify a pinned version before adding it to requirements.txt
-is_vulnerable(dep_spec="numpy==1.24.0")`}
-              </pre>
+              <h3 className={styles.sectionTitle}>Example</h3>
+              <p className={styles.codeLabel}>Request</p>
+              <pre className={styles.codeBlock}>{`{
+  "jsonrpc": "2.0",
+  "method": "tools/call",
+  "id": 2,
+  "params": {
+    "name": "is_vulnerable",
+    "arguments": {
+      "name": "requests==2.19.1"
+    }
+  }
+}`}</pre>
+              <p className={styles.codeLabel}>Response</p>
+              <pre className={styles.codeBlock}>{`{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": {
+    "content": [],
+    "structuredContent": {
+      "package": "requests",
+      "version": "2.19.1",
+      "vulnerabilities": [
+        {
+          "cvss_score": 5.3,
+          "id": "GHSA-9hjg-9r4m-mvj7",
+          "severity": "(Medium):",
+          "summary": "Requests vulnerable to .netrc credentials leak via malicious URLs",
+          "url": "https://osv.dev/vulnerability/GHSA-9hjg-9r4m-mvj7"
+        },
+        {
+          "cvss_score": 5.6,
+          "id": "GHSA-9wx4-h78v-vm56",
+          "severity": "(Medium):",
+          "summary": "Requests Session object does not verify requests after making first request with verify=False",
+          "url": "https://osv.dev/vulnerability/GHSA-9wx4-h78v-vm56"
+        },
+        {
+          "cvss_score": 6.1,
+          "id": "GHSA-j8r2-6x86-q33q",
+          "severity": "(Medium):",
+          "summary": "Unintended leak of Proxy-Authorization header in requests",
+          "url": "https://osv.dev/vulnerability/GHSA-j8r2-6x86-q33q"
+        },
+        {
+          "cvss_score": 7.5,
+          "id": "GHSA-x84v-xcm2-53pg",
+          "severity": "(High):",
+          "summary": "Insufficiently Protected Credentials in Requests",
+          "url": "https://osv.dev/vulnerability/GHSA-x84v-xcm2-53pg"
+        },
+        {
+          "cvss_score": null,
+          "id": "PYSEC-2018-28",
+          "severity": null,
+          "summary": "",
+          "url": "https://osv.dev/vulnerability/PYSEC-2018-28"
+        },
+        {
+          "cvss_score": null,
+          "id": "PYSEC-2023-74",
+          "severity": null,
+          "summary": "",
+          "url": "https://osv.dev/vulnerability/PYSEC-2023-74"
+        }
+      ],
+      "vulnerable": true
+    },
+    "isError": false
+  }
+}`}</pre>
             </div>
 
             {/* lookup */}
@@ -406,20 +558,96 @@ is_vulnerable(dep_spec="numpy==1.24.0")`}
                   </li>
                 </ul>
               </div>
-              <h3 className={styles.sectionTitle}>Examples</h3>
-              <pre className={styles.codeBlock}>
-                {`# Check recent versions of requests for any vulnerabilities
-lookup(dep_specs="requests")
-
-# Check numpy 2.x versions, show only CVSS scores >= 7.0
-lookup(dep_specs="numpy>=2.0", cvss_threshold=7.0)
-
-# Get all versions of flask 3.0.0, including passing ones
-lookup(dep_specs="flask==3.0.0", retain_passing=True)
-
-# Check only the 5 most recent releases
-lookup(dep_specs="pillow", count=5)`}
-              </pre>
+              <h3 className={styles.sectionTitle}>Example</h3>
+              <p className={styles.codeLabel}>Request</p>
+              <pre className={styles.codeBlock}>{`{
+  "jsonrpc": "2.0",
+  "method": "tools/call",
+  "id": 2,
+  "params": {
+    "name": "lookup",
+    "arguments": {
+      "name": "requests>=2.32.0",
+      "retain_passing": true
+    }
+  }
+}`}</pre>
+              <p className={styles.codeLabel}>Response</p>
+              <pre className={styles.codeBlock}>{`{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": {
+    "content": [],
+    "structuredContent": {
+      "package": "requests",
+      "versions": [
+        {
+          "version": "2.32.0",
+          "vulnerabilities": [
+            {
+              "cvss_score": 5.3,
+              "id": "GHSA-9hjg-9r4m-mvj7",
+              "severity": "(Medium):",
+              "summary": "Requests vulnerable to .netrc credentials leak via malicious URLs",
+              "url": "https://osv.dev/vulnerability/GHSA-9hjg-9r4m-mvj7"
+            }
+          ],
+          "vulnerable": true
+        },
+        {
+          "version": "2.32.1",
+          "vulnerabilities": [
+            {
+              "cvss_score": 5.3,
+              "id": "GHSA-9hjg-9r4m-mvj7",
+              "severity": "(Medium):",
+              "summary": "Requests vulnerable to .netrc credentials leak via malicious URLs",
+              "url": "https://osv.dev/vulnerability/GHSA-9hjg-9r4m-mvj7"
+            }
+          ],
+          "vulnerable": true
+        },
+        {
+          "version": "2.32.2",
+          "vulnerabilities": [
+            {
+              "cvss_score": 5.3,
+              "id": "GHSA-9hjg-9r4m-mvj7",
+              "severity": "(Medium):",
+              "summary": "Requests vulnerable to .netrc credentials leak via malicious URLs",
+              "url": "https://osv.dev/vulnerability/GHSA-9hjg-9r4m-mvj7"
+            }
+          ],
+          "vulnerable": true
+        },
+        {
+          "version": "2.32.3",
+          "vulnerabilities": [
+            {
+              "cvss_score": 5.3,
+              "id": "GHSA-9hjg-9r4m-mvj7",
+              "severity": "(Medium):",
+              "summary": "Requests vulnerable to .netrc credentials leak via malicious URLs",
+              "url": "https://osv.dev/vulnerability/GHSA-9hjg-9r4m-mvj7"
+            }
+          ],
+          "vulnerable": true
+        },
+        {
+          "version": "2.32.4",
+          "vulnerabilities": [],
+          "vulnerable": false
+        },
+        {
+          "version": "2.32.5",
+          "vulnerabilities": [],
+          "vulnerable": false
+        }
+      ]
+    },
+    "isError": false
+  }
+}`}</pre>
             </div>
           </div>
         </div>
