@@ -159,6 +159,18 @@ function McpContent() {
                 </a>
                 .
               </p>
+              <p className={styles.bodyText}>
+                For implementation details, issues, or feature requests, visit{" "}
+                <a
+                  href="https://github.com/fetter-io/fetter-mcp"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.link}
+                >
+                  fetter-mcp
+                </a>
+                .
+              </p>
               <div className={styles.infoBox}>
                 <h3 className={styles.infoBoxTitle}>Tools</h3>
                 <ul className={styles.list}>
